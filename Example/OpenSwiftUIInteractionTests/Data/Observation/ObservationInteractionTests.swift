@@ -1,6 +1,6 @@
 //
-//  ObservationUXTests.swift
-//  OpenSwiftUIUXTests
+//  ObservationInteractionTests.swift
+//  OpenSwiftUIInteractionTests
 
 #if OPENSWIFTUI
 import OpenObservation
@@ -13,13 +13,13 @@ import Testing
 
 @MainActor
 @Suite
-struct ObservationUXTests {
+struct ObservationInteractionTests {
     @Test
     func stateModelMutationUpdatesBody() async throws {
         let model = CounterModel()
         let content = CounterView(model: model)
 
-        try await withUXTestHost(of: content) { host in
+        try await withInteractionTestHost(of: content) { host in
             try await host.assertSnapshot(named: "tap-\(model.count)")
             for count in 1...2 {
                 try await host.tap()

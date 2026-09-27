@@ -13,14 +13,14 @@ const loadAction = name => JSON.parse(execFileSync('ruby', [
   `${root}/.github/actions/${name}/action.yml`,
 ], { encoding: 'utf8' }));
 const action = loadAction('uitests');
-const uxAction = loadAction('uxtests');
+const interactionAction = loadAction('interactiontests');
 const evaluate = (source, bindings) => vm.runInNewContext(
   source.replace(/\.([A-Za-z_][\w-]*-[\w-]+)/g, (_, name) => `[${JSON.stringify(name)}]`),
   { always: () => true, ...bindings },
 );
 const expand = (source, bindings) => String(source).replace(/\$\{\{(.*?)\}\}/g, (_, expression) => evaluate(expression, bindings));
 const defaults = action => Object.fromEntries(Object.entries(action.inputs).map(([key, value]) => [key, value.default ?? '']));
-const schemes = ['SUI_UXTests', 'OSUI_UXTests'];
+const schemes = ['SUI_InteractionTests', 'OSUI_InteractionTests'];
 const destination = 'platform=iOS Simulator,OS=18.5,name=iPhone 16 Pro';
 const recordingFailure = {
   failureText: 'Issue recorded: Record mode is on. Automatically recorded snapshot: …',
@@ -32,27 +32,27 @@ const recordingSummary = {
   testFailures: [recordingFailure],
 };
 
-test('UX verification does not record SwiftUI references without update', async t => {
+test('interaction verification does not record SwiftUI references without update', async t => {
   const result = await runTests(t);
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['OSUI_UXTests']);
+  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['OSUI_InteractionTests']);
 });
 
-test('missing UX references do not start recording without update', async t => {
-  const result = await runTests(t, { OSUI_UXTests: { status: 65 } }, { references: false });
+test('missing interaction references do not start recording without update', async t => {
+  const result = await runTests(t, { OSUI_InteractionTests: { status: 65 } }, { references: false });
   assert.equal(result.status, 1, result.stdout + result.stderr);
-  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['OSUI_UXTests']);
+  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['OSUI_InteractionTests']);
   assert.equal(result.steps['record-baseline'].outcome, 'skipped');
 });
 
-test('update records even when persistent UX references already exist', async t => {
+test('update records even when persistent interaction references already exist', async t => {
   const result = await runTests(t, {}, { update: true, references: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), schemes);
 });
 
 test('recording and verification receive the same case-sensitive test selection', async t => {
-  const onlyTesting = 'OpenSwiftUIUXTests/TapGestureUXTests/snapshotsBeforeAndAfterTap(tapCount:)';
+  const onlyTesting = 'OpenSwiftUIInteractionTests/TapGestureInteractionTests/snapshotsBeforeAndAfterTap(tapCount:)';
   const result = await runTests(t, {}, { update: true, onlyTesting });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   for (const args of result.commands) assert.ok(args.includes(`-only-testing:${onlyTesting}`));
@@ -60,22 +60,22 @@ test('recording and verification receive the same case-sensitive test selection'
 
 test('a selected interaction test can update successfully without producing snapshots', async t => {
   const result = await runTests(t, {
-    SUI_UXTests: {
+    SUI_InteractionTests: {
       status: 0, missingReferences: true,
       summary: { totalTestCount: 1, skippedTests: 0, failedTests: 0 },
     },
-  }, { update: true, onlyTesting: 'OpenSwiftUIUXTests/ObservationUXTests' });
+  }, { update: true, onlyTesting: 'OpenSwiftUIInteractionTests/ObservationInteractionTests' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
 });
 
 test('macOS reference paths include all three version components', async t => {
   const result = await runTests(t, {}, { platform: 'macos' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.equal(result.steps.reference.outputs.directory, path.join(result.referenceRoot, 'macOS/26.6.0/OpenSwiftUIUXTests'));
+  assert.equal(result.steps.reference.outputs.directory, path.join(result.referenceRoot, 'macOS/26.6.0/OpenSwiftUIInteractionTests'));
 });
 
 test('recording releases its own lock but preserves another owner', async t => {
-  const result = await runTests(t, { SUI_UXTests: { replaceLock: true } }, { update: true });
+  const result = await runTests(t, { SUI_InteractionTests: { replaceLock: true } }, { update: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.equal(await fs.readFile(result.steps.reference.outputs.lockfile, 'utf8'), 'another recorder');
 });
@@ -95,14 +95,14 @@ async function runTests(t, fixtures = {}, options = {}) {
   const bin = path.join(directory, 'bin');
   const referenceRoot = path.join(directory, 'Persistent references');
   const commandLog = path.join(directory, 'commands.jsonl');
-  const suite = options.suite ?? 'UXTests';
+  const suite = options.suite ?? 'InteractionTests';
   const platform = options.platform ?? 'ios';
   const snapshotPlatform = platform === 'ios' ? 'iOS_Simulator' : 'macOS';
   const snapshotVersion = platform === 'ios' ? '18.5.0' : '26.6.0';
   await fs.mkdir(bin);
   await fs.writeFile(commandLog, '');
   await fs.writeFile(path.join(bin, 'sw_vers'), '#!/bin/sh\necho 26.6\n', { mode: 0o755 });
-  const referenceDirectory = path.join(referenceRoot, snapshotPlatform, snapshotVersion, `OpenSwiftUI${suite}`, 'TapGestureUXTests.swift');
+  const referenceDirectory = path.join(referenceRoot, snapshotPlatform, snapshotVersion, `OpenSwiftUI${suite}`, 'TapGestureInteractionTests.swift');
   if (options.references ?? !options.update) {
     await fs.mkdir(referenceDirectory, { recursive: true });
     await fs.writeFile(path.join(referenceDirectory, 'initial.png'), 'existing reference');
@@ -111,10 +111,10 @@ async function runTests(t, fixtures = {}, options = {}) {
 const fs = require('node:fs');
 const path = require('node:path');
 const args = process.argv.slice(2);
-fs.appendFileSync(process.env.UXTEST_COMMAND_LOG, JSON.stringify(args) + '\\n');
+fs.appendFileSync(process.env.INTERACTION_TEST_COMMAND_LOG, JSON.stringify(args) + '\\n');
 const scheme = args[args.indexOf('-scheme') + 1];
 const result = args[args.indexOf('-resultBundlePath') + 1];
-const fixture = JSON.parse(process.env.UXTEST_FIXTURES)[scheme] ?? {};
+const fixture = JSON.parse(process.env.INTERACTION_TEST_FIXTURES)[scheme] ?? {};
 const recording = scheme.startsWith('SUI_');
 const referenceRoot = process.env.TEST_RUNNER_SNAPSHOT_REFERENCE_DIR;
 fs.writeFileSync(path.join(path.dirname(result), scheme + '-environment.json'), JSON.stringify({ referenceRoot }));
@@ -122,7 +122,7 @@ console.log('Executed ' + scheme);
 if (!fixture.missingResult) {
   fs.mkdirSync(result, { recursive: true });
   const summary = fixture.summary ?? (recording
-    ? JSON.parse(process.env.UXTEST_RECORDING_SUMMARY)
+    ? JSON.parse(process.env.INTERACTION_TEST_RECORDING_SUMMARY)
     : { totalTestCount: 1, skippedTests: 0, failedTests: 0, testFailures: [] });
   fs.writeFileSync(path.join(result, 'summary.json'), JSON.stringify(summary));
   const testTree = fixture.testTree ?? {
@@ -132,14 +132,14 @@ if (!fixture.missingResult) {
       result: summary.failedTests > 0 ? 'Failed' : 'Passed',
       children: (summary.testFailures ?? []).map(failure => ({
         nodeType: 'Failure Message',
-        name: 'TapGestureUXTests.swift:50: ' + failure.failureText,
+        name: 'TapGestureInteractionTests.swift:50: ' + failure.failureText,
       })),
     }],
   };
   fs.writeFileSync(path.join(result, 'tests.json'), JSON.stringify(testTree));
 }
 if (recording && referenceRoot && !fixture.missingReferences) {
-  const referenceDirectory = path.join(referenceRoot, process.env.SNAPSHOT_PLATFORM, process.env.SNAPSHOT_VERSION, 'OpenSwiftUI' + process.env.TEST_SUITE, 'TapGestureUXTests.swift');
+  const referenceDirectory = path.join(referenceRoot, process.env.SNAPSHOT_PLATFORM, process.env.SNAPSHOT_VERSION, 'OpenSwiftUI' + process.env.TEST_SUITE, 'TapGestureInteractionTests.swift');
   fs.mkdirSync(referenceDirectory, { recursive: true });
   fs.writeFileSync(path.join(referenceDirectory, 'initial.png'), 'reference fixture');
 }
@@ -155,7 +155,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
 `, { mode: 0o755 });
 
   let inputs = {
-    ...defaults(suite === 'UXTests' ? uxAction : action),
+    ...defaults(suite === 'InteractionTests' ? interactionAction : action),
     platform,
     destination: platform === 'ios' ? destination : 'platform=macOS',
     'artifact-name': 'snapshot-tests',
@@ -164,8 +164,8 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
     compute: String(options.compute ?? true),
     'update-reference': String(options.update ?? false),
   };
-  if (suite === 'UXTests') {
-    const caller = uxAction.runs.steps.find(step => step.uses === './.github/actions/uitests');
+  if (suite === 'InteractionTests') {
+    const caller = interactionAction.runs.steps.find(step => step.uses === './.github/actions/uitests');
     inputs = { ...defaults(action), ...Object.fromEntries(Object.entries(caller.with).map(([key, value]) => [key, expand(value, { inputs })])) };
   }
   const steps = Object.fromEntries(action.runs.steps.filter(step => step.id).map(step => [step.id, { outputs: {}, outcome: 'skipped' }]));
@@ -190,9 +190,9 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
         RUNNER_TEMP: directory,
         GITHUB_OUTPUT: output,
         GITHUB_RUN_ID: '123', GITHUB_JOB: 'snapshot-tests', GITHUB_RUN_ATTEMPT: '1',
-        UXTEST_COMMAND_LOG: commandLog,
-        UXTEST_FIXTURES: JSON.stringify(fixtures),
-        UXTEST_RECORDING_SUMMARY: JSON.stringify(recordingSummary),
+        INTERACTION_TEST_COMMAND_LOG: commandLog,
+        INTERACTION_TEST_FIXTURES: JSON.stringify(fixtures),
+        INTERACTION_TEST_RECORDING_SUMMARY: JSON.stringify(recordingSummary),
         SNAPSHOT_PLATFORM: snapshotPlatform, SNAPSHOT_VERSION: snapshotVersion, TEST_SUITE: suite,
         ...Object.fromEntries(Object.entries(step.env ?? {}).map(([key, value]) => [key, expand(value, bindings)])),
       },
@@ -220,7 +220,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   };
 }
 
-test('UX action records SwiftUI references before OpenSwiftUI verification and keeps both results', async t => {
+test('interaction action records SwiftUI references before OpenSwiftUI verification and keeps both results', async t => {
   const result = await runTests(t, {}, { update: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   await assert.rejects(fs.access(result.steps.reference.outputs.lockfile), { code: 'ENOENT' });
@@ -252,8 +252,8 @@ for (const scheme of schemes) {
     test(`${scheme}: ${name} fails the action`, async t => {
       const result = await runTests(t, { [scheme]: fixture }, { update: true });
       assert.equal(result.status, 1, result.stdout + result.stderr);
-      if (scheme === 'SUI_UXTests') assert.equal(result.steps.uitest.outcome, 'skipped');
-      for (const name of scheme === 'SUI_UXTests' ? ['SUI_UXTests'] : schemes) {
+      if (scheme === 'SUI_InteractionTests') assert.equal(result.steps.uitest.outcome, 'skipped');
+      for (const name of scheme === 'SUI_InteractionTests' ? ['SUI_InteractionTests'] : schemes) {
         assert.match(await fs.readFile(path.join(result.artifacts, `${name}.log`), 'utf8'), new RegExp(`Executed ${name}`));
       }
     });
@@ -274,8 +274,8 @@ for (const [name, fixture] of Object.entries({
       testNodes: [{
         nodeType: 'Test Case', result: 'Failed', children: [{
           nodeType: 'Arguments', result: 'Failed', children: [
-            { nodeType: 'Failure Message', name: `TapGestureUXTests.swift:50: ${recordingFailure.failureText}` },
-            { nodeType: 'Failure Message', name: 'TapGestureUXTests.swift:52: Caught error: timeout' },
+            { nodeType: 'Failure Message', name: `TapGestureInteractionTests.swift:50: ${recordingFailure.failureText}` },
+            { nodeType: 'Failure Message', name: 'TapGestureInteractionTests.swift:52: Caught error: timeout' },
           ],
         }],
       }],
@@ -285,7 +285,7 @@ for (const [name, fixture] of Object.entries({
     testTree: {
       testNodes: [{
         nodeType: 'Test Case', result: 'Failed', children: [
-          { nodeType: 'Failure Message', name: `TapGestureUXTests.swift:50: ${recordingFailure.failureText}` },
+          { nodeType: 'Failure Message', name: `TapGestureInteractionTests.swift:50: ${recordingFailure.failureText}` },
           { nodeType: 'Arguments', name: '2', result: 'Failed', children: [] },
         ],
       }],
@@ -293,14 +293,14 @@ for (const [name, fixture] of Object.entries({
   },
 })) {
   test(`SwiftUI recording rejects ${name}`, async t => {
-    const result = await runTests(t, { SUI_UXTests: fixture }, { update: true });
+    const result = await runTests(t, { SUI_InteractionTests: fixture }, { update: true });
     assert.equal(result.status, 1, result.stdout + result.stderr);
   });
 }
 
 test('SwiftUI recording accepts a successful run with reference images', async t => {
   const result = await runTests(t, {
-    SUI_UXTests: {
+    SUI_InteractionTests: {
       status: 0,
       summary: { totalTestCount: 1, skippedTests: 0, failedTests: 0, testFailures: [] },
     },

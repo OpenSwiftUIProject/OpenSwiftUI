@@ -1,4 +1,4 @@
-name: Run UX Tests
+name: Run Interaction Tests
 description: Execute hosted snapshot tests and collect failure artifacts
 
 inputs:
@@ -16,11 +16,11 @@ inputs:
     description: 'Name for the artifact upload'
     required: true
   reference-root:
-    description: 'Root directory for persistent UX test reference images'
+    description: 'Root directory for persistent interaction test reference images'
     required: false
     default: /Volumes/Workspace/OpenSwiftUI_CI/ReferenceImages
   update-reference:
-    description: 'Force updating reference images before running UX tests'
+    description: 'Force updating reference images before running interaction tests'
     required: false
     default: 'false'
   only-testing:
@@ -40,7 +40,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Run UX snapshot tests
+    - name: Run interaction snapshot tests
       id: tests
       uses: ./.github/actions/uitests
       with:
@@ -52,5 +52,5 @@ runs:
         update-reference: ${{ inputs.update-reference }}
         only-testing: ${{ inputs.only-testing }}
         compute: ${{ inputs.compute }}
-        test-suite: UXTests
+        test-suite: InteractionTests
         record-if-missing: 'false'

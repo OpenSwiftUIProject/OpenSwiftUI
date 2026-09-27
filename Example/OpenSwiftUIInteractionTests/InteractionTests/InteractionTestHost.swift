@@ -1,6 +1,6 @@
 //
-//  UXTestHost.swift
-//  OpenSwiftUIUXTests
+//  InteractionTestHost.swift
+//  OpenSwiftUIInteractionTests
 
 #if os(macOS)
 import AppKit
@@ -19,12 +19,12 @@ import Testing
 import TestingHost
 
 @MainActor
-func withUXTestHost<Content: View>(
+func withInteractionTestHost<Content: View>(
     of content: Content,
-    _ body: @MainActor (UXTestHost) async throws -> Void
+    _ body: @MainActor (InteractionTestHost) async throws -> Void
 ) async throws {
     #if os(macOS)
-    let window = UXTestWindow.shared
+    let window = InteractionTestWindow.shared
     defer {
         window.makeFirstResponder(nil)
         window.contentViewController = nil
@@ -60,7 +60,7 @@ func withUXTestHost<Content: View>(
     }
     events.showTouches = false
     #endif
-    let host = UXTestHost(events: events)
+    let host = InteractionTestHost(events: events)
     do {
         try await body(host)
     } catch {
@@ -71,7 +71,7 @@ func withUXTestHost<Content: View>(
 }
 
 @MainActor
-struct UXTestHost {
+struct InteractionTestHost {
     fileprivate let events: EventGenerator
 
     func tap(count: Int = 1) async throws {
@@ -174,7 +174,7 @@ struct UXTestHost {
 
 #if os(macOS)
 @MainActor
-private enum UXTestWindow {
+private enum InteractionTestWindow {
     static let shared: HammerWindow = {
         // Hide the scene's placeholder once. Each test replaces only the test window's content.
         for window in NSApp.windows where window.canBecomeMain && window.isVisible {

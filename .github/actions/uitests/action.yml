@@ -33,7 +33,7 @@ inputs:
     default: 'false'
 
   test-suite:
-    description: 'Hosted test suite (UITests or UXTests)'
+    description: 'Hosted test suite (UITests or InteractionTests)'
     default: UITests
   record-if-missing:
     description: 'Record a baseline when the test suite has no reference images'
@@ -101,7 +101,7 @@ runs:
       run: |
         set -euo pipefail
         case "$TEST_SUITE" in
-          UITests|UXTests) ;;
+          UITests|InteractionTests) ;;
           *) echo "::error::Unsupported test suite: $TEST_SUITE"; exit 1 ;;
         esac
         case "$TEST_PLATFORM" in
@@ -164,7 +164,7 @@ runs:
         source Scripts/Tuist/common.sh
         cd Example
         test_arguments=(-workspace Example.xcworkspace)
-        if [[ "${{ inputs.test-suite }}" == "UXTests" ]]; then
+        if [[ "${{ inputs.test-suite }}" == "InteractionTests" ]]; then
           test_arguments+=(-parallel-testing-enabled NO)
         fi
         if [[ -n "$UITEST_ONLY_TESTING" ]]; then
@@ -287,7 +287,7 @@ runs:
         source Scripts/Tuist/common.sh
         cd Example
         test_arguments=(-workspace Example.xcworkspace)
-        if [[ "${{ inputs.test-suite }}" == "UXTests" ]]; then
+        if [[ "${{ inputs.test-suite }}" == "InteractionTests" ]]; then
           test_arguments+=(-parallel-testing-enabled NO)
         fi
         if [[ -n "$UITEST_ONLY_TESTING" ]]; then

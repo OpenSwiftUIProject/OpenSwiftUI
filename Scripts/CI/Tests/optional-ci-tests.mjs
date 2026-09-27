@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const optionalWorkflows = ['uitests', 'uxtests', 'compatibility_tests', 'stdout_renderer'];
+const optionalWorkflows = ['uitests', 'interaction_tests', 'compatibility_tests', 'stdout_renderer'];
 const sharedPreparationWorkflows = ['compatibility_tests', 'stdout_renderer'];
 const files = [...optionalWorkflows, 'prepare_optional_ci', 'prepare_snapshot_tests'];
 const workflows = Object.fromEntries(files.map(name => [name, JSON.parse(execFileSync('ruby', [
@@ -16,8 +16,8 @@ const workflows = Object.fromEntries(files.map(name => [name, JSON.parse(execFil
 ], { encoding: 'utf8' }))]));
 const prepare = workflows.prepare_optional_ci.jobs.prepare;
 
-test('UX dispatch supports the UI snapshot options', () => {
-  assert.deepEqual(Object.keys(workflows.uxtests.on.workflow_dispatch.inputs).sort(), [
+test('interaction dispatch supports the UI snapshot options', () => {
+  assert.deepEqual(Object.keys(workflows.interaction_tests.on.workflow_dispatch.inputs).sort(), [
     'configuration', 'only-testing', 'platform', 'update_reference',
   ]);
 });
@@ -249,16 +249,16 @@ for (const name of ['compatibility_tests']) {
   });
 }
 
-test('UX verification requires successful checks on both platforms at the same SHA', () => {
-  const workflow = workflows.uxtests;
+test('interaction verification requires successful checks on both platforms at the same SHA', () => {
+  const workflow = workflows.interaction_tests;
   const output = workflow.on.workflow_call.outputs['verified-sha'].value;
   const platformSHA = (name, outcome, sha) => expression(workflow.jobs[name].outputs.sha, {
     steps: { 'run-tests': { outputs: { 'test-result': outcome } }, checkout: { outputs: { commit: sha } } },
-    needs: { prepare_uxtests: { outputs: { 'only-testing': '' } } },
+    needs: { prepare_interaction_tests: { outputs: { 'only-testing': '' } } },
   });
   const jobs = {
-    ios_uxtest: { outputs: { sha: platformSHA('ios_uxtest', 'success', headSha) } },
-    macos_uxtest: { outputs: { sha: platformSHA('macos_uxtest', 'success', headSha) } },
+    ios_interaction_test: { outputs: { sha: platformSHA('ios_interaction_test', 'success', headSha) } },
+    macos_interaction_test: { outputs: { sha: platformSHA('macos_interaction_test', 'success', headSha) } },
   };
   assert.equal(expression(output, { jobs }), headSha);
   for (const name of Object.keys(jobs)) {
@@ -275,24 +275,24 @@ test('UX verification requires successful checks on both platforms at the same S
   }
 });
 
-test('UI and UX expose the same snapshot inputs and configuration matrix', () => {
+test('UI and interaction tests expose the same snapshot inputs and configuration matrix', () => {
   for (const event of ['workflow_call', 'workflow_dispatch']) {
     const ui = workflows.uitests.on[event].inputs;
-    const ux = workflows.uxtests.on[event].inputs;
-    assert.deepEqual(Object.keys(ux).sort(), Object.keys(ui).sort());
+    const interaction = workflows.interaction_tests.on[event].inputs;
+    assert.deepEqual(Object.keys(interaction).sort(), Object.keys(ui).sort());
     for (const name of Object.keys(ui)) {
-      assert.equal(ux[name].default, ui[name].default);
-      assert.deepEqual(ux[name].options, ui[name].options);
+      assert.equal(interaction[name].default, ui[name].default);
+      assert.deepEqual(interaction[name].options, ui[name].options);
     }
   }
-  for (const name of ['uitests', 'uxtests']) {
+  for (const name of ['uitests', 'interaction_tests']) {
     const [prepareName, caller] = Object.entries(workflows[name].jobs).find(([, job]) => job.uses);
     assert.equal(caller.uses, './.github/workflows/prepare_snapshot_tests.yml');
     for (const job of Object.values(workflows[name].jobs).filter(job => !job.uses)) {
       assert.equal(job.env.OPENSWIFTUI_LINK_TESTING, 0);
       assert.equal(job.permissions['id-token'], 'write');
       assert.equal(job.strategy['fail-fast'], false);
-      const step = job.steps.find(step => step.uses === `./.github/actions/${name}`);
+      const step = job.steps.find(step => step.uses === `./.github/actions/${name.replace('_', '')}`);
       for (const key of ['only-testing', 'update-reference']) assert.ok(step.with[key].includes(`needs.${prepareName}.outputs.${key}`));
       assert.equal(step.with.compute, '${{ matrix.configuration.compute == 1 }}');
       assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, '${{ matrix.configuration.swiftui_renderer }}');
@@ -404,10 +404,10 @@ async function snapshotRequest(name, options = {}) {
   return { ...result, admitted };
 }
 
-for (const name of ['uitests', 'uxtests']) {
-  const command = name === 'uitests' ? '/uitest' : '/uxtest';
-  const label = name === 'uitests' ? 'UI Tests' : 'UX Tests';
-  const target = name === 'uitests' ? 'OpenSwiftUIUITests/TextUITests/dateFormatStyleExample()' : 'OpenSwiftUIUXTests/TapGestureUXTests/snapshotsBeforeAndAfterTap(tapCount:)';
+for (const name of ['uitests', 'interaction_tests']) {
+  const command = name === 'uitests' ? '/uitest' : '/interactiontest';
+  const label = name === 'uitests' ? 'UI Tests' : 'Interaction Tests';
+  const target = name === 'uitests' ? 'OpenSwiftUIUITests/TextUITests/dateFormatStyleExample()' : 'OpenSwiftUIInteractionTests/TapGestureInteractionTests/snapshotsBeforeAndAfterTap(tapCount:)';
   for (const platform of ['all', 'ios', 'macos']) {
     test(`${command}: selects ${platform} with the default configurations and reuses references`, async () => {
       const result = await snapshotRequest(name, { body: `${command} ${platform.toUpperCase()}` });
@@ -447,8 +447,8 @@ for (const name of ['uitests', 'uxtests']) {
       assert.equal(result.outputs['only-testing'], target);
       assert.deepEqual(result.statuses.map(row => row.context), expected.map(id => `${label} / iOS / ${id} / Selected`));
       for (const row of result.statuses) assert.equal(row.sha, headSha);
-      const job = workflows[name].jobs[name === 'uitests' ? 'ios_uitest' : 'ios_uxtest'];
-      const prepareName = name === 'uitests' ? 'prepare_uitests' : 'prepare_uxtests';
+      const job = workflows[name].jobs[name === 'uitests' ? 'ios_uitest' : 'ios_interaction_test'];
+      const prepareName = name === 'uitests' ? 'prepare_uitests' : 'prepare_interaction_tests';
       assert.equal(expression(job.outputs.sha, {
         steps: { 'run-tests': { outputs: { 'test-result': 'success' } }, checkout: { outputs: { commit: headSha } } },
         needs: { [prepareName]: { outputs: result.outputs } },

@@ -1,6 +1,6 @@
 //
-//  TapGestureUXTests.swift
-//  OpenSwiftUIUXTests
+//  TapGestureInteractionTests.swift
+//  OpenSwiftUIInteractionTests
 
 #if OPENSWIFTUI
 import OpenSwiftUI
@@ -13,7 +13,7 @@ import Testing
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
-struct TapGestureUXTests {
+struct TapGestureInteractionTests {
     @Test(arguments: [1, 2])
     func onTapGestureIncrementsCount(tapCount: Int) async throws {
         struct ContentView: View {
@@ -32,7 +32,7 @@ struct TapGestureUXTests {
 
         var count = 0
         let content = ContentView(tapCount: tapCount) { count += 1 }
-        try await withUXTestHost(of: content) { host in
+        try await withInteractionTestHost(of: content) { host in
             #expect(count == 0)
             try await host.assertSnapshot(named: "tap-\(tapCount)-initial")
             try await host.tap(count: tapCount)

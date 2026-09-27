@@ -75,9 +75,9 @@ jobs:
       configuration: all
       update_reference: false
 
-  ux:
+  interaction:
     needs: prepare
-    uses: ./.github/workflows/uxtests.yml
+    uses: ./.github/workflows/interaction_tests.yml
     with:
       ref: ${{ needs.prepare.outputs.sha }}
       platform: all
@@ -101,7 +101,7 @@ jobs:
   verify:
     name: Verify all required checks
     if: always()
-    needs: [prepare, macos, ios, ubuntu, ui, ux, compatibility, stdout]
+    needs: [prepare, macos, ios, ubuntu, ui, interaction, compatibility, stdout]
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.verify.outputs.sha }}
