@@ -9,8 +9,6 @@ import Foundation
 import SnapshotTesting
 import TestingHost
 
-let defaultSize = CGSize(width: 200, height: 200)
-
 #if os(macOS)
 extension Snapshotting where Value == NSViewController, Format == NSImage {
     /// drawHierarchyInKeyWindow is iOS only parameter, here for compatibility

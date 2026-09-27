@@ -21,7 +21,7 @@ import TestingHost
 @MainActor
 func withInteractionTestHost<Content: View>(
     of content: Content,
-    size: CGSize,
+    size: CGSize = defaultSize,
     _ body: @MainActor (InteractionTestHost) async throws -> Void
 ) async throws {
     #if os(macOS)

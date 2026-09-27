@@ -32,7 +32,7 @@ struct TapGestureInteractionTests {
 
         var count = 0
         let content = ContentView(tapCount: tapCount) { count += 1 }
-        try await withInteractionTestHost(of: content, size: .init(width: 300, height: 200)) { host in
+        try await withInteractionTestHost(of: content) { host in
             #expect(count == 0)
             try await host.assertSnapshot(named: "tap-\(tapCount)-initial")
             try await host.tap(count: tapCount)

@@ -55,14 +55,16 @@ with `.tags(.interaction)` and keep them on the main actor. Serialize tests that
 share application windows and Hammer settings.
 
 Use `withInteractionTestHost(of:size:)` to host a view and clean up after the test.
-Pass the content size in points. The hosted view and its snapshots use that size
-on both macOS and iOS, independently of the screen size.
+The default content size is 200×200 points, shared with UI tests through
+`defaultSize` in [Shared/SnapshotTesting.swift](Shared/SnapshotTesting.swift).
+Pass `size` only when a test needs another content size. The hosted view and its
+snapshots use that size on both macOS and iOS, independently of the screen size.
 Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
 `assertSnapshot(named:)` captures the current hosted view and preserves its
 state for later interactions:
 
 ```swift
-try await withInteractionTestHost(of: content, size: CGSize(width: 300, height: 200)) { host in
+try await withInteractionTestHost(of: content) { host in
     try await host.assertSnapshot(named: "before")
     try await host.tap()
     try await host.waitUntil(count == 1)

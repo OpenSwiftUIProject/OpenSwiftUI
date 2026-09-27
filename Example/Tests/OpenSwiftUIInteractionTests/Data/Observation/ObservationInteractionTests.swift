@@ -19,7 +19,7 @@ struct ObservationInteractionTests {
         let model = CounterModel()
         let content = CounterView(model: model)
 
-        try await withInteractionTestHost(of: content, size: .init(width: 200, height: 200)) { host in
+        try await withInteractionTestHost(of: content, size: .init(width: 400, height: 400)) { host in
             try await host.assertSnapshot(named: "tap-\(model.count)")
             for count in 1...2 {
                 try await host.tap()
