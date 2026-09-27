@@ -20,6 +20,16 @@ package struct WhitespaceRemovingFormatStyle<Format, Key>: FormatStyle
     var prefixValue: Key.Value?
     var suffixValue: Key.Value?
 
+    package init(
+        base: Format,
+        prefixValue: Key.Value?,
+        suffixValue: Key.Value?
+    ) {
+        self.base = base
+        self.prefixValue = prefixValue
+        self.suffixValue = suffixValue
+    }
+
     package func format(_ input: Format.FormatInput) -> AttributedString {
         base.format(input)
     }

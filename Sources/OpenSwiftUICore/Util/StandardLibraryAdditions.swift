@@ -738,11 +738,11 @@ extension ClosedRange where Bound: SignedNumeric {
 extension ClosedRange where Bound == Date {
     package func progress(at date: Date, countdown: Bool) -> Double {
         let totalDuration = upperBound.timeIntervalSince(lowerBound)
-        guard totalDuration > 0 else { return countdown ? 1.0 : 0.0 }
+        guard totalDuration > 0 else { return countdown ? 0.0 : 1.0 }
         
         let elapsed = date.timeIntervalSince(lowerBound)
         let progress = elapsed / totalDuration
-        let clampedProgress = Swift.max(0.0, Swift.min(1.0, progress))
+        let clampedProgress = progress >= 0 ? Swift.min(progress, 1.0) : 0.0
         
         return countdown ? (1.0 - clampedProgress) : clampedProgress
     }

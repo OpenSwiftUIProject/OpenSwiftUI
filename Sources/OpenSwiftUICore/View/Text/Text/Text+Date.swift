@@ -3,14 +3,15 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: AEE0E21EC7C6B2D1204F94F94CBF7389 (SwiftUICore)
 
 public import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - Text + DateStyle [WIP]
+// MARK: - Text + DateStyle
 
+@available(OpenSwiftUI_v2_0, *)
 extension Text {
 
     /// A predefined style used to display a `Date`.
@@ -79,7 +80,7 @@ extension Text {
             )
         }
 
-        enum Storage {
+        enum Storage: Int {
             case time
             case date
             case relative
@@ -126,18 +127,121 @@ extension Text {
             }
 
         }
+
+        func text(for date: Date) -> Text {
+            switch storage {
+            case .time:
+                let format = Date.FormatStyle()
+                    .hour(.defaultDigits(amPM: .abbreviated))
+                    .minute(.defaultDigits)
+                    .attributedStyle
+                let trimmedFormat = WhitespaceRemovingFormatStyle<
+                    Date.FormatStyle.Attributed,
+                    AttributeScopes.FoundationAttributes.DateFieldAttribute
+                >(
+                    base: format,
+                    prefixValue: .minute,
+                    suffixValue: .amPM
+                )
+                return Text(date, format: trimmedFormat)
+            case .date:
+                let format = Date.FormatStyle()
+                    .year(.defaultDigits)
+                    .month(.wide)
+                    .day(.defaultDigits)
+                return Text(date, format: format)
+            case .relative, .offset, .timer:
+                #if canImport(Darwin)
+                return Text(
+                    source: TimeDataSource<Date>.DateStorage.identity,
+                    format: format(for: date)!,
+                    reducedLuminanceBudget: nil
+                )
+                #else
+                _openSwiftUIPlatformUnimplementedFailure()
+                #endif
+            }
+        }
+
+        #if canImport(Darwin)
+        func format(for date: Date) -> SystemFormatStyle.DateOffset? {
+            switch storage {
+            case .time, .date:
+                return nil
+            case .relative, .offset:
+                let allowedFields: Set<Date.ComponentsFormatStyle.Field>
+                if let units = unitConfiguration?.units {
+                    allowedFields = Set(units)
+                } else {
+                    allowedFields = [.year, .month, .day, .hour, .minute, .second]
+                }
+                let format = SystemFormatStyle.DateOffset(
+                    to: date,
+                    allowedFields: allowedFields,
+                    maxFieldCount: storage == .relative ? 2 : 1,
+                    sign: storage == .relative ? .never : .always(includingZero: true)
+                )
+                let sizeVariant: TextSizeVariant
+                if let style = unitConfiguration?.style {
+                    sizeVariant = TextSizeVariant(rawValue: 2 - style.rawValue)
+                } else {
+                    sizeVariant = storage == .relative ? .compact : .regular
+                }
+                return format.sizeVariant(sizeVariant)
+            case .timer:
+                let timerFields: Set<Date.ComponentsFormatStyle.Field> = [
+                    .hour,
+                    .minute,
+                    .second,
+                ]
+                let allowedFields: Set<Date.ComponentsFormatStyle.Field>
+                if let units = unitConfiguration?.units {
+                    allowedFields = Set(units).intersection(timerFields)
+                } else {
+                    allowedFields = timerFields
+                }
+                return SystemFormatStyle.DateOffset(
+                    to: date,
+                    allowedFields: allowedFields,
+                    maxFieldCount: allowedFields.count,
+                    sign: .never,
+                    forceUnitsAoDStyle: true
+                )
+            }
+        }
+        #endif
     }
 
+    /// Creates an instance that displays localized dates and times using a
+    /// specific style.
+    ///
+    /// - Parameters:
+    ///     - date: The target date to display.
+    ///     - style: The style used when displaying a date.
     public init(_ date: Date, style: Text.DateStyle) {
-        _openSwiftUIUnimplementedFailure()
+        self = style.text(for: date)
     }
 
+    /// Creates an instance that displays a localized range between two dates.
+    ///
+    /// - Parameters:
+    ///     - dates: The range of dates to display
     public init(_ dates: ClosedRange<Date>) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(DateInterval(start: dates.lowerBound, end: dates.upperBound))
     }
 
+    /// Creates an instance that displays a localized time interval.
+    ///
+    ///     Text(DateInterval(start: event.startDate, duration: event.duration))
+    ///
+    /// Example output:
+    ///
+    ///     9:30AM - 3:30PM
+    ///
+    /// - Parameters:
+    ///     - interval: The date interval to display
     public init(_ interval: DateInterval) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .interval(interval: interval)))
     }
 
     @_spi(Private)
@@ -145,7 +249,10 @@ extension Text {
         dateFormat: String,
         timeZone: TimeZone? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .current(
+            dateFormat: .format(dateFormat),
+            timeZone: timeZone
+        )))
     }
 
     @_spi(Private)
@@ -153,7 +260,85 @@ extension Text {
         dateFormatTemplate: String,
         timeZone: TimeZone? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .current(
+            dateFormat: .template(dateFormatTemplate),
+            timeZone: timeZone
+        )))
+    }
+}
+
+private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
+    enum Storage: Equatable {
+        case interval(interval: DateInterval)
+        case current(dateFormat: ResolvableCurrentDate.DateFormat, timeZone: TimeZone?)
+        case progress(interval: ClosedRange<Date>, countdown: Bool)
+    }
+
+    var storage: Storage
+
+    init(storage: Storage) {
+        self.storage = storage
+    }
+
+    override func resolve<T>(
+        into result: inout T,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) where T: ResolvedTextContainer {
+        func defaultContentTransition(_ countdown: Bool) -> ContentTransition? {
+            if environment.contentTransitionStyle == .sessionWidget ||
+                !Semantics.TextContentTransitionDisabled.isEnabled {
+                .numericText(countsDown: countdown)
+            } else {
+                .identity
+            }
+        }
+
+        switch storage {
+        case let .interval(interval):
+            result.append(
+                resolvable: ResolvableDateInterval(interval, in: environment),
+                in: environment,
+                with: options,
+                transition: nil
+            )
+        case let .current(dateFormat, timeZone):
+            result.append(
+                resolvable: ResolvableCurrentDate(
+                    dateFormat: dateFormat,
+                    timeZone: timeZone,
+                    in: environment
+                ),
+                in: environment,
+                with: options,
+                transition: defaultContentTransition(false)
+            )
+        case let .progress(interval, countdown):
+            result.append(
+                resolvable: ResolvableProgress(interval: interval, countdown: countdown),
+                in: environment,
+                with: options,
+                transition: defaultContentTransition(countdown)
+            )
+        }
+    }
+
+    override func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) -> Bool {
+        false
+    }
+
+    override func isEqual(to other: AnyTextStorage) -> Bool {
+        guard let other = other as? DateTextStorage else {
+            return false
+        }
+        return storage == other.storage
+    }
+
+    override func isStyled(options: Text.ResolveOptions) -> Bool {
+        false
     }
 }
 
@@ -161,7 +346,23 @@ extension Text {
 
 @available(OpenSwiftUI_v4_0, *)
 extension Text {
-    /// Creates a text view that displays a timer over a date interval.
+    /// Creates an instance that displays a timer counting within the provided
+    /// interval.
+    ///
+    ///     Text(
+    ///         timerInterval: Date.now...Date(timeInterval: 12 * 60, since: .now),
+    ///         pauseTime: Date.now + (10 * 60))
+    ///
+    /// The example above shows a text that displays a timer counting down
+    /// from "12:00" and will pause when reaching "10:00".
+    ///
+    /// - Parameters:
+    ///     - timerInterval: The interval between where to run the timer.
+    ///     - pauseTime: If present, the date at which to pause the timer.
+    ///         The default is `nil` which indicates to never pause.
+    ///     - countsDown: Whether to count up or down. The default is `true`.
+    ///     - showsHours: Whether to include an hours component if there are
+    ///         more than 60 minutes left on the timer. The default is `true`.
     public init(
         timerInterval: ClosedRange<Date>,
         pauseTime: Date? = nil,
@@ -195,7 +396,136 @@ extension Text {
     }
 }
 
-// TDOO
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension Text {
+    @available(*, deprecated, renamed: "init(timerInterval:pauseTime:countsDown:showsHours:)")
+    public init(
+        interval: ClosedRange<Date>,
+        pauseAt: TimeInterval? = nil,
+        countdown: Bool = true,
+        units: NSCalendar.Unit? = nil
+    ) {
+        self.init(
+            interval: DateInterval(start: interval.lowerBound, end: interval.upperBound),
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        )
+    }
+
+    @available(*, deprecated, renamed: "init(timerInterval:pauseTime:countsDown:showsHours:)")
+    public init(
+        interval: DateInterval,
+        pauseAt: TimeInterval? = nil,
+        countdown: Bool = true,
+        units: NSCalendar.Unit? = nil
+    ) {
+        let timer = ResolvableTimer(
+            interval: interval,
+            pause: pauseAt,
+            countdown: countdown,
+            units: units,
+            in: EnvironmentValues()
+        )
+        self.init(
+            source: timer.source,
+            format: timer.format,
+            reducedLuminanceBudget: 60.0
+        )
+    }
+}
+
+// MARK: - LocalizedStringKey.StringInterpolation + Date
+
+@available(OpenSwiftUI_v2_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ date: Date, style: Text.DateStyle) {
+        appendInterpolation(Text(date, style: style))
+    }
+
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ dates: ClosedRange<Date>) {
+        appendInterpolation(Text(dates))
+    }
+
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ interval: DateInterval) {
+        appendInterpolation(Text(interval))
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @available(*, deprecated, renamed: "appendInterpolation(timerInterval:pauseTime:countsDown:showsHours:)")
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        interval: ClosedRange<Date>,
+        pauseAt: TimeInterval?,
+        countdown: Bool = false,
+        units: NSCalendar.Unit? = nil
+    ) {
+        appendInterpolation(Text(
+            interval: interval,
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        ))
+    }
+
+    @available(*, deprecated, renamed: "appendInterpolation(timerInterval:pauseTime:countsDown:showsHours:)")
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        interval: DateInterval,
+        pauseAt: TimeInterval?,
+        countdown: Bool = false,
+        units: NSCalendar.Unit? = nil
+    ) {
+        appendInterpolation(Text(
+            interval: interval,
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        ))
+    }
+}
+
+@available(OpenSwiftUI_v4_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        timerInterval: ClosedRange<Date>,
+        pauseTime: Date? = nil,
+        countsDown: Bool = true,
+        showsHours: Bool = true
+    ) {
+        appendInterpolation(Text(
+            timerInterval: timerInterval,
+            pauseTime: pauseTime,
+            countsDown: countsDown,
+            showsHours: showsHours
+        ))
+    }
+}
+
+// MARK: - Text + Progress Interval
+
+extension Text {
+    package init(progressInterval: ClosedRange<Date>, countsDown: Bool = false) {
+        self.init(anyTextStorage: DateTextStorage(storage: .progress(
+            interval: progressInterval,
+            countdown: countsDown
+        )))
+    }
+}
 
 // MARK: - Text + ReferenceDate
 
@@ -264,10 +594,24 @@ extension Text.DateStyle: Codable {
     }
 
     public func encode(to encoder: any Encoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(storage.rawValue, forKey: .storage)
+        try container.encodeIfPresent(
+            unitConfiguration,
+            forKey: .unitConfiguration
+        )
     }
 
     public init(from decoder: any Decoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rawStorage = try container.decode(Int.self, forKey: .storage)
+        guard let storage = Storage(rawValue: rawStorage) else {
+            throw Errors.unknownStorage
+        }
+        self.storage = storage
+        self.unitConfiguration = try? container.decodeIfPresent(
+            UnitsConfiguration.self,
+            forKey: .unitConfiguration
+        )
     }
 }
