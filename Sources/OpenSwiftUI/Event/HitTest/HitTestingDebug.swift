@@ -315,7 +315,6 @@ private enum ResponderBasedHitTestTracing: HitTestTracing {
                         guard let responder = leaf.responderForHitTesting else {
                             return nil
                         }
-                        // [AI] Both identity operands read the responder's host view.
                         if let viewResponder = responder as? PlatformViewResponder,
                            let hostView = viewResponder.hostView,
                            hostView === viewResponder.hostView
