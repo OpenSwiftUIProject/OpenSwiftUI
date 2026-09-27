@@ -6,6 +6,8 @@ import Foundation
 import SnapshotTesting
 import Testing
 
+let defaultSize = CGSize(width: 200, height: 200)
+
 #if OPENSWIFTUI
 let shouldRecord: SnapshotTestingConfiguration.Record? = nil
 #else

@@ -21,10 +21,12 @@ import TestingHost
 @MainActor
 func withInteractionTestHost<Content: View>(
     of content: Content,
+    size: CGSize = defaultSize,
     _ body: @MainActor (InteractionTestHost) async throws -> Void
 ) async throws {
     #if os(macOS)
-    let window = InteractionTestWindow.shared
+    let window = InteractionTestWindow.shared(size: size)
+    let rightEdge = window.frame.maxX
     defer {
         window.makeFirstResponder(nil)
         window.contentViewController = nil
@@ -32,7 +34,6 @@ func withInteractionTestHost<Content: View>(
     }
 
     // Keep the test surface fixed instead of adopting the content's ideal size.
-    let size = NSSize(width: 400, height: 400)
     let controller = TestingHost.PlatformHostingController(
         rootView: content.frame(width: size.width, height: size.height)
     )
@@ -40,9 +41,12 @@ func withInteractionTestHost<Content: View>(
     window.contentViewController = controller
     // Installing the controller adopts its initial view size, which can be zero.
     window.setContentSize(size)
+    // Keep a hidden window outside all screens when its width changes.
+    window.setFrameOrigin(NSPoint(x: rightEdge - window.frame.width, y: window.frame.minY))
 
     let events = try EventGenerator(viewController: controller)
     try await events.waitUntilWindowIsReady()
+    let host = InteractionTestHost(events: events, view: controller.view)
     #else
     let previousSettings = EventGenerator.settings
     let previousKeyWindow = UIApplication.shared.connectedScenes
@@ -56,13 +60,31 @@ func withInteractionTestHost<Content: View>(
 
     // These tests locate the hosting view directly, so accessibility activation is unnecessary.
     EventGenerator.settings.forceActivateAccessibilityEngine = false
-    let events = try await onMainRunLoop {
-        let controller = TestingHost.PlatformHostingController(rootView: content)
-        return try EventGenerator(viewController: controller)
+    let host = try await onMainRunLoop {
+        let controller = TestingHost.PlatformHostingController(
+            rootView: content.frame(width: size.width, height: size.height)
+        )
+        let container = UIViewController()
+        let view = controller.view!
+        container.addChild(controller)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        container.view.addSubview(view)
+        NSLayoutConstraint.activate([
+            view.widthAnchor.constraint(equalToConstant: size.width),
+            view.heightAnchor.constraint(equalToConstant: size.height),
+            view.centerXAnchor.constraint(equalTo: container.view.centerXAnchor),
+            view.centerYAnchor.constraint(equalTo: container.view.centerYAnchor),
+        ])
+        controller.didMove(toParent: container)
+
+        // Hammer fills the screen with its controller. Keep the captured view at the requested size.
+        let events = try EventGenerator(viewController: container)
+        events.showTouches = false
+        try events.waitUntilWindowIsReady()
+        return InteractionTestHost(events: events, view: view)
     }
-    events.showTouches = false
     #endif
-    let host = InteractionTestHost(events: events)
+    try #require(host.view.bounds.size == size, "The hosted view must use the requested size.")
     do {
         try await body(host)
     } catch {
@@ -75,6 +97,7 @@ func withInteractionTestHost<Content: View>(
 @MainActor
 struct InteractionTestHost {
     fileprivate let events: EventGenerator
+    fileprivate let view: PlatformView
 
     func tap(count: Int = 1) async throws {
         #if os(macOS)
@@ -101,7 +124,6 @@ struct InteractionTestHost {
         // Capture the existing view without moving it out of Hammer's window.
         #if os(macOS)
         try await events.waitUntilWindowIsReady()
-        let view = events.mainView
         let bitmap = try #require(
             view.bitmapImageRepForCachingDisplay(in: view.bounds),
             "Unable to create a bitmap for the hosted view."
@@ -113,7 +135,6 @@ struct InteractionTestHost {
         #else
         return try await onMainRunLoop {
             try events.waitUntilWindowIsReady()
-            let view = events.mainView
             try #require(!view.bounds.isEmpty, "The hosted view has no drawable bounds.")
             let renderer = UIGraphicsImageRenderer(
                 bounds: view.bounds,
@@ -177,13 +198,18 @@ struct InteractionTestHost {
 #if os(macOS)
 @MainActor
 private enum InteractionTestWindow {
-    static let shared: HammerWindow = {
+    private static var window: HammerWindow?
+
+    static func shared(size: CGSize) -> HammerWindow {
+        if let window { return window }
         // Hide the scene's placeholder once. Each test replaces only the test window's content.
         for window in NSApp.windows where window.canBecomeMain && window.isVisible {
             window.orderOut(nil)
         }
-        return HammerWindow(size: NSSize(width: 400, height: 400))
-    }()
+        let window = HammerWindow(size: size)
+        self.window = window
+        return window
+    }
 }
 #else
 @MainActor
