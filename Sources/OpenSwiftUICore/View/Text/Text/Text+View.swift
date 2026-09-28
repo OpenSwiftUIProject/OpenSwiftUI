@@ -1144,6 +1144,10 @@ extension ResolvedStyledText {
 struct CodableResolvedStyledText: ProtobufMessage {
     var base: ResolvedStyledText
 
+    init(base: ResolvedStyledText) {
+        self.base = base
+    }
+
     init(from decoder: inout ProtobufDecoder) throws {
         var storage: NSAttributedString?
         var stylePadding = EdgeInsets.zero

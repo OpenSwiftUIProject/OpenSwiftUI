@@ -39,6 +39,10 @@ package struct ProtobufEncoder {
     package var archiveHost: (any AnyArchivedViewHost)? {
         userInfo[ArchivedViewCore.archivedViewHostKey] as? any AnyArchivedViewHost
     }
+
+    package var archiveOptions: ArchivedViewInput.Value {
+        userInfo[ArchivedViewCore.archiveOptionsKey] as? ArchivedViewInput.Value ?? .init()
+    }
     
     /// Takes the encoded data.
     ///

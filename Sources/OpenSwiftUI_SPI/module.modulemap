@@ -58,6 +58,11 @@ module MobileGestaltPrivate {
     export *
 }
 
+module libAccessibilityPrivate {
+    umbrella "Shims/Accessibility"
+    export *
+}
+
 module UIFoundation_Private {
     umbrella "Shims/UIFoundation"
     export *

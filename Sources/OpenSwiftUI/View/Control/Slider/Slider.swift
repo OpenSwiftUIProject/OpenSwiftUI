@@ -577,7 +577,7 @@ extension Slider {
         _maximumValueLabel = maximumValueLabel
         hasCustomMinMaxValueLabels = customMinMaxValueLabels
         self.label = label
-        let accessibilitySliderValue = accessibilityValue.map { AccessibilitySliderValue(base: $0) }
+        let accessibilitySliderValue = accessibilityValue.map { AccessibilitySliderValue($0) }
         self.accessibilityValue = accessibilitySliderValue?.base
     }
 }

@@ -157,9 +157,6 @@ struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
     }
 }
 
-// FIXME
-struct AccessibilityAttachment {}
-
 extension AccessibilityAttachment {
     enum Tree {
         case leaf(AccessibilityAttachment)
