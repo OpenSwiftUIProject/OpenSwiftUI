@@ -45,11 +45,6 @@ selected toolchain without changing the package's linker settings.
 When running the executable directly, include the toolchain's `usr/lib` in
 `LD_LIBRARY_PATH` if it is outside the system library directories.
 
-Compute is built from source at `0.5.2-bugfix.2` by default, matching
-`mise.compute.toml`. Set `OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_VERSION`
-to select another version. With local dependencies enabled, check out that
-version in the sibling Compute repository instead.
-
 The example includes `Text` only when Darwin is available. Linux currently
 renders the red and blue color regions; text layout is not supported yet.
 
