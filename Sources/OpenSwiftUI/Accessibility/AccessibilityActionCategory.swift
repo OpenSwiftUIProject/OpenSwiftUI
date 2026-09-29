@@ -21,6 +21,10 @@ public struct AccessibilityActionCategory: Equatable, Sendable {
 
     let category: Category
 
+    private init(category: Category) {
+        self.category = category
+    }
+
     /// An accessibility action category for the default actions of a view.
     /// This category replaces the system provided actions rotor
     /// for accessibility technologies like VoiceOver.
@@ -138,10 +142,9 @@ extension View {
         accessibilityAttachment(content: content()) { tree in
             var attachment = AccessibilityAttachment()
             if let properties = tree.attachment?.mergedProperties {
-                attachment.properties[AccessibilityProperties.ActionsKey.self] =
-                    properties[AccessibilityProperties.ActionsKey.self].map {
-                        $0.asCustomAction(category: category) ?? $0
-                    }
+                attachment.properties.actions = properties.actions.map {
+                    $0.asCustomAction(category: category) ?? $0
+                }
             }
             tree = .leaf(attachment)
         }
