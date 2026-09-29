@@ -127,9 +127,6 @@ struct ResolvedPresentation: Rule {
 }
 
 // FIXME
-class AnyAccessibilityViewModifier {}
-
-// FIXME
 struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
     var storage: MutableBox<AccessibilityAttachment>
 

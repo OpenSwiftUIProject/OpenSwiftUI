@@ -209,6 +209,16 @@ struct AccessibilityScrollableModifier: AccessibilityViewModifier {
     ) -> AccessibilityAttachment {
         initialAttachment(for: nodes)
     }
+
+    static func makeAccessibilityViewModifier(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        body(_Graph(), inputs)
+    }
+
+    var supportsPlaceholders: Bool { false }
 }
 
 // MARK: - AccessibilityScrollableContextModifier
@@ -233,4 +243,24 @@ struct AccessibilityScrollableContextModifier: AccessibilityViewModifier {
     ) -> AccessibilityAttachment {
         initialAttachment(for: nodes)
     }
+
+    func createOrUpdateNode(
+        viewRendererHost: (any ViewRendererHost)?,
+        existingNode: AccessibilityNode?
+    ) -> AccessibilityNode {
+        if let existingNode {
+            return existingNode
+        }
+        return AccessibilityNode(viewRendererHost: viewRendererHost, isFromDisplayList: false)
+    }
+
+    static func makeAccessibilityViewModifier(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        body(_Graph(), inputs)
+    }
+
+    var supportsPlaceholders: Bool { false }
 }
