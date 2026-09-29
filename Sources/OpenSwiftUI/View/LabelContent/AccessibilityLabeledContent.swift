@@ -130,11 +130,6 @@ struct ResolvedPresentation: Rule {
 class AnyAccessibilityViewModifier {}
 
 // FIXME
-struct AccessibilityChildBehavior {
-    var modifier: AnyAccessibilityViewModifier
-}
-
-// FIXME
 struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
     var storage: MutableBox<AccessibilityAttachment>
 
