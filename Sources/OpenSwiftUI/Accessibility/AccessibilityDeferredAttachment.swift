@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by AccessibilityChildBehavior and AccessibilityRepresentation
+//  Status: Blocked by AccessibilityRepresentation
 //  ID: 0820208E6CE9DACCA3E182CEE5DB708A (SwiftUI)
 
 import OpenAttributeGraphShims

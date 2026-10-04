@@ -19,8 +19,26 @@ typealias AccessibilityNodeBase = NSObject
 
 // FIXME
 class AccessibilityNode: AccessibilityNodeBase {
+    weak var bridgedChild: AccessibilityNode?
+
     var platformElement: PlatformAccessibilityElement? {
         // TODO: Resolve the platform element from accessibility attachments.
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var visibility: AccessibilityVisibilityStorage {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func visibilityIgnoringAttachment(with token: AccessibilityAttachmentToken) -> AccessibilityVisibilityStorage {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var isPlaceholderOrIgnored: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var sortPriority: Double? {
         _openSwiftUIUnimplementedFailure()
     }
 }
