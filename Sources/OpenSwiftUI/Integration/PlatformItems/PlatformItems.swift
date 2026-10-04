@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: B9CDC31698DC70A42F63A10B524A44D9 (SwiftUI)
 
 import Foundation
@@ -340,7 +340,54 @@ private struct PlatformItemsTransform<Modifier>: StatefulRule where Modifier: Pl
     }
 }
 
-// TODO: PlatformItemsGenerator
+// MARK: - PlatformItemsGenerator
+
+private struct PlatformItemsGenerator<Strategy, Source>: StatefulRule where Strategy: PlatformItemsStrategy, Source: View {
+    @Attribute var source: Source
+    let inputs: _ViewInputs
+    let inputsIncludeGeometry: Bool
+    @OptionalAttribute var content: Strategy.Content?
+    let subgraph: Subgraph
+    var oldContent: Strategy.Content
+
+    init(
+        strategy: Strategy,
+        source: Attribute<Source>,
+        inputs: _ViewInputs,
+        inputsIncludeGeometry: Bool
+    ) {
+        _source = source
+        self.inputs = inputs
+        self.inputsIncludeGeometry = inputsIncludeGeometry
+        _content = .init()
+        subgraph = .current!
+        oldContent = Strategy.defaultValue
+    }
+
+    typealias Value = Strategy.Content
+
+    mutating func updateValue() {
+        if !hasValue {
+            _content = subgraph.apply(makeContent)
+        }
+        let (content, changed) = $content?.changedValue() ?? (Strategy.defaultValue, false)
+        defer { oldContent = content }
+        let contentChanged = Strategy.hasChanges(from: oldContent, to: content)
+        guard !hasValue || (changed && contentChanged) else {
+            return
+        }
+        value = content
+    }
+
+    private func makeContent() -> OptionalAttribute<Strategy.Content> {
+        var newInputs = inputsIncludeGeometry ? inputs.withoutGeometryDependencies : inputs
+        newInputs.preferences.requiresPlatformItems = false
+        newInputs.requestedTextRepresentation = nil
+        Strategy.makeInputs(&newInputs)
+        let outputs = Source._makeView(view: _GraphValue($source), inputs: newInputs)
+        return Strategy.makeContent(from: outputs)
+    }
+}
 
 // MARK: - PlatformItemRuleConfiguration
 
@@ -383,6 +430,18 @@ extension PreferencesOutputs {
 }
 
 extension _ViewInputs {
+    func makePlatformItemsGenerator<Strategy, Source>(
+        strategy: Strategy,
+        source: Attribute<Source>
+    ) -> Attribute<Strategy.Content> where Strategy: PlatformItemsStrategy, Source: View {
+        Attribute(PlatformItemsGenerator(
+            strategy: strategy,
+            source: source,
+            inputs: self,
+            inputsIncludeGeometry: true
+        ))
+    }
+
     var requestsPlatformItems: Bool {
         get { self[RequestsPlatformItemsKey.self] }
         set { self[RequestsPlatformItemsKey.self] = newValue }
@@ -414,6 +473,10 @@ extension _ViewInputs {
 }
 
 extension _ViewOutputs {
+    var platformItem: Attribute<PlatformItem>? {
+        preferences.platformItems.map { Attribute(FirstItem(items: $0)) }
+    }
+
     mutating func makePlatformItem<ItemRule>(
         inputs: _ViewInputs,
         itemRule: ItemRule
