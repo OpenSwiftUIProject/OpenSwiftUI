@@ -125,10 +125,3 @@ struct ResolvedPresentation: Rule {
         _openSwiftUIUnimplementedFailure()
     }
 }
-
-// FIXME
-struct AccessibilityFrameModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-    }
-}

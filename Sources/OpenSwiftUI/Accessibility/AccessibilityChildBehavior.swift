@@ -418,6 +418,27 @@ public struct AccessibilityChildBehavior: Hashable {
 @available(*, unavailable)
 extension AccessibilityChildBehavior: Sendable {}
 
+// MARK: - View + AccessibilityChildBehavior
+
+extension View {
+    func accessibilityCombinedElement(
+        options: AccessibilityChildBehavior.Combine.Options,
+        ignoredTraits: [AccessibilityTrait]
+    ) -> ModifiedContent<Self, AccessibilityAttachmentModifier> {
+        let behavior = AccessibilityChildBehavior(
+            modifier: AccessibilityChildBehaviorBox(
+                provider: AccessibilityChildBehavior.Combine(options: options)
+            )
+        )
+        return modifier(AccessibilityAttachmentModifier(
+            storage: MutableBox(.properties(AccessibilityProperties(reserving: 4))),
+            behavior: behavior
+        ))
+        .update(AccessibilityProperties.TraitsKey.self, combining: .init(removing: ignoredTraits))
+        .update(AccessibilityProperties.VisibilityKey.self, combining: .init(adding: .childrenIgnored))
+    }
+}
+
 // MARK: - AccessibilityChildBehaviorProvider
 
 protocol AccessibilityChildBehaviorProvider: Hashable {
