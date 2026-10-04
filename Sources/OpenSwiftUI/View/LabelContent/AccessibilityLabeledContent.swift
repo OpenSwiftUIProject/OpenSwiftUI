@@ -127,59 +127,6 @@ struct ResolvedPresentation: Rule {
 }
 
 // FIXME
-struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
-    var storage: MutableBox<AccessibilityAttachment>
-
-    let behavior: AccessibilityChildBehavior?
-
-    nonisolated static func _makeView(
-        modifier _: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        body(_Graph(), inputs)
-    }
-
-    nonisolated static func _makeViewList(
-        modifier _: _GraphValue<Self>,
-        inputs: _ViewListInputs,
-        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
-    ) -> _ViewListOutputs {
-        body(_Graph(), inputs)
-    }
-}
-
-extension AccessibilityAttachment {
-    enum Tree {
-        case leaf(AccessibilityAttachment)
-        case branch([Tree])
-        case empty
-    }
-
-    struct Key: HostPreferenceKey {
-        static let defaultValue: Tree = .empty
-
-        static func reduce(value: inout Tree, nextValue: () -> Tree) {
-            let nextValue = nextValue()
-            switch (value, nextValue) {
-            case (_, .empty):
-                break
-            case (.empty, _):
-                value = nextValue
-            case let (.branch(lhs), .branch(rhs)):
-                value = .branch(lhs + rhs)
-            case let (.branch(lhs), _):
-                value = .branch(lhs + [nextValue])
-            case let (_, .branch(rhs)):
-                value = .branch([value] + rhs)
-            default:
-                value = .branch([value, nextValue])
-            }
-        }
-    }
-}
-
-// FIXME
 struct AccessibilityFrameModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
