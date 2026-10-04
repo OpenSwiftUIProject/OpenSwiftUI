@@ -32,6 +32,7 @@ extension AccessibilityCore {
         _ text: Text,
         in environment: EnvironmentValues,
         updateResolvableAttributes: Bool = false,
+        resolveSuffix: Bool = false,
         idiom: AnyInterfaceIdiom? = nil
     ) -> String {
         guard let storedAccessibilityLabel = text.storedAccessibilityLabel else {
@@ -41,6 +42,7 @@ extension AccessibilityCore {
             storedAccessibilityLabel,
             in: environment,
             updateResolvableAttributes: updateResolvableAttributes,
+            resolveSuffix: resolveSuffix,
             idiom: idiom
         )
     }
@@ -49,6 +51,7 @@ extension AccessibilityCore {
         _ texts: [Text],
         in environment: EnvironmentValues,
         updateResolvableAttributes: Bool = false,
+        resolveSuffix: Bool = false,
         idiom: AnyInterfaceIdiom? = nil,
         separator: String = ", "
     ) -> String? {
