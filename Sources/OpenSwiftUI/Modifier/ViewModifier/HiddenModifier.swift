@@ -152,7 +152,7 @@ package struct DynamicHiddenModifier: ViewModifier, PrimitiveViewModifier, Multi
 
 struct HiddenModifierAllowingAccessibility: ViewModifier, PrimitiveViewModifier, MultiViewModifier {
     nonisolated public static func _makeView(
-        modifier: _GraphValue<_HiddenModifier>,
+        modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {

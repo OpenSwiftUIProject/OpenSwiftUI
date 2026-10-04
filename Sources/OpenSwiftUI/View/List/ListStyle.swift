@@ -27,12 +27,6 @@ struct ColumnarLabeledContentStyle: LabeledContentStyle {
     }
 }
 
-struct AccessibilityLabeledContentStyle: LabeledContentStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
-
 struct FormBoxLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         _openSwiftUIUnimplementedFailure()

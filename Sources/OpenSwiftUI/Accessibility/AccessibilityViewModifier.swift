@@ -162,6 +162,44 @@ extension AccessibilityViewModifier {
         }
     }
 
+    @inline(__always)
+    static func makeAccessibilityTransform(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        outputs: _ViewOutputs
+    ) -> Attribute<AccessibilityNodeList>? {
+        guard let nodes = makeAccessibilityPropertiesTransform(
+            modifier: modifier,
+            inputs: inputs,
+            outputs: outputs
+        ) else {
+            return nil
+        }
+        return makeAccessibilityGeometryTransform(
+            for: nodes,
+            kind: nil,
+            inputs: inputs,
+            outputs: outputs
+        )
+    }
+
+    @inline(__always)
+    static func makeAccessibilityPropertiesTransform(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        outputs: _ViewOutputs
+    ) -> Attribute<AccessibilityNodeList>? {
+        guard inputs.preferences.requiresAccessibilityNodes else {
+            return nil
+        }
+        return makePropertiesTransform(
+            modifier: modifier,
+            inputs: inputs,
+            outputs: outputs,
+            scrapeableID: .none
+        )
+    }
+
     private static func makePropertiesTransform(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,

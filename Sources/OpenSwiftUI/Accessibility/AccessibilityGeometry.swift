@@ -25,6 +25,12 @@ extension ViewModifier {
 
 // MARK: - IgnoreViewRespondersModifier
 
+extension View {
+    func accessibilityIgnoreViewResponders() -> some View {
+        modifier(IgnoreViewRespondersModifier())
+    }
+}
+
 private struct IgnoreViewRespondersModifier: PrimitiveViewModifier, ViewInputsModifier {
     nonisolated static func _makeViewInputs(
         modifier _: _GraphValue<Self>,

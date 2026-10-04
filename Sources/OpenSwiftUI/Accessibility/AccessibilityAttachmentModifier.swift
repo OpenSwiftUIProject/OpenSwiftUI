@@ -16,6 +16,11 @@ public struct AccessibilityAttachmentModifier: AccessibilityViewModifier {
     var storage: MutableBox<AccessibilityAttachment>
     let behavior: AccessibilityChildBehavior?
 
+    init(storage: MutableBox<AccessibilityAttachment>, behavior: AccessibilityChildBehavior?) {
+        self.storage = storage
+        self.behavior = behavior
+    }
+
     init(_ properties: AccessibilityProperties) {
         storage = MutableBox(AccessibilityAttachment(properties: properties))
         behavior = nil
