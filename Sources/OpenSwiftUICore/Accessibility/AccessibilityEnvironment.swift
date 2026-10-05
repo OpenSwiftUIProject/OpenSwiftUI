@@ -6,6 +6,26 @@
 //  Status: Complete
 //  ID: 1E80A5D8CD82563C298D64AC1337E839 (SwiftUICore)
 
+package import OpenAttributeGraphShims
+
+// MARK: - Accessibility inputs
+
+extension CachedEnvironment.ID {
+    static let accessibilityEnabled: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    package var accessibilityEnabled: Attribute<Bool> {
+        mapEnvironment(id: .accessibilityEnabled) { $0.accessibilityEnabled }
+    }
+}
+
+extension _ViewInputs {
+    package var accessibilityEnabled: Attribute<Bool> {
+        base.accessibilityEnabled
+    }
+}
+
 // MARK: - Accessibility Environment Values
 
 private struct AccessibilityEnabledKey: EnvironmentKey {

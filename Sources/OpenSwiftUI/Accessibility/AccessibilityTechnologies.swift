@@ -35,9 +35,14 @@ public struct AccessibilityTechnologies: SetAlgebra, Sendable {
 
     static let focusSupportingTechnologies: AccessibilityTechnologies = .init(technologySet: .focusSupportingTechnologies)
 
-    // MARK: - Initializers
-
     private var technologySet: AccessibilityTechnologySet
+
+    @inline(__always)
+    func assertAllSupportFocus() {
+        technologySet.assertAllSupportFocus()
+    }
+
+    // MARK: - Initializers
 
     /// Creates a new accessibility technologies structure with an empy accessibility technology set.
     public init() {
@@ -140,7 +145,7 @@ private struct AccessibilityTechnologySet: OptionSet, Hashable, Codable {
     func assertAllSupportFocus() {
         for technology in list {
             guard technology.rawValue < 2 else {
-                Log.runtimeIssues("Technology %@ does not support Accessibility focus!", [String(describing: technology)])
+                Log.runtimeIssues("Accessibility technology %@ does not support getting or setting Accessibility focus!", [String(describing: technology)])
                 continue
             }
         }

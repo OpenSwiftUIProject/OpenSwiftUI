@@ -141,6 +141,11 @@ enum AccessibilityLargeContentViewTree: Equatable {
     case branch([AccessibilityLargeContentViewTree])
     case empty
 
+    var hasValue: Bool {
+        // TODO: Check whether the tree contains an enabled large content item.
+        _openSwiftUIUnimplementedFailure()
+    }
+
     func hitTest(at point: CGPoint) -> AccessibilityLargeContentViewItem? {
         switch self {
         case .leaf(let item):

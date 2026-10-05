@@ -36,6 +36,7 @@ struct AccessibilityFocus {
             if let node = platformAccessibilityElement.accessibilityNodeForPlatformElement {
                 return node
             }
+            #if os(iOS) || os(visionOS) || os(macOS)
             var node: AccessibilityNode?
             platformAccessibilityElement.traverseAncestors { element in
                 if let ancestor = element as? AccessibilityNode {
@@ -49,6 +50,9 @@ struct AccessibilityFocus {
                 return true
             }
             return node
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
 
         func match(focusStoreNode: AccessibilityNode) -> Match? {
@@ -66,6 +70,7 @@ struct AccessibilityFocus {
                ancestor == focusStoreNode {
                 return .platformChildFocused
             }
+            #if os(iOS) || os(visionOS) || os(macOS)
             if let ancestor = ancestorAccessibilityNode {
                 var isContainerChildFocused = false
                 ancestor.traverseAncestors { element in
@@ -79,6 +84,11 @@ struct AccessibilityFocus {
                     return .containerChildFocused
                 }
             }
+            #else
+            if ancestorAccessibilityNode != nil {
+                _openSwiftUIPlatformUnimplementedFailure()
+            }
+            #endif
             #if os(macOS)
             if let element = platformAccessibilityElement,
                let tableCellClass = AXNSTableViewCellMockElementClass(),
@@ -98,6 +108,59 @@ struct AccessibilityFocus {
         case implicitlyFocused
         case platformChildFocused
         case containerChildFocused
+
+        func takesPriority(over other: Match) -> Bool {
+            // The platform implementation returns false for every valid match.
+            false
+        }
+    }
+
+    static func move(to element: PlatformAccessibilityElement, for technologies: AccessibilityTechnologies) {
+        guard technologies.contains(.voiceOver) else {
+            return
+        }
+        #if os(iOS) || os(visionOS)
+        if let node = (element as? AccessibilityNode) ?? element.accessibilityNodeForPlatformElement,
+           node.parent == nil,
+           !node.visibility[.host, default: false],
+           let host = node.viewRendererHost {
+            host.updateAccessibilityEnvironment()
+            AccessibilityCore.Notification.ScreenChanged(
+                nextElement: element,
+                updateImmediately: true
+            ).post()
+        } else {
+            AccessibilityCore.Notification.LayoutChanged(nextElement: element).post()
+        }
+        #elseif os(macOS)
+        let sourceElement: PlatformAccessibilityElement
+        if NSAccessibilityRemoteUIElement.isRemoteUIApp(),
+           let node = (element as? AccessibilityNode) ?? element.accessibilityNodeForPlatformElement,
+           let host = node.viewRendererHost as? NSView {
+            sourceElement = host
+        } else if let window = element.valueForAttribute(.window, asType: NSObject.self) {
+            sourceElement = window
+        } else {
+            return
+        }
+        var nextElement = element.knownRepresentedElement
+        if let node = (element as? AccessibilityNode) ?? element.accessibilityNodeForPlatformElement,
+           node.parent == nil,
+           !node.visibility[.host, default: false],
+           let host = node.viewRendererHost {
+            host.updateAccessibilityEnvironment()
+        }
+        if let children = NSAccessibility.unignoredChildrenForOnlyChild(from: nextElement) as? [PlatformAccessibilityElement],
+           let first = children.first {
+            nextElement = first
+        }
+        AccessibilityCore.Notification.LayoutChanged(
+            sourceElement: sourceElement,
+            nextElement: nextElement
+        ).post()
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 

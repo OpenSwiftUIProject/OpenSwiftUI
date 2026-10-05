@@ -6,13 +6,17 @@
 //  Status: WIP
 //  ID: 425A368F5B4FB640C2ED9A96D72B5AF3
 
+package import OpenAttributeGraphShims
+
 // MARK: - Scrollable [WIP]
 
 package protocol Scrollable {}
 
 package protocol ScrollableContainer: Scrollable {}
 
-package protocol ScrollableCollection : Scrollable {}
+package protocol ScrollableCollection: Scrollable {
+    func collectionViewID(for subgraph: Subgraph) -> _ViewList_ID.Canonical?
+}
 
 // MARK: ScrollablePreferenceKey
 

@@ -11,6 +11,15 @@
 
 #import <objc/runtime.h>
 
+Class _Nullable AXNSTableRowClass(void) {
+    static Class tableRowClass;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        tableRowClass = NSClassFromString(@"NSTableRow");
+    });
+    return tableRowClass;
+}
+
 Class _Nullable AXNSTableViewCellMockElementClass(void) {
     static Class tableViewCellMockElementClass;
     static dispatch_once_t onceToken;

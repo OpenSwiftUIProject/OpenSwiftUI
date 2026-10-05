@@ -12,6 +12,50 @@ import OpenAttributeGraphShims
 @_spi(Private)
 import OpenSwiftUICore
 
+extension View {
+    func transformPlatformItemList<Flags>(
+        _ flags: Flags.Type,
+        _ transform: @escaping (inout PlatformItemList) -> Void
+    ) -> some View where Flags: PlatformItemListFlags {
+        modifier(PlatformItemListTransformModifier<Flags>(transform: transform))
+    }
+}
+
+// MARK: - PlatformItemListTransformModifier
+
+struct PlatformItemListTransformModifier<Flags>: PrimitiveViewModifier, MultiViewModifier where Flags: PlatformItemListFlags {
+    var transform: (inout PlatformItemList) -> Void
+
+    nonisolated static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var outputs = body(_Graph(), inputs)
+        if inputs.platformItemListFlags.contains(Flags.flags),
+           inputs.preferences.requiresPlatformItemList {
+            outputs.preferences.platformItemList = Attribute(
+                Transform(
+                    modifier: modifier.value,
+                    list: .init(outputs.preferences.platformItemList)
+                )
+            )
+        }
+        return outputs
+    }
+
+    private struct Transform: Rule {
+        @Attribute var modifier: PlatformItemListTransformModifier
+        @OptionalAttribute var list: PlatformItemList?
+
+        var value: PlatformItemList {
+            var list = list ?? .init(items: [])
+            modifier.transform(&list)
+            return list
+        }
+    }
+}
+
 // FIXME
 package struct PlatformItemList {
     var items: [Item]
@@ -73,7 +117,10 @@ package struct PlatformItemList {
 
         struct SecondaryNavigationBehavior {}
 
-        struct Accessibility {}
+        struct Accessibility {
+            var properties: AccessibilityProperties
+            var environment: EnvironmentValues
+        }
 
         struct ImageColorResolver {
             var shapeStyle: AnyShapeStyle
@@ -170,6 +217,19 @@ extension _ViewInputs {
         case nil:
             break
         }
+    }
+}
+
+extension _ViewOutputs {
+    mutating func transformPlatformItemList(
+        inputs: _ViewInputs,
+        transform: @autoclosure () -> Attribute<(inout PlatformItemList) -> Void>
+    ) {
+        preferences.makePreferenceTransformer(
+            inputs: inputs.preferences,
+            key: PlatformItemList.Key.self,
+            transform: transform()
+        )
     }
 }
 

@@ -34,11 +34,7 @@ public struct FocusState<Value>: DynamicProperty where Value: Hashable {
             if let location = _binding.location as? FocusStoreLocation<Value> {
                 location.id
             } else {
-                #if canImport(ObjectiveC)
                 ObjectIdentifier(PrivateType.self)
-                #else
-                ObjectIdentifier(unsafeBitCast(0, to: AnyObject.self))
-                #endif
             }
         }
 

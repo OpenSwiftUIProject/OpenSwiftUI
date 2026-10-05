@@ -21,6 +21,9 @@ OPENSWIFTUI_EXPORT
 Class _Nullable AXNSTableViewCellMockElementClass(void);
 
 OPENSWIFTUI_EXPORT
+Class _Nullable AXNSTableRowClass(void);
+
+OPENSWIFTUI_EXPORT
 void NSAccessibilityBeginInternalAccessors(void);
 
 OPENSWIFTUI_EXPORT
@@ -29,7 +32,27 @@ void NSAccessibilityEndInternalAccessors(void);
 OPENSWIFTUI_EXPORT
 id _Nullable NSAccessibilityEntryPointValueForAttribute(id element, NSAccessibilityAttributeName attribute);
 
+OPENSWIFTUI_EXPORT
+NSArray * _Nullable NSAccessibilityEntryPointActionNames(id element);
+
+OPENSWIFTUI_EXPORT
+NSString * _Nullable NSAccessibilityEntryPointActionDescription(id element, NSAccessibilityActionName action);
+
+OPENSWIFTUI_EXPORT
+BOOL NSAccessibilityEntryPointPerformAction(id element, NSAccessibilityActionName action);
+
+OPENSWIFTUI_EXPORT
+NSAccessibilityAttributeName const NSAccessibilityIsAccessibilityElementAttribute;
+
+OPENSWIFTUI_EXPORT
+NSAccessibilityAttributeName const NSAccessibilityAttributedUserInputLabelsAttribute;
+
 OPENSWIFTUI_EXTERN_C_END
+
+@interface NSObject (OpenSwiftUI_SPI)
+- (BOOL)_accessibilitySetOverrideValue:(nullable id)value forAttribute:(NSAccessibilityAttributeName)attribute OPENSWIFTUI_SWIFT_NAME(_accessibilitySetOverrideValue(_:for:));
+- (BOOL)_accessibilitySetOverrideHandler:(id _Nullable (^ _Nullable)(void))handler forAttribute:(NSAccessibilityAttributeName)attribute OPENSWIFTUI_SWIFT_NAME(_accessibilitySetOverrideHandler(_:for:));
+@end
 
 @interface NSApplication (OpenSwiftUI_SPI)
 
@@ -67,6 +90,23 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 
 @interface NSImage (OpenSwiftUI_SPI)
 @property (nullable, copy) NSString *_defaultAccessibilityDescription;
+@end
+
+@interface NSWorkspace (OpenSwiftUI_SPI)
+@property (readonly, getter=isAccessibilityFullKeyboardAccessEnabled) BOOL accessibilityFullKeyboardAccessEnabled;
+@end
+
+@interface NSView (OpenSwiftUI_SPI)
+- (nullable id)accessibilityFocusedUIElement;
+@end
+
+@interface NSAccessibilityRemoteUIElement : NSObject
++ (BOOL)isRemoteUIApp;
+@end
+
+@protocol NSWindowSwiftUIDelegate <NSObject>
+@optional
+- (nullable id)_accessibilityWindow:(NSWindow *)window focusedUIElementOverrideWithCurrentValue:(nullable id)currentValue;
 @end
 
 OPENSWIFTUI_ASSUME_NONNULL_END
