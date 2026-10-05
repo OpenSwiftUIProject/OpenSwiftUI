@@ -17,7 +17,7 @@ entries use the same pipeline and concurrency group for the version.
 | `release_create.yml` | Handle version tag pushes and manual requests; coordinate checks and build, then verify or create the tag. |
 | `release_build.yml` | Build and sign seven XCFramework archives; store them with their version, source SHA, and SHA-256 digests. |
 | `release_publish.yml` | Verify stored artifacts, prepare a draft, add assets and notes, publish it, then update `OpenSwiftUI-spm`. |
-| `release_notes.yml` | Update notes for an existing release. Cannot create a release or tag. |
+| `release_notes.yml` | Update the title and notes for an existing release. Cannot create a release or tag. |
 | `documentation.yml` | Assemble and deploy versioned documentation after publication. Also supports manual dispatch. |
 
 By default, the release gate requires all of these checks:
@@ -68,7 +68,7 @@ they are already configured.
 | Secret | `SIGNING_CERTIFICATE_PASSWORD` | Signing certificate password |
 | Secret | `BINARY_REPO_PAT` | Token with Contents read/write access to `OpenSwiftUIProject/OpenSwiftUI-spm` |
 | Optional secret | `CODECOV_TOKEN` | Coverage upload |
-| Optional secret | `COPILOT_GITHUB_TOKEN` | Release note highlights |
+| Optional secret | `COPILOT_GITHUB_TOKEN` | Release title themes and note highlights |
 
 The release entry can run as soon as the workflows are merged and the required
 secrets are available. No activation variable is required. This setup does not
@@ -136,6 +136,41 @@ A successful run includes the checked tag, signed assets, release notes,
 matching binary package tag, and documentation deployment. Also inspect the
 binary repository's Example CI, which is triggered by its own push and is
 outside this workflow, and the published documentation selector.
+
+## Release Titles and Notes
+
+Release titles use `<version>: <theme>`, for example `0.22.0: Gesture Support`.
+The notes workflow asks Copilot for one short theme and user-facing Highlights
+from the generated changelog. It writes the title and notes before publication.
+A draft can show only its version until the notes step finishes.
+
+To choose the theme yourself, set `release-theme` on **Release / Create**:
+
+```shell
+gh workflow run release_create.yml \
+  --repo OpenSwiftUIProject/OpenSwiftUI --ref main \
+  -f version=0.23.0 -f release-theme='Gesture Support'
+```
+
+Replace the example version and theme with the actual release details. Supply
+only the theme, without a version prefix. The input must be one nonempty line.
+Leave it empty for automatic selection. Tag pushes use automatic selection.
+
+The title priority is a manual theme, an existing descriptive title, then a
+generated theme. Rerunning notes preserves an existing descriptive title unless
+you supply a manual theme. To update an existing release without rebuilding:
+
+```shell
+gh workflow run release_notes.yml \
+  --repo OpenSwiftUIProject/OpenSwiftUI --ref main \
+  -f tag-name=0.23.0 -f release-theme='Gesture Support'
+```
+
+Copilot is optional. Missing credentials, failed setup or generation, and invalid
+output produce a warning. The workflow still writes the GitHub changelog and
+Binary Integration section. A manual theme still applies; otherwise the current
+title stays unchanged, which can leave a new release with only its version.
+Invalid manual themes fail validation instead of silently falling back.
 
 ## Skip Pre-release Checks
 

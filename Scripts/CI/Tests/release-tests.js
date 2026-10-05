@@ -35,11 +35,11 @@ function client({ tag = null, published = false, assets = [] } = {}) {
       listReleases: async () => ({ data: currentRelease ? [currentRelease] : [] }),
       createRelease: async args => {
         writes.push(args);
-        currentRelease = { id: 7, tag_name: args.tag_name, draft: args.draft };
+        currentRelease = { id: 7, tag_name: args.tag_name, name: args.name, draft: args.draft };
         return { data: currentRelease };
       },
       listReleaseAssets: async () => ({ data: assets }),
-      updateRelease: async args => { writes.push(args); currentRelease.draft = args.draft; },
+      updateRelease: async args => { writes.push(args); Object.assign(currentRelease, args); },
     },
   } };
   github.paginate = async (method, args) => (await method(args)).data;
@@ -191,6 +191,22 @@ test("publication finds a prepared draft by ID when tag lookup returns 404", asy
   await release.publishRelease({ ...mock, repo, plan });
   assert.equal(mock.writes.at(-1).release_id, 7);
   assert.equal(mock.writes.at(-1).draft, false);
+});
+
+test("draft retries and publication preserve a title set by the notes workflow", async t => {
+  const directory = await artifacts(t);
+  const mock = client({ tag: sha });
+  const plan = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  for (const [name, digest] of Object.entries(plan.files)) {
+    mock.assets.push({ name, state: "uploaded", digest: `sha256:${digest}` });
+  }
+  await mock.github.rest.repos.updateRelease({ release_id: plan.releaseId, name: "0.20.0: Rich Text Rendering", body: "Release notes" });
+  const retry = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  await release.publishRelease({ ...mock, repo, plan: retry });
+  const { data: published } = await mock.github.rest.repos.getRelease({ release_id: plan.releaseId });
+  assert.equal(published.name, "0.20.0: Rich Text Rendering");
+  assert.equal(published.body, "Release notes");
+  assert.equal(published.draft, false);
 });
 
 test("draft preparation ignores releases for other tags", async t => {

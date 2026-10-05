@@ -11,6 +11,10 @@ on:
         description: Stable version to release, without a v prefix
         required: true
         type: string
+      release-theme:
+        description: Optional title theme, without the version number
+        default: ''
+        type: string
       skip_checks:
         description: Skip pre-release tests for this release
         default: false
@@ -46,6 +50,7 @@ jobs:
         uses: actions/github-script@v7
         env:
           VERSION: ${{ inputs.version || github.ref_name }}
+          RELEASE_THEME: ${{ inputs['release-theme'] }}
           CHECKOUT_SHA: ${{ steps.checkout.outputs.commit }}
           SKIP_CHECKS: ${{ inputs.skip_checks }}
           SKIP_CHECKS_REASON: ${{ inputs.skip_checks_reason }}
@@ -55,6 +60,8 @@ jobs:
         with:
           script: |
             const { validateVersion, validateSHA, validateReleaseRef, getTagSHA } = require('./Scripts/CI/release.js');
+            const { validateTheme } = require('./Scripts/CI/release-notes.js');
+            if (process.env.RELEASE_THEME) validateTheme(process.env.RELEASE_THEME);
             if (['HAS_SIGNING_CERTIFICATE', 'HAS_SIGNING_PASSWORD', 'HAS_BINARY_REPO_TOKEN'].some(name => process.env[name] !== 'true')) {
               throw new Error('Signing and binary repository credentials must be configured.');
             }
@@ -182,6 +189,7 @@ jobs:
       ref: ${{ needs.prepare.outputs.sha }}
       version: ${{ needs.prepare.outputs.version }}
       artifact-id: ${{ needs.build.outputs.artifact-id }}
+      release-theme: ${{ inputs['release-theme'] || '' }}
     secrets:
       BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

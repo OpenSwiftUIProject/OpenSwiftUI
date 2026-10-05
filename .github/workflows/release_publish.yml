@@ -9,6 +9,9 @@ on:
       version:
         required: true
         type: string
+      release-theme:
+        default: ''
+        type: string
       artifact-id:
         required: true
         type: string
@@ -70,6 +73,7 @@ jobs:
     uses: ./.github/workflows/release_notes.yml
     with:
       tag-name: ${{ inputs.version }}
+      release-theme: ${{ inputs['release-theme'] }}
       ref: ${{ inputs.ref }}
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

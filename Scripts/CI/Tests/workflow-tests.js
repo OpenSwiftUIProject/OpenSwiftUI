@@ -5,7 +5,7 @@ const test = require("node:test");
 const vm = require("node:vm");
 const release = require("../release.js");
 
-const names = ["release_checks", "release_create", "documentation"];
+const names = ["release_checks", "release_create", "release_publish", "release_notes", "documentation"];
 const workflows = Object.fromEntries(names.map(name => [name, JSON.parse(execFileSync("ruby", [
   "-ryaml", "-rjson", "-e", 'doc = YAML.load_file(ARGV[0]); puts JSON.generate(doc)',
   path.join(__dirname, "../../../.github/workflows", `${name}.yml`),
@@ -24,7 +24,7 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
     write: async () => {},
   };
   await vm.runInNewContext(`(async () => { ${step.with.script}\n })()`, {
-    require: () => release, process: { env }, context: { repo, sha, ref: "refs/heads/main", eventName: "workflow_dispatch", ...context }, github,
+    require: name => require(path.resolve(__dirname, "../../..", name)), process: { env }, context: { repo, sha, ref: "refs/heads/main", eventName: "workflow_dispatch", ...context }, github,
     core: { setOutput: (key, value) => { outputs[key] = value; }, warning: value => observations.warnings.push(value), summary },
   });
   return outputs;
@@ -286,4 +286,49 @@ test("tag pushes and manual requests share the release entry and version concurr
   assert.equal(deploy.needs, "build");
   assert.equal(vm.runInNewContext(deploy.if || "success()", { success: () => true }), true);
   assert.equal(vm.runInNewContext(deploy.if || "success()", { success: () => false }), false);
+});
+
+test("release themes reach notes through manual dispatch and reusable workflows", () => {
+  for (const inputs of [
+    workflows.release_create.true.workflow_dispatch.inputs,
+    workflows.release_publish.true.workflow_call.inputs,
+    workflows.release_notes.true.workflow_dispatch.inputs,
+    workflows.release_notes.true.workflow_call.inputs,
+  ]) {
+    assert.equal(inputs["release-theme"].type, "string");
+    assert.equal(inputs["release-theme"].default, "");
+    assert.notEqual(inputs["release-theme"].required, true);
+  }
+  const update = workflows.release_notes.jobs["release-notes"].steps.find(step => step.name === "Update release title and notes");
+  assert.equal(update.run, "node Scripts/CI/release-notes.js");
+  const evaluate = (expression, inputs) => vm.runInNewContext(expression.replace(/^\$\{\{\s*|\s*\}\}$/g, ""), { inputs });
+  for (const theme of ["", 'Text "Quotes" & $(touch sentinel)']) {
+    const publishTheme = evaluate(workflows.release_create.jobs.publish.with["release-theme"], { "release-theme": theme });
+    const notesTheme = evaluate(workflows.release_publish.jobs.notes.with["release-theme"], { "release-theme": publishTheme });
+    assert.equal(evaluate(update.env.RELEASE_THEME, { "release-theme": notesTheme }), theme);
+    assert.equal(evaluate(update.env.RELEASE_THEME, { "release-theme": theme }), theme);
+  }
+  assert.equal(evaluate(workflows.release_create.jobs.publish.with["release-theme"], {}), "");
+  assert.deepEqual(workflows.release_publish.jobs.publish.needs, ["assets", "notes"]);
+  assert.equal(workflows.release_publish.jobs.notes.with.ref, "${{ inputs.ref }}");
+});
+
+test("invalid manual themes fail release preflight before any tag request", async () => {
+  const step = workflows.release_create.jobs.prepare.steps.find(step => step.id === "prepare");
+  assert.equal(step.env.RELEASE_THEME, "${{ inputs['release-theme'] }}");
+  const env = {
+    VERSION: "0.23.0", CHECKOUT_SHA: sha,
+    HAS_SIGNING_CERTIFICATE: "true", HAS_SIGNING_PASSWORD: "true", HAS_BINARY_REPO_TOKEN: "true",
+  };
+  let tagReads = 0;
+  const github = { rest: { git: { getRef: async () => {
+    tagReads++;
+    throw Object.assign(new Error("Not found"), { status: 404 });
+  } } } };
+  for (const theme of [" ", "Line\nBreak", "0.23.0: Gesture Support"]) {
+    await assert.rejects(script(step, { ...env, RELEASE_THEME: theme }, {}, github), /theme/i);
+  }
+  assert.equal(tagReads, 0);
+  assert.equal((await script(step, { ...env, RELEASE_THEME: "Gesture Support" }, {}, github)).version, "0.23.0");
+  assert.equal((await script(step, { ...env, RELEASE_THEME: "" }, {}, github)).version, "0.23.0");
 });
