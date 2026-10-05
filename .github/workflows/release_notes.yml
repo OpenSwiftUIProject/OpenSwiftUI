@@ -4,8 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       tag-name:
-        description: 'Tag name (e.g. 0.17.1)'
+        description: 'Tag name (e.g. 0.23.0)'
         required: true
+      release-theme:
+        description: Optional title theme override, without the version number
+        default: ''
+        type: string
   workflow_call:
     inputs:
       ref:
@@ -15,6 +19,9 @@ on:
       tag-name:
         description: 'Tag name for the release'
         required: true
+        type: string
+      release-theme:
+        default: ''
         type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
@@ -36,105 +43,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Require an existing release
+      - name: Update release title and notes
         env:
           TAG_NAME: ${{ inputs.tag-name }}
-        run: gh release view "$TAG_NAME" > /dev/null
-
-      - name: Generate changelog from GitHub
-        env:
-          TAG_NAME: ${{ inputs.tag-name }}
-        run: |
-          gh api repos/${{ github.repository }}/releases/generate-notes \
-            -f tag_name="${TAG_NAME}" \
-            --jq '.body' > /tmp/changelog.md
-          echo "Generated changelog:"
-          cat /tmp/changelog.md
-
-      - name: Generate highlights with Copilot
-        env:
+          RELEASE_THEME: ${{ inputs['release-theme'] }}
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          TAG_NAME: ${{ inputs.tag-name }}
-        run: |
-          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
-            echo "::warning::COPILOT_GITHUB_TOKEN not set, continuing without highlights"
-            : > /tmp/highlights.md
-            exit 0
-          fi
-
-          {
-            cat <<'STATIC_EOF'
-          You are generating the Highlights section for an OpenSwiftUI release.
-          OpenSwiftUI is an open source reimplementation of Apple's SwiftUI framework.
-
-          Below is the auto-generated changelog:
-
-          STATIC_EOF
-            cat /tmp/changelog.md
-            cat <<'STATIC_EOF'
-
-          Write ONLY a ## Highlights section with concise bullet points of key user-facing changes.
-          Rules:
-          - Skip [NFC], [CI], refactoring, docs, and internal-only changes
-          - Each bullet starts with a verb: Add, Fix, Improve, Update
-          - Keep 1-5 bullets, be concise
-          - Output ONLY the ## Highlights header followed by bullet points, nothing else
-
-          Examples from past releases:
-
-          ## Highlights
-
-          - Add Xcode Preview support
-          - Add initial Text support
-          - Add OpenSwiftUI xcframework release support
-
-          ## Highlights
-
-          - Add NS/UIApplicationDelegateAdapter support
-          - Add Compute backend support as an alternative to AttributeGraph
-          - Add NamedImage support for bundle image and system image
-          STATIC_EOF
-          } > /tmp/prompt.txt
-
-          npm install -g @github/copilot
-
-          if ! copilot \
-            -p "$(cat /tmp/prompt.txt)" \
-            -s \
-            --no-ask-user > /tmp/highlights.md; then
-            echo "::warning::Copilot highlights generation failed, continuing without highlights"
-            : > /tmp/highlights.md
-          fi
-
-          if [ -s /tmp/highlights.md ]; then
-            echo "Generated highlights:"
-            cat /tmp/highlights.md
-          else
-            echo "No highlights generated."
-          fi
-
-      - name: Update release notes
-        env:
-          TAG_NAME: ${{ inputs.tag-name }}
-        run: |
-          {
-            cat /tmp/highlights.md
-            echo ""
-            cat /tmp/changelog.md
-            cat <<INTEGRATION_EOF
-
-          ## Binary Integration
-
-          \`\`\`swift
-          .package(url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI-spm.git", from: "${TAG_NAME}")
-          \`\`\`
-
-          See [INTEGRATION.md](https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main/INTEGRATION.md#binary-integration-recommended) for more details.
-          INTEGRATION_EOF
-          } > /tmp/release_notes.md
-
-          echo "=== Full release notes ==="
-          cat /tmp/release_notes.md
-          echo "=========================="
-
-          gh release edit "${TAG_NAME}" --notes-file /tmp/release_notes.md
+        run: node Scripts/CI/release-notes.js
