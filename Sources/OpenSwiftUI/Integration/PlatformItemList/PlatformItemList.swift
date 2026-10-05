@@ -13,11 +13,29 @@ import OpenAttributeGraphShims
 import OpenSwiftUICore
 
 extension View {
+    func platformItemLabel<Label, Flags>(_ label: Label, flags: Flags) -> some View where Label: View, Flags: PlatformItemListFlags {
+        PlatformItemLabelView(flags: flags, label: label, content: self)
+    }
+
     func transformPlatformItemList<Flags>(
         _ flags: Flags.Type,
         _ transform: @escaping (inout PlatformItemList) -> Void
     ) -> some View where Flags: PlatformItemListFlags {
         modifier(PlatformItemListTransformModifier<Flags>(transform: transform))
+    }
+}
+
+// MARK: - PlatformItemLabelView [WIP]
+
+private struct PlatformItemLabelView<Flags, Label, Content>: View where Flags: PlatformItemListFlags, Label: View, Content: View {
+    var flags: Flags
+
+    var label: Label
+
+    var content: Content
+
+    var body: some View {
+        content
     }
 }
 
