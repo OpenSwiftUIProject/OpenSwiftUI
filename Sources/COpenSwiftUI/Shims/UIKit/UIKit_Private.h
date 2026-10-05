@@ -42,6 +42,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
+@property(nonatomic, readonly, nullable) UIResponder *firstResponder_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(firstResponder);
 - (nullable id<UILargeContentViewerItem>)_largeContentViewerItemAtPoint:(CGPoint)point OPENSWIFTUI_SWIFT_NAME(_largeContentViewerItem(at:));
 - (instancetype)_initWithLayer:(CALayer *)layer;
 - (void)_geometryChanged:(const void *)geometry forAncestor:(nullable UIView *)ancestor;

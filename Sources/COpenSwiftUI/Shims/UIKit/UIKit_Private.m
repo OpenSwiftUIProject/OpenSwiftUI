@@ -44,6 +44,11 @@
 @end
 
 @implementation UIView (OpenSwiftUI_SPI)
+- (UIResponder *)firstResponder_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIResponder *, @"firstResponder", nil);
+    return func(self, selector);
+}
+
 - (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_shouldAnimatePropertyWithKey:", NO, NSString *);
     return func(self, selector, key);
