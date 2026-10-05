@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 10718FCC504A33B6994038B6E6E29C50 (SwiftUI?)
 
 #if os(iOS) || os(visionOS)
@@ -47,22 +47,26 @@ extension AnyUIKitHostedFocusItem {
 
     fileprivate func addToHostIfNeeded(_ host: UIView) {
         guard self.host == nil else { return }
+        Log.focus?.log("adding unmanaged: \(UIKitFocusItemDescription(self)) to: \(UIKitFocusItemDescription(host))")
         self.host = host
     }
 
     fileprivate func move(toParent parent: UIView?) {
         guard host !== parent else { return }
         if let host {
+            Log.focus?.log("unparenting: \(UIKitFocusItemDescription(self)) from \(UIKitFocusItemDescription(host))")
             UIFocusSystem.focusSystem(for: host)?._focusEnvironmentWillDisappear(self)
         }
         host = parent
         if let host {
+            Log.focus?.log("parenting: \(UIKitFocusItemDescription(self)) to: \(UIKitFocusItemDescription(host))")
             UIFocusSystem.focusSystem(for: host)?._focusEnvironmentDidAppear(self)
         }
     }
 
     fileprivate func invalidateFocusIfNeeded() {
         guard let host, isFocused, !canBecomeFocused else { return }
+        Log.focus?.log("invalidating focus in \(UIKitFocusItemDescription(host))")
         host.setNeedsFocusUpdate()
     }
 }
@@ -134,7 +138,7 @@ extension _UIHostingView: UIKitContainerFocusItem {
     var host: UIView? { self }
 }
 
-// MARK: - UIKitHostContainer [WIP]
+// MARK: - UIKitHostContainer
 
 protocol UIKitHostContainer {
     var visibleHostCells: [any PlatformListCell & UIFocusItem] { get }
@@ -195,7 +199,6 @@ class UIKitContainerFocusResponderItem<A>: UIKitContainerFocusResponderItemBase,
     @objc
     class func _supportsInvalidatingFocusCache() -> Bool { true }
 
-    // The public UIKit SDK does not expose the SPI parameter and result types.
     @objc(_focusGuideBehaviorForFocusMovement:)
     func _focusGuideBehavior(forFocusMovement movement: AnyObject?) -> UInt { 0 }
 
@@ -209,8 +212,8 @@ class UIKitContainerFocusResponderItem<A>: UIKitContainerFocusResponderItemBase,
             super.init()
         }
 
+        // NOTE: The point overloads use the opposite direction
         func convert(_ point: CGPoint, from coordinateSpace: any UICoordinateSpace) -> CGPoint {
-            // The point overloads use the opposite direction in 6.5.4.
             host?.coordinateSpace.convert(point, to: coordinateSpace) ?? .zero
         }
 
@@ -409,20 +412,24 @@ extension FocusBridge {
                 return .skipToNextSibling
             }
             guard let item = responder.platformItem else { return .next }
-            let frame: CGRect
+            let frame: CGRect?
             if let view = item as? UIView {
                 frame = view.convert(view.bounds, to: host as any UICoordinateSpace)
             } else if let hostedItem = item as? any AnyUIKitHostedFocusItem {
                 hostedItem.addToHostIfNeeded(host)
                 frame = hostedItem.frame
             } else {
-                return .skipToNextSibling
+                Log.focus?.error("unknown focus item: \(UIKitFocusItemDescription(item))")
+                frame = nil
             }
-            if !frame.intersection(rect).isEmpty {
+            if let frame, !frame.intersection(rect).isEmpty {
                 items.append(item)
+            } else {
+                Log.focus?.log("skipped: \(UIKitFocusItemDescription(item)) with: \((frame ?? .zero).loggable) in: \(rect.loggable) for: \(UIKitFocusItemDescription(host))")
             }
             return .skipToNextSibling
         }
+        Log.focus?.log("focus items queried: \(items.count) in: \(rect.loggable) for: \(UIKitFocusItemDescription(host))")
         return items
     }
 
@@ -500,6 +507,72 @@ extension UIFocusEnvironment {
             environment = current.parentFocusEnvironment
         }
         return nil
+    }
+}
+
+// MARK: - UIKitFocusItemDescription
+
+struct UIKitFocusItemDescription<Item>: CustomStringConvertible where Item: UIFocusItem {
+    var description: String
+
+    init(_ item: Item) {
+        let category = Category(item)
+        description = "<\(category.name): \(address(of: item))"
+        for attribute in category.attributes {
+            description += "; " + attribute
+        }
+        description += ">"
+    }
+
+    enum Category {
+        case host(UIView & UIKitContainerFocusItem)
+        case container(any UIKitHostedContainerFocusItem)
+        case item(any AnyUIKitHostedFocusItem)
+        case unknown(Item)
+
+        init(_ item: Item) {
+            if let host = item as? UIView & UIKitContainerFocusItem {
+                self = .host(host)
+            } else if let container = item as? any UIKitHostedContainerFocusItem {
+                self = .container(container)
+            } else if let item = item as? any AnyUIKitHostedFocusItem {
+                self = .item(item)
+            } else {
+                self = .unknown(item)
+            }
+        }
+
+        var name: String {
+            switch self {
+            case .host: "Host"
+            case .container: "Container"
+            case .item: "Item"
+            case let .unknown(item): "Unknown<\(_typeName(type(of: item), qualified: false))>"
+            }
+        }
+
+        var attributes: [String] {
+            switch self {
+            case .host:
+                []
+            case .container:
+                ["responder: \(addressOfResponder ?? "??")"]
+            case let .item(item):
+                ["responder: \(addressOfResponder ?? "??")", "focused: \(item.isFocused)"]
+            case let .unknown(item):
+                ["focused: \(item.isFocused)"]
+            }
+        }
+
+        private var addressOfResponder: String? {
+            let responder: ViewResponder?
+            switch self {
+            case let .container(item): responder = item.responder
+            case let .item(item): responder = item.responder
+            case .host, .unknown: return nil
+            }
+            return responder.map { "\(address(of: $0))" }
+        }
     }
 }
 #endif
