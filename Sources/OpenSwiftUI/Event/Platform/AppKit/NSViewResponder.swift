@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by FocusResponder)
+//  Status: Complete
 
 #if os(macOS)
 import AppKit
@@ -78,17 +78,49 @@ class NSViewResponder: PlatformViewResponderBase {
     }
 
     var focusItem: FocusItem? {
-        _openSwiftUIUnimplementedFailure()
+        guard let view = preferredFocusableView
+            ?? (hostView as? any PlatformFocusViewProvider)?.focusView else {
+            return nil
+        }
+        return FocusItem(
+            base: .platformResponder(WeakBox(view)),
+            prefersFocusSystem: false,
+            responder: self
+        )
     }
 
     var isInVisibleRect: Bool {
-        _openSwiftUIUnimplementedFailure()
+        let frame = self.frame ?? .zero
+        guard var visibleRect = helper.transform.containingScrollGeometry?.visibleRect else {
+            return true
+        }
+        visibleRect.convert(to: .id(hostingViewCoordinateSpace), transform: helper.transform)
+        return !frame.intersection(visibleRect).isEmpty
     }
 
     var focusRingView: (NSView & FocusRingDelegate)? {
-        _openSwiftUIUnimplementedFailure()
+        if delegatesFocusEffect {
+            return firstAncestor(ofType: FocusEffectDelegateResponder.self)?.focusRingView
+        } else {
+            return (hostView as? any PlatformFocusViewProvider)?.focusView as? (NSView & FocusRingDelegate)
+        }
     }
 }
 
-// TODO: FocusResponder
+extension NSViewResponder: FocusResponder {
+    var platformItem: NSView? {
+        _openSwiftUIUnreachableCode()
+    }
+
+    func setFocusRingView(_ view: (NSView & FocusRingDelegate)?) {
+        _openSwiftUIEmptyStub()
+    }
+}
+
+extension BaseFocusResponder where Self: NSViewResponder {
+    var isEnabled: Bool {
+        _openSwiftUIUnreachableCode()
+    }
+}
+
 #endif

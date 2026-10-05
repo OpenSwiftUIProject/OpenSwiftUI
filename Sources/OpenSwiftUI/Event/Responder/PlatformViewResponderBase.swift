@@ -27,6 +27,15 @@ class PlatformViewResponderBase: ViewResponder {
 
     weak var preferredFocusableView: PlatformView?
 
+    #if os(macOS)
+    var frame: CGRect? {
+        guard let hostView else { return .zero }
+        var frame = hostView.alignmentRect(forFrame: hostView.bounds)
+        frame.convert(to: .id(hostingViewCoordinateSpace), transform: helper.transform)
+        return frame
+    }
+    #endif
+
     var platformViewIsEnabled: Bool {
         hostView != nil
     }

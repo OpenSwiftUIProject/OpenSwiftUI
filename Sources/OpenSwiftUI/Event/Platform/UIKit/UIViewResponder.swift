@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by FocusResponder)
+//  Status: Complete
 
 #if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
@@ -67,14 +67,40 @@ class UIViewResponder: PlatformViewResponderBase {
     }
 
     var wantsOpenSwiftUIFocusItem: Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard let view = preferredFocusableView ?? representedView else {
+            return false
+        }
+        if _SemanticFeature_v5.isEnabled {
+            return view.firstFocusableDescendant != nil
+        } else {
+            return view.canBecomeFirstResponder
+        }
     }
 
     var focusItem: FocusItem? {
-        _openSwiftUIUnimplementedFailure()
+        guard let representedView else { return nil }
+        if UIFocusSystem.focusSystem(for: representedView) != nil {
+            let prefersFocusSystem = representedView.traitCollection.userInterfaceIdiom == .carPlay
+            let item = preferredFocusableView
+                ?? (_SemanticFeature_v5.isEnabled ? representedView.firstFocusableDescendant : nil)
+                ?? representedView
+            return FocusItem(
+                base: .platformItem(WeakBox(item)),
+                prefersFocusSystem: prefersFocusSystem,
+                responder: self
+            )
+        } else if wantsOpenSwiftUIFocusItem {
+            return FocusItem(
+                base: .platformResponder(WeakBox(preferredFocusableView ?? representedView)),
+                prefersFocusSystem: false,
+                responder: self
+            )
+        } else {
+            return nil
+        }
     }
 }
 
-// TODO: FocusResponder conformance
+extension UIViewResponder: FocusResponder {}
 
 #endif

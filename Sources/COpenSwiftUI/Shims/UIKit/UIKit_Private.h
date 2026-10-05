@@ -26,6 +26,15 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (NSComparisonResult)accessibilityCompareGeometry:(NSObject *)element;
 @end
 
+@interface NSObject (OpenSwiftUIFocus)
+- (void)_requestFocusEffectUpdateToEnvironment:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_requestFocusEffectUpdate(to:));
+@end
+
+@interface UIFocusSystem (OpenSwiftUI_SPI)
+- (void)_focusEnvironmentWillDisappear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_focusEnvironmentWillDisappear(_:));
+- (void)_focusEnvironmentDidAppear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_focusEnvironmentDidAppear(_:));
+@end
+
 @interface UIApplication (OpenSwiftUI_SPI)
 - (nullable NSString *)_extendLaunchTest;
 - (BOOL)_supportsPrintCommand;
@@ -42,6 +51,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
+@property(nonatomic, readonly, nullable) UIResponder *firstResponder_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(firstResponder);
 - (nullable id<UILargeContentViewerItem>)_largeContentViewerItemAtPoint:(CGPoint)point OPENSWIFTUI_SWIFT_NAME(_largeContentViewerItem(at:));
 - (instancetype)_initWithLayer:(CALayer *)layer;
 - (void)_geometryChanged:(const void *)geometry forAncestor:(nullable UIView *)ancestor;
@@ -97,6 +107,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIWindowScene (OpenSwiftUI_SPI)
+@property (nonatomic, readonly, nullable) NSObject *_focusSystemSceneComponent_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_focusSystemSceneComponent);
 @property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @property (nonatomic, readonly, nullable) BLSBacklightFBSSceneEnvironment *_backlightSceneEnvironment_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_backlightSceneEnvironment);

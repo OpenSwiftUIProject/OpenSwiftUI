@@ -177,6 +177,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             >.self,
             options: options
         )
+        _base.viewGraph.append(feature: FocusViewGraph(graph: _base.viewGraph))
         eventBridge = UIKitEventBindingBridge(eventBindingManager: _base.eventBindingManager)
         // TODO
         if _UIUpdateAdaptiveRateNeeded() {

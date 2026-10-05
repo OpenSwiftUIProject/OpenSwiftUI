@@ -4,6 +4,7 @@
 //
 //  Audited for 6.0.87
 //  Status: Complete
+//  ID: EF4F47D847BB5F23A034A6658EC56E22 (SwiftUICore)
 
 import Foundation
 #if OPENSWIFTUI_LINK_TESTING
@@ -234,6 +235,8 @@ package enum Log {
     package static var events: OSLog = OSLog(subsystem: subsystem, category: "Events")
     #endif
     
+    package static let focus: Logger? = EnableFocusLogging.isEnabled ? Logger(subsystem: subsystem, category: "Focus") : nil
+
     package static let archiving: Logger = Logger(subsystem: subsystem, category: "Archiving")
     package static let archivedToggle: Logger = Logger(subsystem: subsystem, category: "ArchivedToggle")
     package static let archivedButton: Logger = Logger(subsystem: subsystem, category: "ArchivedButton")
@@ -253,6 +256,12 @@ package enum Log {
 
 @available(*, unavailable)
 extension Log: Sendable {}
+
+private struct EnableFocusLogging: UserDefaultKeyedFeature {
+    static var key: String { "org.OpenSwiftUIProject.OpenSwiftUI.EnableFocusLogging" }
+
+    static var cachedValue: Bool?
+}
 
 @_transparent
 package func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String, file: StaticString = #fileID, line: UInt = #line) {

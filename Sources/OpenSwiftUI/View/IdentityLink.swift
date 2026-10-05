@@ -34,6 +34,16 @@ package struct ViewIdentity: Hashable {
         package var id: ViewIdentity
         package var resetSeed: UInt32
 
+        init(id: ViewIdentity, resetSeed: UInt32) {
+            self.id = id
+            self.resetSeed = resetSeed
+        }
+
+        init() {
+            id = .invalid
+            resetSeed = .zero
+        }
+
         package mutating func update(
             for phase: ViewPhase
         ) -> (value: ViewIdentity, changed: Bool) {
