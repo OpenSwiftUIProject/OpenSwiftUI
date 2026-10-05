@@ -36,6 +36,7 @@ struct AccessibilityFocus {
             if let node = platformAccessibilityElement.accessibilityNodeForPlatformElement {
                 return node
             }
+            #if os(iOS) || os(visionOS) || os(macOS)
             var node: AccessibilityNode?
             platformAccessibilityElement.traverseAncestors { element in
                 if let ancestor = element as? AccessibilityNode {
@@ -49,6 +50,9 @@ struct AccessibilityFocus {
                 return true
             }
             return node
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
 
         func match(focusStoreNode: AccessibilityNode) -> Match? {
@@ -66,6 +70,7 @@ struct AccessibilityFocus {
                ancestor == focusStoreNode {
                 return .platformChildFocused
             }
+            #if os(iOS) || os(visionOS) || os(macOS)
             if let ancestor = ancestorAccessibilityNode {
                 var isContainerChildFocused = false
                 ancestor.traverseAncestors { element in
@@ -79,6 +84,11 @@ struct AccessibilityFocus {
                     return .containerChildFocused
                 }
             }
+            #else
+            if ancestorAccessibilityNode != nil {
+                _openSwiftUIPlatformUnimplementedFailure()
+            }
+            #endif
             #if os(macOS)
             if let element = platformAccessibilityElement,
                let tableCellClass = AXNSTableViewCellMockElementClass(),

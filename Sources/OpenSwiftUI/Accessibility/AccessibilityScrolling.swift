@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 0E5D36A33D50442A9EDB086D241B5AD6 (SwiftUI)
 
+import Foundation
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore

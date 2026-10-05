@@ -21,5 +21,13 @@ extension Text {
             tableName: "Localizable",
             bundle: .openSwiftUI
         )
+
+        static func drag<S>(_ label: S) -> Text where S: StringProtocol {
+            Text("Drag \(String(label))", tableName: "Localizable", bundle: .openSwiftUI)
+        }
+
+        static func drop<S>(_ label: S) -> Text where S: StringProtocol {
+            Text("Drop \(String(label))", tableName: "Localizable", bundle: .openSwiftUI)
+        }
     }
 }

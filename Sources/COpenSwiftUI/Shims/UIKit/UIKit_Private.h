@@ -19,6 +19,13 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+@interface NSObject (OpenSwiftUIAccessibility)
+- (nullable UITextRange *)_textRangeFromNSRange:(NSRange)range OPENSWIFTUI_SWIFT_NAME(_textRange(from:));
+- (NSRange)_nsrangeForTextRange:(UITextRange *)range OPENSWIFTUI_SWIFT_NAME(_nsrange(for:));
+- (nullable id)_textInputForReveal;
+- (NSComparisonResult)accessibilityCompareGeometry:(NSObject *)element;
+@end
+
 @interface UIApplication (OpenSwiftUI_SPI)
 - (nullable NSString *)_extendLaunchTest;
 - (BOOL)_supportsPrintCommand;
@@ -35,6 +42,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
+- (nullable id<UILargeContentViewerItem>)_largeContentViewerItemAtPoint:(CGPoint)point OPENSWIFTUI_SWIFT_NAME(_largeContentViewerItem(at:));
 - (instancetype)_initWithLayer:(CALayer *)layer;
 - (void)_geometryChanged:(const void *)geometry forAncestor:(nullable UIView *)ancestor;
 - (void)_registerForGeometryChanges;

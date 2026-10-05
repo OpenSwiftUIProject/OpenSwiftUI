@@ -8,7 +8,7 @@
 #import "OpenSwiftUIAccessibilityPrivate.h"
 #import "../Foundation/OpenSwiftUI+NSObject.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_TARGET_OS_OSX
+#if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #import <objc/runtime.h>
 
@@ -55,4 +55,4 @@
 #endif
 @end
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_TARGET_OS_OSX */
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */

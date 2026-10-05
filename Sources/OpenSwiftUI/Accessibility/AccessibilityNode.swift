@@ -50,6 +50,8 @@ class AccessibilityNode: AccessibilityNodeBase {
 
     #if canImport(UIKit)
     var platformRotorStorage: [String: UIAccessibilityCustomRotor] = [:]
+    #elseif os(macOS)
+    var platformRotorStorage: [String: CustomRotorStorage] = [:]
     #endif
 
     var cachedIsPlaceholderOrIgnored: Bool?
@@ -443,12 +445,53 @@ class AccessibilityNode: AccessibilityNodeBase {
         resolvedPlainTexts(properties.labelStorage?.texts)
     }
 
+    #if os(iOS) || os(visionOS)
+    var currentLinkRotor: UIKitAccessibilityLinkRotorBridge? {
+        get {
+            // TODO: Read the stored link rotor.
+            _openSwiftUIUnimplementedFailure()
+        }
+        set {
+            // TODO: Store the link rotor.
+            _openSwiftUIUnimplementedFailure()
+        }
+    }
+
+    @objc(_accessibilityBoundsForRange:)
+    func _accessibilityBounds(for range: NSRange) -> CGRect {
+        // TODO: Resolve text bounds and convert them to screen coordinates.
+        _openSwiftUIUnimplementedFailure()
+    }
+    #endif
+
     var resolvedToggleValue: AccessibilityValueStorage? {
         guard properties.traits[.isToggle, default: false] else { return nil }
         return AccessibilityValueStorage(AccessibilityToggleValue(
             properties.traits[.isSelected, default: false] ? .on : .off
         ))
     }
+
+    #if os(macOS)
+    enum ResolvedActivationPoint {
+        case global(CGPoint)
+        case screen(CGPoint)
+    }
+
+    func resolvedDragDropPoint(for location: AccessibilityActivationPoint.Location) -> ResolvedActivationPoint? {
+        // TODO: Resolve explicit, child, and implicit activation points.
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @objc func accessibilityFrameForRange(_ range: NSRange) -> CGRect {
+        // TODO: Resolve text bounds and convert them to screen coordinates.
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @objc func accessibilityStringForRange(_ range: NSRange) -> String? {
+        // TODO: Resolve the exposed text and extract the requested range.
+        _openSwiftUIUnimplementedFailure()
+    }
+    #endif
 
     var isFromArchive: Bool {
         attachmentsStorage.contains {
@@ -547,4 +590,39 @@ private struct AccessibilityAttachmentStorage {
     var attachment: AccessibilityAttachment
     var geometry: AccessibilityGeometryStorage?
     let token: AccessibilityAttachmentToken?
+}
+
+// MARK: - AccessibilityActivationPoint + Resolved Description
+
+extension AccessibilityActivationPoint {
+    enum InteractionKind {
+        case drag
+        case drop
+    }
+
+    func resolvedDescription(
+        for node: AccessibilityNode,
+        in environment: EnvironmentValues,
+        kind: InteractionKind,
+        resolveLabel: Bool
+    ) -> Text {
+        guard resolveLabel,
+              case let .verbatim(value) = description.storage,
+              value == AccessibilityActivationKind.defaultDescriptor,
+              let label = node.properties.labelStorage,
+              let text = AccessibilityCore.textsResolvedToPlainText(
+                label.texts,
+                in: environment,
+                updateResolvableAttributes: false,
+                idiom: _GraphInputs.defaultInterfaceIdiom,
+                separator: ", "
+              ),
+              !text.isEmpty else {
+            return description
+        }
+        switch kind {
+        case .drag: return Text.Accessibility.drag(text)
+        case .drop: return Text.Accessibility.drop(text)
+        }
+    }
 }
