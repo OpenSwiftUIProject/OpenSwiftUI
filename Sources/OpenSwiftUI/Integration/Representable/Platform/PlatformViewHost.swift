@@ -416,6 +416,15 @@ where Content: PlatformViewRepresentable {
     }
 }
 
+extension PlatformViewHost: PlatformFocusViewProvider {
+    var focusView: PlatformView {
+        if let provider = Content.platformView(for: representedViewProvider) as? any PlatformFocusViewProvider {
+            return provider.focusView
+        }
+        return Content.platformView(for: representedViewProvider)
+    }
+}
+
 extension PlatformViewHost: SafeAreaHelperDelegate {
     #if os(macOS)
     var _safeAreaInsets: PlatformEdgeInsets {
