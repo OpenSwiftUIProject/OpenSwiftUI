@@ -21,20 +21,12 @@ import AppKit
 struct FocusItem: Equatable {
     var base: Base
     var prefersFocusSystem: Bool
-    #if os(iOS) || os(visionOS) || os(macOS)
     weak var responder: (any FocusResponder)?
-    #else
-    weak var responder: (any BaseFocusResponder)?
-    #endif
     var seed: VersionSeed = .empty
 
     enum Base {
         case view(ViewItem)
-        #if os(iOS) || os(visionOS)
-        case platformItem(WeakBox<any UIFocusItem>)
-        #else
-        case platformItem(WeakBox<PlatformView>)
-        #endif
+        case platformItem(WeakBox<PlatformFocusItem>)
         case platformResponder(WeakBox<PlatformView>)
     }
 
