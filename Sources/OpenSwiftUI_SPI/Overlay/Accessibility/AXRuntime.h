@@ -23,6 +23,12 @@ void *AXRuntimeLibrary(void);
 OPENSWIFTUI_EXPORT
 NSString *AXOpenSwiftUIInteractionLocationDescriptorDefaultName(void);
 
+OPENSWIFTUI_EXPORT
+NSString *AXOpenSwiftUIMoveToElementNotificationKeyElement(void);
+
+OPENSWIFTUI_EXPORT
+NSString *AXOpenSwiftUIPerformElementUpdateImmediatelyToken(void);
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 OPENSWIFTUI_EXTERN_C_END
 

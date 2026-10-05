@@ -302,12 +302,54 @@ struct UIKitAccessibilityPropertyApplicator: AccessibilityPlatformPropertyApplic
     }
 }
 
-// MARK: - AccessibilityCore.Notification.Info
+// MARK: - AccessibilityCoreNotification
+
+protocol AccessibilityCoreNotification {
+    static var name: UIAccessibility.Notification { get }
+    var info: AccessibilityCore.Notification.Info { get }
+}
+
+extension AccessibilityCoreNotification {
+    func post() {
+        let info = info
+        UIAccessibility.post(notification: Self.name, argument: info.argument)
+    }
+}
+
+// MARK: - AccessibilityCore.Notification
 
 extension AccessibilityCore {
     enum Notification {
         struct Info {
             var argument: Any?
+        }
+
+        struct ScreenChanged: AccessibilityCoreNotification {
+            var nextElement: PlatformAccessibilityElement?
+            var updateImmediately: Bool
+
+            static var name: UIAccessibility.Notification { .screenChanged }
+
+            var info: Info {
+                guard let nextElement, updateImmediately else {
+                    return Info(argument: nextElement)
+                }
+                let argument: [String: Any] = [
+                    AXOpenSwiftUIPerformElementUpdateImmediatelyToken(): true,
+                    AXOpenSwiftUIMoveToElementNotificationKeyElement(): nextElement,
+                ]
+                return Info(argument: argument)
+            }
+        }
+
+        struct LayoutChanged: AccessibilityCoreNotification {
+            var nextElement: PlatformAccessibilityElement?
+
+            static var name: UIAccessibility.Notification { .layoutChanged }
+
+            var info: Info {
+                Info(argument: nextElement)
+            }
         }
     }
 }

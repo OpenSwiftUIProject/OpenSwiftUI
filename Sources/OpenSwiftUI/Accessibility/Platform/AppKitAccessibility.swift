@@ -449,9 +449,58 @@ private extension NSWorkspace {
     static let hoverTextStatusChangedNotification = Notification.Name("com.apple.accessibility.AXVisualSupportAgent.hoverTextSettingsDidChange")
 }
 
+// MARK: - AccessibilityCoreNotification
+
+protocol AccessibilityCoreNotification {
+    static var name: NSAccessibility.Notification { get }
+    var info: AccessibilityCore.Notification.Info { get }
+}
+
+extension AccessibilityCoreNotification {
+    func post() {
+        info.post(name: Self.name)
+    }
+}
+
 // MARK: - AccessibilityCore + AppKit
 
 extension AccessibilityCore {
+    enum Notification {
+        struct Info {
+            var element: PlatformAccessibilityElement
+            var userInfo: [NSAccessibility.NotificationUserInfoKey: Any]?
+
+            func post(name: NSAccessibility.Notification) {
+                if name == .layoutChanged, suppressLayoutChangedCount != 0 {
+                    return
+                }
+                var element: Any = self.element
+                if name == .layoutChanged,
+                   let ancestor = NSAccessibility.unignoredAncestor(of: element) {
+                    element = ancestor
+                }
+                NSAccessibility.post(element: element, notification: name, userInfo: userInfo)
+            }
+        }
+
+        struct LayoutChanged: AccessibilityCoreNotification {
+            var sourceElement: PlatformAccessibilityElement
+            var nextElement: PlatformAccessibilityElement?
+
+            static var name: NSAccessibility.Notification { .layoutChanged }
+
+            var info: Info {
+                var userInfo: [NSAccessibility.NotificationUserInfoKey: Any] = [
+                    .uiElements: [sourceElement],
+                ]
+                if let nextElement {
+                    userInfo[.init(rawValue: "AXElementToFocusForLayoutChange")] = nextElement
+                }
+                return Info(element: sourceElement, userInfo: userInfo)
+            }
+        }
+    }
+
     static func unignoredDescendant(of element: Any) -> PlatformAccessibilityElement? {
         NSAccessibility.unignoredDescendant(of: element) as? PlatformAccessibilityElement
     }

@@ -100,6 +100,10 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 - (nullable id)accessibilityFocusedUIElement;
 @end
 
+@interface NSAccessibilityRemoteUIElement : NSObject
++ (BOOL)isRemoteUIApp;
+@end
+
 @protocol NSWindowSwiftUIDelegate <NSObject>
 @optional
 - (nullable id)_accessibilityWindow:(NSWindow *)window focusedUIElementOverrideWithCurrentValue:(nullable id)currentValue;

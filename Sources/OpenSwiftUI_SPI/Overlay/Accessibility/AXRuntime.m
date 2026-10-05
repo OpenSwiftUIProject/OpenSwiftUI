@@ -44,4 +44,32 @@ NSString *AXOpenSwiftUIInteractionLocationDescriptorDefaultName(void) {
     return *symbol;
 }
 
+NSString *AXOpenSwiftUIMoveToElementNotificationKeyElement(void) {
+    static NSString * __unsafe_unretained const *ptr;
+    if (ptr == NULL) {
+        ptr = (NSString * __unsafe_unretained const *)dlsym(
+            AXRuntimeLibrary(),
+            "kAXMoveToElementNotificationKeyElement"
+        );
+    }
+    if (ptr == NULL) {
+        abort_report_np("%s", dlerror());
+    }
+    return *ptr;
+}
+
+NSString *AXOpenSwiftUIPerformElementUpdateImmediatelyToken(void) {
+    static NSString * __unsafe_unretained const *ptr;
+    if (ptr == NULL) {
+        ptr = (NSString * __unsafe_unretained const *)dlsym(
+            AXRuntimeLibrary(),
+            "kAXPerformElementUpdateImmediatelyToken"
+        );
+    }
+    if (ptr == NULL) {
+        abort_report_np("%s", dlerror());
+    }
+    return *ptr;
+}
+
 #endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
