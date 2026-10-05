@@ -4,9 +4,12 @@
 //
 //  Audited for 3.5.2
 //  Status: WIP
-//  ID: 274D264A38B51DC68ACC48A91353B7D0
+//  ID: 274D264A38B51DC68ACC48A91353B7D0 (SwiftUI)
 
-@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+public import OpenSwiftUICore
+
+// MARK: - FocusState [TBA]
 
 @frozen
 @propertyWrapper
@@ -14,10 +17,10 @@ public struct FocusState<Value>: DynamicProperty where Value: Hashable {
     @frozen
     @propertyWrapper
     public struct Binding {
-        @OpenSwiftUI.Binding
+        @OpenSwiftUICore.Binding
         private var binding: Value
         
-        init(binding: OpenSwiftUI.Binding<Value>) {
+        init(binding: OpenSwiftUICore.Binding<Value>) {
             _binding = binding
         }
         
@@ -44,6 +47,7 @@ public struct FocusState<Value>: DynamicProperty where Value: Hashable {
     var value: Value
     var location: AnyLocation<Value>?
     var resetValue: Value
+
     public var wrappedValue: Value {
         get {
             getValue(forReading: true)

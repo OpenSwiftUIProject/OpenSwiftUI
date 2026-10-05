@@ -74,7 +74,8 @@ public struct AccessibilityFocusState<Value>: DynamicProperty where Value: Hasha
     @propertyWrapper
     @frozen
     public struct Binding {
-        private var _binding: OpenSwiftUICore.Binding<Value>
+        @OpenSwiftUICore.Binding
+        private var binding: Value
 
         init(binding: OpenSwiftUICore.Binding<Value>) {
             _binding = binding
@@ -82,8 +83,8 @@ public struct AccessibilityFocusState<Value>: DynamicProperty where Value: Hasha
 
         /// The underlying value referenced by the bound property.
         public var wrappedValue: Value {
-            get { _binding.wrappedValue }
-            nonmutating set { _binding.wrappedValue = newValue }
+            get { binding }
+            nonmutating set { binding = newValue }
         }
 
         /// The currently focused element.
