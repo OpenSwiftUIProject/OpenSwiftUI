@@ -11,6 +11,18 @@
 
 #import <objc/runtime.h>
 
+@implementation UIFocusSystem (OpenSwiftUI_SPI)
+- (void)_focusEnvironmentWillDisappear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_focusEnvironmentWillDisappear:", , id<UIFocusEnvironment>);
+    func(self, selector, environment);
+}
+
+- (void)_focusEnvironmentDidAppear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_focusEnvironmentDidAppear:", , id<UIFocusEnvironment>);
+    func(self, selector, environment);
+}
+@end
+
 @implementation UIApplication (OpenSwiftUI_SPI)
 - (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_performBlockAfterCATransactionCommits:", block(),void (^)(void));
@@ -108,6 +120,11 @@
 @end
 
 @implementation UIWindowScene (OpenSwiftUI_SPI)
+- (NSObject *)_focusSystemSceneComponent_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSObject *, @"_focusSystemSceneComponent", nil);
+    return func(self, selector);
+}
+
 - (UIUserInterfaceStyle) _systemUserInterfaceStyle_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIUserInterfaceStyle, @"_systemUserInterfaceStyle", UIUserInterfaceStyleUnspecified);
     return func(self, selector);

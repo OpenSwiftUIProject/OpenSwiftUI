@@ -432,7 +432,7 @@ class FocusStateBindingResponder: DefaultLayoutViewResponder, BaseFocusResponder
     var transform = ViewTransform()
     var size: CGSize = .zero
     var isEnabled: Bool = true
-    // TODO: UIKitContainerFocusResponderItem and AnyUIKitHostedFocusItemResponder.
+    var _uikitFocusItem: UIKitContainerFocusResponderItem<FocusStateBindingResponder>?
     #else
     var isEnabled: Bool {
         #if os(macOS)
@@ -448,8 +448,9 @@ class FocusStateBindingResponder: DefaultLayoutViewResponder, BaseFocusResponder
         #if os(macOS)
         // Deleted in the target image.
         _openSwiftUIUnreachableCode()
+        #elseif os(iOS) || os(visionOS)
+        hostedItem
         #else
-        // TODO: Return hostedItem on UIKit platforms.
         _openSwiftUIUnimplementedFailure()
         #endif
     }
@@ -498,6 +499,17 @@ class FocusStateBindingResponder: DefaultLayoutViewResponder, BaseFocusResponder
     #endif
 }
 
+#if os(iOS) || os(visionOS)
+extension FocusStateBindingResponder: AnyUIKitHostedFocusItemResponder {
+    var hostedItem: (any AnyUIKitHostedFocusItem)? {
+        if _uikitFocusItem == nil {
+            _uikitFocusItem = UIKitContainerFocusResponderItem(self)
+        }
+        return _uikitFocusItem
+    }
+}
+#endif
+
 // MARK: - FocusStateBindingModifier [WIP]
 
 private struct FocusStateBindingModifier<Value>: MultiViewModifier, PrimitiveViewModifier where Value: Hashable {
@@ -528,8 +540,8 @@ private struct FocusStateBindingModifier<Value>: MultiViewModifier, PrimitiveVie
             isFocused: false
         ))
         #if os(iOS) || os(visionOS)
-        // TODO: Attach UIKitHostedFocusItemLifecycle with removable and transactional flags.
-        _openSwiftUIUnimplementedWarning("UIKitHostedFocusItemLifecycle")
+        let lifecycle = Attribute(UIKitHostedFocusItemLifecycle(inputs: inputs, responder: filter))
+        lifecycle.flags = [.removable, .transactional]
         #endif
         outputs.preferences.viewResponders = filter
         outputs.preferences.makePreferenceTransformer(
