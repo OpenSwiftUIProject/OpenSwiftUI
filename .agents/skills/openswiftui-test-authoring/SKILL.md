@@ -24,8 +24,10 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 - Group mutually exclusive imports in one `#if` / `#elseif` / `#else` block.
   Never split the block or reorder its branches to alphabetize individual
   imports. Preserve its conditions, fallback behavior, and import attributes.
-- Mark suites/tests that contain AI-generated Swift Testing tests with `.tags(.aigc)`
-  on `@Suite` or `@Test`. Also add `import OpenSwiftUITestsSupport` if not imported yet.
+- Do not add `.aigc` by default. For unit, compatibility, symbol-dual, and similar
+  non-UI tests, add `.tags(.aigc)` only when a test case contains more than 100
+  lines of AI-written code. Import `OpenSwiftUITestsSupport` when the tag is needed.
+- UI and UX tests do not need `.aigc`, regardless of their length.
 - In Swift Testing, prefer `@Test(arguments:)` when cases share the same test
   body. Keep different behaviors in separate tests.
 - Give argument collections explicit types when inference is ambiguous,
