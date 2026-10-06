@@ -290,7 +290,19 @@ So the source-backend release shape still publishes the same OpenSwiftUI
 xcframework set. It does not require consumers to embed or load a separate
 Compute dynamic framework.
 
-Dynamic frameworks should be limited to modules with a runtime reason to share
-one loaded identity. `OpenSwiftUI` and `OpenSwiftUICore` are the intentional
-exceptions; the remaining support frameworks stay static to minimize embedding,
-signing, launch-time loading, and artifact-management overhead.
+## Runtime Dependency Validation
+
+Implementation-only targets such as `OpenRenderBoxShimsCxx` and
+`OpenObservationCxx` must remain static in the Tuist project. They are not
+separate binary targets in the distribution. The root and Example package
+settings explicitly select static frameworks for these targets.
+
+Before creating each XCFramework, the packaging script checks every archived
+SDK slice with `otool -L`. Each dependency must use an `@rpath` framework or
+dylib path, a `/usr/lib/*.dylib` path, or a system framework path under
+`/System/Library/Frameworks/` or `/System/Library/PrivateFrameworks/`.
+The check ignores library names and version metadata. Other paths, such as
+absolute build paths, fail before signing and publication. This check validates
+runtime paths, not whether each dependency is included in the distribution.
+The Compute source backend retains its separate static-link validation for
+OpenSwiftUI and OpenSwiftUICore.
