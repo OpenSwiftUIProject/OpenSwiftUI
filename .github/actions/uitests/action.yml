@@ -249,7 +249,8 @@ runs:
           2>&1 | tee "$test_log" || record_status=$?
 
         result_mode=verify
-        if [[ "$record_status" -eq 65 ]]; then
+        # Tuist reports xcodebuild test failures as exit status 1.
+        if [[ "$record_status" -eq 1 || "$record_status" -eq 65 ]]; then
           result_mode=record
         elif [[ "$record_status" -ne 0 ]]; then
           exit "$record_status"
@@ -295,6 +296,7 @@ runs:
         fi
         result_bundle="${{ steps.paths.outputs.artifacts }}/OSUI_${{ inputs.test-suite }}.xcresult"
         test_log="${{ steps.paths.outputs.artifacts }}/OSUI_${{ inputs.test-suite }}.log"
+        test_status=0
         NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test \
           -scheme "OSUI_${{ inputs.test-suite }}" \
           -destination "${{ inputs.destination }}" \
@@ -302,8 +304,12 @@ runs:
           -skipPackagePluginValidation \
           -derivedDataPath "${{ steps.paths.outputs.derived-data-path }}" \
           "${test_arguments[@]}" \
-          2>&1 | tee "$test_log"
+          2>&1 | tee "$test_log" || test_status=$?
+        if [[ "$test_status" -ne 0 && ! -d "$result_bundle" ]]; then
+          exit "$test_status"
+        fi
         bash ../Scripts/CI/check_uitest_selection.sh "$result_bundle" "${UITEST_ONLY_TESTING:-OSUI_${{ inputs.test-suite }}}" 2>&1 | tee -a "$test_log"
+        exit "$test_status"
 
     - name: Collect failure artifacts
       if: always() && steps.paths.outputs.artifacts != '' && (steps.record-baseline.outcome == 'failure' || steps.uitest.outcome == 'failure')
