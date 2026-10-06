@@ -1031,6 +1031,7 @@ let packageSettings = PackageSettings(
         "OpenObservationCxx": ProjectDescription.Product.staticFramework,
         "OpenQuartzCoreShims": ProjectDescription.Product.framework,
         "OpenRenderBoxShims": ProjectDescription.Product.framework,
+        "OpenRenderBoxShimsCxx": ProjectDescription.Product.staticFramework,
         "SymbolLocator": ProjectDescription.Product.staticFramework,
     ],
     baseProductType: ProjectDescription.Product.staticFramework,
