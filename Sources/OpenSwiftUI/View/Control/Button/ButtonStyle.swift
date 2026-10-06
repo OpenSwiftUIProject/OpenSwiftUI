@@ -3,11 +3,11 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Partial-Stubbed
 //  ID: AEEDD090E917AC57C12008D974DC6805 (SwiftUI)
 
 import OpenAttributeGraphShims
-public import OpenSwiftUICore
+@_spi(Private) public import OpenSwiftUICore
 
 // MARK: - ButtonStyle
 
@@ -160,3 +160,150 @@ public protocol ButtonStyleConvertible {
 
     var buttonStyleRepresentation: ButtonStyleRepresentation { get }
 }
+
+// MARK: - ButtonStyleModifier + ButtonStyle
+
+extension ButtonStyleModifier {
+    init<S>(style: S) where Style == WrappedButtonStyle<S>, S: ButtonStyle {
+        self.init(style: WrappedButtonStyle(style: style))
+    }
+}
+
+// TODO: ArchivableLinkModifier
+
+// MARK: - WrappedButtonStyle
+
+struct WrappedButtonStyle<Style>: PrimitiveButtonStyle where Style: ButtonStyle {
+    let style: Style
+
+    init(style: Style) {
+        self.style = style
+    }
+
+    func makeBody(configuration: Configuration) -> some View {
+        WrappedButtonStyleBody(style: style, configuration: configuration)
+    }
+}
+
+extension WrappedButtonStyle: AnyDefaultStyle where Style: AnyDefaultStyle {
+    init() {
+        self.init(style: Style())
+    }
+}
+
+// TODO: ArchivableButtonAppIntentModifier
+
+// TODO: LinkButtonModifierBody
+
+// MARK: - ResolvedButtonStyleBody
+
+struct ResolvedButtonStyleBody<Style>: PrimitiveView where Style: ButtonStyle {
+    var style: Style
+    var configuration: ButtonStyleConfiguration
+
+    nonisolated static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        let fields = DynamicPropertyCache.fields(of: Style.self)
+        let (body, buffer) = makeStyleBody(
+            view: view,
+            inputs: &inputs.base,
+            fields: fields
+        )
+        let outputs = Style.Body.makeDebuggableView(view: body, inputs: inputs)
+        if let buffer {
+            buffer.traceMountedProperties(to: view, fields: fields)
+        }
+        return outputs
+    }
+
+    nonisolated static func _makeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        let fields = DynamicPropertyCache.fields(of: Style.self)
+        let (body, buffer) = makeStyleBody(
+            view: view,
+            inputs: &inputs.base,
+            fields: fields
+        )
+        let outputs = Style.Body.makeDebuggableViewList(view: body, inputs: inputs)
+        if let buffer {
+            buffer.traceMountedProperties(to: view, fields: fields)
+        }
+        return outputs
+    }
+
+    nonisolated private static func makeStyleBody(
+        view: _GraphValue<Self>,
+        inputs: inout _GraphInputs,
+        fields: DynamicPropertyCache.Fields
+    ) -> (_GraphValue<Style.Body>, _DynamicPropertyBuffer?) {
+        if Semantics.ViewStylesMustBeValueTypes.isEnabled {
+            precondition(
+                Metadata(Style.self).isValueType,
+                "styles must be value types (either a struct or an enum); \(Style.self) is a class."
+            )
+        }
+        let accessor = StyleBodyAccessor(view: view.value)
+        return accessor.makeBody(
+            container: view[offset: { .of(&$0.style) }],
+            inputs: &inputs,
+            fields: fields
+        )
+    }
+
+    private struct StyleBodyAccessor: BodyAccessor {
+        @Attribute var view: ResolvedButtonStyleBody<Style>
+
+        typealias Container = Style
+        typealias Body = Style.Body
+
+        func updateBody(of container: Style, changed: Bool) {
+            let (view, viewChanged) = $view.changedValue()
+            guard changed || viewChanged else {
+                return
+            }
+            setBody {
+                container.makeBody(configuration: view.configuration)
+            }
+        }
+    }
+}
+
+// TODO: ButtonBehavior
+
+// MARK: - WrappedButtonStyleBody [TODO]
+
+private struct WrappedButtonStyleBody<Style>: ConditionallyArchivableView where Style: ButtonStyle {
+    let style: Style
+    let configuration: PrimitiveButtonStyleConfiguration
+
+    init(style: Style, configuration: PrimitiveButtonStyleConfiguration) {
+        self.style = style
+        self.configuration = configuration
+    }
+
+    var body: some View {
+        // TODO: ButtonBehavior
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var archivedBody: some View {
+        // TODO: ArchiveBody
+        // TODO: ArchivesInteractiveControlsEffect
+        // TODO: HandGestureShortcutInteractiveControl
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// TODO: ButtonSpringLoadedInteraction
+
+// TODO: ButtonRepeatModifier
+
+// TODO: ButtonFocusInteractionModifier
+
+// TODO: ButtonInteractionPhase
