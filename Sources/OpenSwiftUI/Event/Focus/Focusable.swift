@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: B6A2D4E72E5722B5103497ADB7778B5F (SwiftUI)
 
+import COpenSwiftUI
 import Foundation
 import OpenAttributeGraphShims
 @_spi(Private)
@@ -294,7 +295,274 @@ extension FocusableOptions: _FocusableModifier_Configuration {
     }
 }
 
-// TODO: - FocusableViewResponder
+// MARK: - FocusableViewResponder [TBA]
+
+private class FocusableViewResponder: DefaultLayoutViewResponder, FocusResponder {
+    weak var focusAccessibilityNode: AccessibilityNode?
+    var keyPressHandlers: [KeyPress.Handler] = []
+    var baseItem: FocusItem.ViewItem? {
+        didSet {
+            #if os(iOS) || os(visionOS)
+            if oldValue?.id != baseItem?.id {
+                _uikitFocusItem = nil
+            }
+            #endif
+        }
+    }
+    var frame: CGRect?
+    var isEnabled: Bool = true
+    var geometry: ContentResponderHelper<TrivialContentResponder> = .init() {
+        didSet {
+            guard !geometry.size.isNaN, geometry.size != .zero else {
+                frame = nil
+                return
+            }
+            var frame = CGRect(origin: .zero, size: geometry.size)
+            frame.convert(to: .id(hostingViewCoordinateSpace), transform: geometry.transform)
+            self.frame = frame
+        }
+    }
+    #if os(iOS) || os(visionOS)
+    var isFocused: WeakAttribute<Bool>?
+    var isPlatformFocusSystemEnabled: Bool = false
+    var groupID: FocusGroupIdentifier?
+    private var _uikitFocusItem: UIKitFocusableViewResponderItem?
+
+    var platformItem: PlatformFocusItem? { hostedItem }
+
+    // Deleted in the target image.
+    var focusGroupID: FocusGroupIdentifier? { _openSwiftUIUnreachableCode() }
+    #elseif os(macOS)
+    var evaluateDefaultFocus: EvaluateDefaultFocusAction?
+    var effectiveLayoutDirection: LayoutDirection?
+    private weak var _focusRingView: (NSView & FocusRingDelegate)?
+    weak var firstKeyViewInSubtree: NSView?
+    weak var lastKeyViewInSubtree: NSView?
+
+    var isInVisibleRect: Bool {
+        guard let frame else { return false }
+        guard var visibleRect = geometry.transform.containingScrollGeometry?.visibleRect else {
+            return true
+        }
+        visibleRect.convert(to: .id(hostingViewCoordinateSpace), transform: geometry.transform)
+        return frame.intersection(visibleRect) != .null
+    }
+
+    var delegatesFocusEffect: Bool {
+        guard let focusItem, case let .view(item) = focusItem.base else { return false }
+        return item.delegatesFocusEffect
+    }
+
+    var focusRingView: (NSView & FocusRingDelegate)? {
+        guard let focusItem else { return nil }
+        if focusItem.platformItemDrawsFocusRingMask {
+            var result: (NSView & FocusRingDelegate)?
+            visitFocusResponders { responder in
+                guard let item = responder.focusItem,
+                      case let .platformResponder(view) = item.base,
+                      view.base != nil,
+                      let view = responder.focusRingView,
+                      view.canShowFocusRing else { return .next }
+                result = view
+                return .cancel
+            }
+            return result
+        } else if delegatesFocusEffect {
+            return firstAncestor(ofType: FocusEffectDelegateResponder.self)?.focusRingView
+        } else {
+            return _focusRingView
+        }
+    }
+
+    func setFocusRingView(_ view: (NSView & FocusRingDelegate)?) {
+        _focusRingView = view
+    }
+    #endif
+
+    var focusItem: FocusItem? {
+        guard let baseItem else { return nil }
+        #if os(iOS) || os(visionOS)
+        if isPlatformFocusSystemEnabled, let hostedItem {
+            return FocusItem(
+                base: .platformItem(WeakBox(hostedItem)),
+                prefersFocusSystem: false,
+                responder: self
+            )
+        }
+        #endif
+        return FocusItem(base: .view(baseItem), prefersFocusSystem: false, responder: self)
+    }
+
+    override func bindEvent(_ event: any EventType) -> ResponderNode? {
+        if let responder = super.bindEvent(event) {
+            return responder
+        }
+        return event.isFocusEvent ? focusProxyResponder : nil
+    }
+
+    var focusProxyResponder: ViewResponder? {
+        var result: ViewResponder?
+        visit { responder in
+            guard let responder = responder as? FocusEventProxyResponder else { return .next }
+            result = responder
+            return .cancel
+        }
+        return result
+    }
+
+    #if os(macOS)
+    override func extendPrintTree(string: inout String) {
+        string += "[\(frame!.size.width), \(frame!.size.height)] @\((frame!.origin.x, frame!.origin.y)) \(_featuresString)"
+    }
+
+    private var _featuresString: String {
+        "[ \(platformItem != nil ? "P" : " ")\(focusItem != nil ? "i" : " ")\(focusAccessibilityNode != nil ? "x" : " ")\(focusRingView != nil ? "r" : " ")]"
+    }
+    #endif
+}
+
+#if os(iOS) || os(visionOS)
+extension FocusableViewResponder: AnyUIKitHostedFocusItemResponder {
+    var hostedItem: (any AnyUIKitHostedFocusItem)? {
+        guard let baseItem, !baseItem.options.contains(.platformContainerHandlesFocus) else {
+            return nil
+        }
+        if _uikitFocusItem == nil {
+            _uikitFocusItem = UIKitFocusableViewResponderItem(self)
+        }
+        return _uikitFocusItem
+    }
+}
+
+// MARK: - UIKitFocusableViewResponderItem [TBA]
+
+private class UIKitFocusableViewResponderItem: UIKitFocusableViewResponderItemBase, UIKitHostedFocusItem, TrivialContentPathObserver {
+    weak var base: FocusableViewResponder?
+    weak var host: UIView?
+    var frame: CGRect = .zero
+    private var contentPath: Path?
+    private lazy var defaultFocusGroupIdentifier: FocusGroupIdentifier = .explicit(.init(base: Int(makeUniqueID())))
+
+    init(_ base: FocusableViewResponder) {
+        self.base = base
+        super.init()
+    }
+
+    // Deleted in the target image.
+    var id: ViewIdentity { _openSwiftUIUnreachableCode() }
+
+    var responder: (ViewResponder & BaseFocusResponder)? { base }
+
+    var canBecomeFocused: Bool { base?.baseItem!.isFocusable ?? false }
+
+    override var next: UIResponder? {
+        guard GestureContainerFeature.isEnabled else { return host }
+        guard let responder = base.map({ $0.focusProxyResponder ?? $0 }) else { return nil }
+        var parent = responder.parent
+        while let current = parent {
+            if let container = current.gestureContainer {
+                return (container as! UIResponder)
+            } else if let view = (current as? UIViewResponder)?.hostView {
+                return view
+            }
+            parent = current.parent
+        }
+        return responder.host?.as(UIView.self)
+    }
+
+    override var openswiftui_focusGroupIdentifier: String? {
+        switch base?.groupID ?? defaultFocusGroupIdentifier {
+        case let .explicit(id): "org.openswiftuiproject.openswiftui.FocusGroup-\(id.base)"
+        case .inferred: nil
+        }
+    }
+
+    var parentFocusEnvironment: (any UIFocusEnvironment)? { host }
+
+    var preferredFocusEnvironments: [any UIFocusEnvironment] { [] }
+
+    var focusItemContainer: (any UIFocusItemContainer)? { nil }
+
+    func setNeedsFocusUpdate() {
+        UIFocusSystem.focusSystem(for: self)?.requestFocusUpdate(to: self)
+    }
+
+    func updateFocusIfNeeded() {
+        UIFocusSystem.focusSystem(for: self)?.updateFocusIfNeeded()
+    }
+
+    func shouldUpdateFocus(in context: UIFocusUpdateContext) -> Bool {
+        guard context.nextFocusedItem === self,
+              context.previouslyFocusedItem != nil,
+              let item = base?.baseItem else { return true }
+        return item.isFocusable && item.options.contains(.fromKeyboard)
+    }
+
+    func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        Log.focus?.log("focus changed for: \(UIKitFocusItemDescription(self))")
+        base?.baseItem!.onFocusChange(context.nextFocusedItem === self)
+        updateFocusedState()
+    }
+
+    func updateFocusedState() {
+        guard let isFocused = base?.isFocused, let attribute = isFocused.attribute else { return }
+        attribute.graph.viewGraph().asyncTransaction(
+            mutation: FocusedStateCommitMutation(value: self.isFocused, attribute: isFocused)
+        )
+    }
+
+    private struct FocusedStateCommitMutation: GraphMutation {
+        var value: Bool
+        var attribute: WeakAttribute<Bool>
+
+        func apply() {
+            attribute.attribute?.value = value
+        }
+
+        mutating func combine(with other: some GraphMutation) -> Bool {
+            guard let other = other as? Self, attribute == other.attribute else { return false }
+            self = other
+            return true
+        }
+    }
+
+    var focusEffect: UIFocusEffect? {
+        let path: Path
+        if let contentPath {
+            path = contentPath
+        } else {
+            guard let base else { return nil }
+            var contentPath = Path()
+            // TODO: Use the scroll-view safe area for HostingScrollView.PlatformGroupContainer.
+            base.addContentPath(
+                to: &contentPath,
+                kind: ._focusEffect,
+                in: .id(hostingViewCoordinateSpace),
+                observer: self
+            )
+            if contentPath.isEmpty {
+                contentPath = Update.ensure {
+                    let position = Graph.withoutUpdate { base.inputs.position.value }
+                    let size = Graph.withoutUpdate { base.inputs.size.value.value }
+                    return Path(CGRect(origin: position, size: size))
+                }
+            }
+            self.contentPath = contentPath
+            path = contentPath
+        }
+        if base?.baseItem!.options.contains(.platformItemDrawsFocusRingMask) == true {
+            return nil
+        }
+        let effect = path.isEmpty ? UIFocusHaloEffect() : UIFocusHaloEffect(path: UIBezierPath(cgPath: path.cgPath))
+        effect.containerView = host
+        return effect
+    }
+
+    func contentPathDidChange(for parent: ViewResponder) {
+        contentPath = nil
+    }
+}
+#endif
 
 #if os(macOS)
 // MARK: - FocusRingDelegate
