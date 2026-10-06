@@ -19,16 +19,13 @@ xcrun xcresulttool get test-results summary --path "$result_bundle" --compact |
         abort("::error::No UI tests ran for #{ARGV.fetch(0)}. Check the identifier, including (), and whether the test is disabled.")
       end
       puts "Executed #{executed} UI test(s) for #{ARGV.fetch(0)}."
-      if ARGV.fetch(1) == "verify" && summary.fetch("failedTests", 0) > 0
-        abort("::error::Tests failed for #{ARGV.fetch(0)}.")
-      end
-      if ARGV.fetch(1) == "record"
+      if ARGV.fetch(1) == "record" || summary.fetch("failedTests", 0) > 0
         # The summary contains only the first failure for each test case.
         test_json = IO.popen([
           "xcrun", "xcresulttool", "get", "test-results", "tests",
           "--path", ARGV.fetch(2), "--compact"
         ], &:read)
-        abort("::error::Unable to read all snapshot recording failures.") unless $?.success?
+        abort("::error::Unable to read all test failures.") unless $?.success?
 
         def failure_messages(node)
           return [node.fetch("name", "")] if node["nodeType"] == "Failure Message"
@@ -40,6 +37,16 @@ xcrun xcresulttool get test-results summary --path "$result_bundle" --compact |
         end
 
         failures = JSON.parse(test_json).fetch("testNodes").flat_map { |node| failure_messages(node) }
+        if ARGV.fetch(1) == "verify"
+          failures.each do |failure|
+            message = failure.gsub("%", "%25").gsub("\r", "%0D").gsub("\n", "%0A")
+            warn "::error::#{message}"
+          end
+          if failures.any? { |failure| failure.include?("No reference was found on disk.") }
+            warn "::error::Snapshot references are missing. Run the snapshot workflow with update_reference=true to record SwiftUI references for this platform and OS version."
+          end
+          abort("::error::Tests failed for #{ARGV.fetch(0)}.")
+        end
         if failures.empty?
           abort("::error::The failed recording run has no snapshot recording issues.")
         end

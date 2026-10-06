@@ -86,6 +86,13 @@ Pushing a tag on an older commit uses that commit's workflows.
 
 ## Run Pre-release Checks
 
+Interaction tests need SwiftUI snapshot references for the current test content,
+host sizes, platform, and OS version. Before the first release with new or
+changed snapshots, run **Interaction Tests** on the candidate branch with
+`platform=all` and `update_reference=true`. Wait for recording and verification
+to finish before starting release checks. Release checks do not update these
+references. See [snapshot reference setup](../Example/Tests/README.md#ci).
+
 For a full check without a tag, release, or signed XCFramework build:
 
 ```shell

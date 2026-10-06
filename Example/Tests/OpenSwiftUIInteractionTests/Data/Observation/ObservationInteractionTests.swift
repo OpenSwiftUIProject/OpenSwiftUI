@@ -9,10 +9,11 @@ import OpenSwiftUI
 import Observation
 import SwiftUI
 #endif
+import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite(.tags(.interaction))
+@Suite(.tags(.interaction), .snapshots(record: .never, diffTool: diffTool))
 struct ObservationInteractionTests {
     @Test
     func stateModelMutationUpdatesBody() async throws {

@@ -79,13 +79,17 @@ The same `only-testing` identifier applies to recording and verification.
 Selected runs append ` / Selected` to their commit status context and cannot
 report a full-suite `verified-sha`.
 
-SnapshotTesting reports recording issues as test failures. CI accepts exit
-status 65 from SwiftUI only when every failure is a recording issue and
-reference images exist. A successful interaction test without snapshots does
-not need to produce images. Other recording failures stop verification.
+SnapshotTesting reports recording issues as test failures. CI accepts Tuist
+exit status 1 or xcodebuild exit status 65 from SwiftUI only when every failure
+is a recording issue and reference images exist. A successful interaction test
+without snapshots does not need to produce images. Other recording failures stop
+verification.
 Missing results, zero executed tests, and skipped-only selections fail the
 check. Test execution is serial. Failed runs upload logs, snapshot differences,
 and zipped `.xcresult` bundles for seven days; temporary build files are removed.
+Verification failures also report the result bundle details in the job log.
+Missing references include a reminder to record SwiftUI baselines with
+`update_reference=true`.
 
 Other workflows can call `.github/workflows/interaction_tests.yml` with a full commit SHA
 in `ref`, plus `platform`, `configuration`, `update_reference`, and

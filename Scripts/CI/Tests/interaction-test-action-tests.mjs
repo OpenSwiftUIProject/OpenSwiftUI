@@ -45,6 +45,66 @@ test('missing interaction references do not start recording without update', asy
   assert.equal(result.steps['record-baseline'].outcome, 'skipped');
 });
 
+test('verification reports missing references from every parameter case', async t => {
+  const missingReference = 'No reference was found on disk. New snapshot was not recorded because recording is disabled';
+  const result = await runTests(t, {
+    OSUI_InteractionTests: {
+      status: 1,
+      summary: {
+        totalTestCount: 1, skippedTests: 0, failedTests: 1,
+        testFailures: [{ failureText: 'Expectation failed: count == 1' }],
+      },
+      testTree: {
+        testNodes: [{
+          nodeType: 'Test Case', result: 'Failed', children: [
+            { nodeType: 'Arguments', name: '1', result: 'Failed', children: [
+              { nodeType: 'Failure Message', name: 'TapGestureInteractionTests.swift:40: Expectation failed: count == 1' },
+            ] },
+            { nodeType: 'Arguments', name: '2', result: 'Failed', children: [
+              { nodeType: 'Failure Message', name: `TapGestureInteractionTests.swift:41: Issue recorded: ${missingReference}` },
+            ] },
+          ],
+        }],
+      },
+    },
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  const output = result.stdout + result.stderr;
+  assert.match(output, /Expectation failed: count == 1/);
+  assert.ok(output.includes(missingReference));
+  assert.match(output, /update_reference=true/);
+  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['OSUI_InteractionTests']);
+});
+
+test('verification preserves a command failure when its result summary passes', async t => {
+  const result = await runTests(t, {
+    OSUI_InteractionTests: { status: 1 },
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /Executed 1 UI test\(s\)/);
+});
+
+test('SwiftUI recording accepts Tuist exit status 1 only for recording issues', async t => {
+  const result = await runTests(t, {
+    SUI_InteractionTests: { status: 1 },
+  }, { update: true });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), schemes);
+  assert.match(result.stdout, /Accepted 1 snapshot recording issue\(s\)/);
+});
+
+test('SwiftUI recording rejects real test failures behind Tuist exit status 1', async t => {
+  const result = await runTests(t, {
+    SUI_InteractionTests: {
+      status: 1,
+      summary: { ...recordingSummary, testFailures: [recordingFailure, { failureText: 'Expectation failed: count == 1' }] },
+    },
+  }, { update: true });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.equal(result.steps.uitest.outcome, 'skipped');
+  assert.match(result.stdout + result.stderr, /Unexpected failure during snapshot recording.*Expectation failed: count == 1/);
+});
+
 test('update records even when persistent interaction references already exist', async t => {
   const result = await runTests(t, {}, { update: true, references: true });
   assert.equal(result.status, 0, result.stdout + result.stderr);
