@@ -419,17 +419,8 @@ compute_framework_search_path() {
     dirname "$(framework_path "$(compute_archive_path "$sdk")" "Compute")"
 }
 
-verify_compute_has_no_runtime_dependency() {
+verify_framework_runtime_dependencies() {
     local scheme="$1"
-
-    case "$scheme" in
-        OpenSwiftUI|OpenSwiftUICore) ;;
-        *) return ;;
-    esac
-
-    if ! compute_source_backend_enabled; then
-        return
-    fi
 
     local sdk
     for sdk in "${SDKS[@]}"; do
@@ -441,16 +432,20 @@ verify_compute_has_no_runtime_dependency() {
             binary="$framework/Versions/Current/$scheme"
         fi
 
-        local linked_libraries
-        if ! linked_libraries="$(otool -L "$binary")"; then
-            echo "Error: Could not inspect $scheme for $sdk at $binary." >&2
-            exit 1
-        fi
+        bash "$SCRIPT_DIR/CI/check_framework_dependencies.sh" "$binary"
 
-        if grep -Fq "@rpath/Compute.framework/" <<<"$linked_libraries"; then
-            echo "Error: $scheme for $sdk has an undistributed Compute.framework runtime dependency." >&2
-            echo "Build the Compute source backend statically or publish Compute as a separate binary target." >&2
-            exit 1
+        if compute_source_backend_enabled && [[ "$scheme" == OpenSwiftUI || "$scheme" == OpenSwiftUICore ]]; then
+            local linked_libraries
+            if ! linked_libraries="$(otool -L "$binary")"; then
+                echo "Error: Could not inspect $scheme for $sdk at $binary." >&2
+                exit 1
+            fi
+
+            if grep -Fq "@rpath/Compute.framework/" <<<"$linked_libraries"; then
+                echo "Error: $scheme for $sdk has an undistributed Compute.framework runtime dependency." >&2
+                echo "Build the Compute source backend statically or publish Compute as a separate binary target." >&2
+                exit 1
+            fi
         fi
     done
 }
@@ -623,7 +618,7 @@ for scheme in "${FRAMEWORK_NAMES[@]}"; do
     for i in "${!SDKS[@]}"; do
         build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$scheme" "${SDK_ARCHS[$i]}"
     done
-    verify_compute_has_no_runtime_dependency "$scheme"
+    verify_framework_runtime_dependencies "$scheme"
     create_xcframework "$scheme"
     copy_debug_symbols "$scheme"
     echo "Created $(xcframework_path "$scheme")"
