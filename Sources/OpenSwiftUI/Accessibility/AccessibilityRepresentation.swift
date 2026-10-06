@@ -260,7 +260,23 @@ private struct AccessibilityRepresentationModifier<Representation> where Represe
 extension AccessibilityRepresentationModifier: PrimitiveViewModifier, MultiViewModifier {}
 
 // TODO: AccessibilityDisclosureGroupStyle requires DisclosureGroupStyleConfiguration.
-// TODO: AccessibilityLabelStyle requires LabelStyleConfiguration.
+
+// MARK: - AccessibilityLabelStyle
+
+struct AccessibilityLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.title.accessibilityAttachment(content: configuration.icon) { tree in
+            switch tree {
+            case let .leaf(attachment):
+                var properties = AccessibilityProperties()
+                properties.images = attachment.properties.images
+                tree = .leaf(.properties(properties))
+            case .branch, .empty:
+                tree = .empty
+            }
+        }
+    }
+}
 
 // MARK: - AccessibilityButtonStyle
 
