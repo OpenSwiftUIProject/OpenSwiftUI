@@ -185,4 +185,27 @@ extension View {
     nonisolated public func labelStyle<S>(_ style: S) -> some View where S: LabelStyle {
         modifier(LabelStyleWritingModifier(style: style))
     }
+
+    func labelStyle<S, Predicate>(
+        _ style: S,
+        requiring predicate: Predicate.Type
+    ) -> some View where S: LabelStyle, Predicate: ViewInputPredicate {
+        modifier(LabelStyleWritingModifier(style: style).requiring(predicate))
+    }
+
+    @inline(__always)
+    func labelStyle<S, Context>(
+        _ style: S,
+        in context: Context
+    ) -> some View where S: LabelStyle, Context: StyleContext {
+        modifier(LabelStyleWritingModifier(style: style).requiring(StyleContextAcceptsPredicate<Context>.self))
+    }
+
+    @inline(__always)
+    func labelStyle<S, I>(
+        _ style: S,
+        idiom: I
+    ) -> some View where S: LabelStyle, I: InterfaceIdiom {
+        modifier(LabelStyleWritingModifier(style: style).requiring(InterfaceIdiomPredicate<I>.self))
+    }
 }
