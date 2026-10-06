@@ -24,8 +24,67 @@ extension AccessibilityConfigurationModifier where Configuration == Never {
     var configuration: Configuration { _openSwiftUIBaseClassAbstractMethod() }
 }
 
-// TODO: AccessibilityTraitsModifier
-// TODO: AccessibilityTraitsModifier.ChildModifier
+// MARK: - AccessibilityTraitsModifier
+
+struct AccessibilityTraitsModifier<Content: View>: AccessibilityConfigurationModifier {
+    var traits: AccessibilityTraitSet
+
+    init(traits: AccessibilityTraitSet) {
+        self.traits = traits
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityCaptureViewResponders()
+            .modifier(ChildModifier(traits: traits))
+            .accessibilityIgnoreViewResponders()
+    }
+
+    private struct ChildModifier: AccessibilityViewModifier {
+        var traits: AccessibilityTraitSet
+
+        static var options: AccessibilityModifierOptions { [] }
+
+        func willCreateNode(for nodes: [AccessibilityNode]) -> Bool {
+            false
+        }
+
+        func initialAttachment(for nodes: [AccessibilityNode]) -> AccessibilityAttachment {
+            AccessibilityAttachment()
+        }
+
+        func updatedAttachment(
+            for token: AccessibilityAttachmentToken,
+            nodes: [AccessibilityNode],
+            atIndex index: Int
+        ) -> AccessibilityAttachment {
+            guard index == 0 else {
+                return .properties(AccessibilityProperties())
+            }
+            return .properties(AccessibilityProperties(
+                AccessibilityProperties.TraitsKey.self,
+                .init(implying: traits)
+            ))
+        }
+
+        func createOrUpdateNode(
+            viewRendererHost: (any ViewRendererHost)?,
+            existingNode: AccessibilityNode?
+        ) -> AccessibilityNode {
+            existingNode ?? AccessibilityNode(viewRendererHost: viewRendererHost, isFromDisplayList: false)
+        }
+
+        static func makeAccessibilityViewModifier(
+            modifier: _GraphValue<Self>,
+            inputs: _ViewInputs,
+            body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+        ) -> _ViewOutputs {
+            body(_Graph(), inputs)
+        }
+
+        var supportsPlaceholders: Bool { false }
+    }
+}
 
 // MARK: - AccessibilityLabelModifier
 
