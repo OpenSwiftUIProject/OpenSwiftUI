@@ -574,6 +574,87 @@ protocol FocusRingDelegate: AnyObject {
 }
 #endif
 
+// MARK: - UpdateFocusableViewResponder [TBA]
+
+private struct UpdateFocusableViewResponder: StatefulRule {
+    @Attribute var item: FocusItem.ViewItem
+    @Attribute var geometry: ContentResponderHelper<TrivialContentResponder>
+    @Attribute var children: [ViewResponder]
+    @Attribute var isEnabled: Bool
+    @Attribute var isPlatformFocusSystemEnabled: Bool
+    @Attribute var focusGroupID: FocusGroupIdentifier?
+    @Attribute var layoutDirection: LayoutDirection
+    @OptionalAttribute var isFocusEffectDisabled: Bool?
+    #if os(macOS)
+    @Attribute var evaluateDefaultFocus: EvaluateDefaultFocusAction?
+    #endif
+    @Attribute var keyPressHandlers: [KeyPress.Handler]
+    let responder: FocusableViewResponder
+
+    init(
+        inputs: _ViewInputs,
+        outputs: _ViewOutputs,
+        item: Attribute<FocusItem.ViewItem>,
+        geometry: Attribute<ContentResponderHelper<TrivialContentResponder>>,
+        responder: FocusableViewResponder
+    ) {
+        _item = item
+        _geometry = geometry
+        _children = outputs.viewResponders()
+        _isEnabled = inputs.base.isEnabled
+        _isPlatformFocusSystemEnabled = inputs.base.isPlatformFocusSystemEnabled
+        _focusGroupID = inputs.base.mapEnvironment(id: .focusGroupID) { $0.focusGroupID }
+        _layoutDirection = inputs.base.layoutDirection
+        _isFocusEffectDisabled = OptionalAttribute(outputs[PreferredDisabledFocusEffectKey.self])
+        #if os(macOS)
+        _evaluateDefaultFocus = inputs.base.mapEnvironment(id: .evaluateDefaultFocus) { $0.evaluateDefaultFocus }
+        #endif
+        _keyPressHandlers = inputs.base.keyPressHandlers
+        self.responder = responder
+    }
+
+    typealias Value = [ViewResponder]
+
+    mutating func updateValue() {
+        let (geometry, geometryChanged) = $geometry.changedValue()
+        let (isEnabled, isEnabledChanged) = $isEnabled.changedValue()
+        responder.baseItem = item
+        #if os(macOS)
+        if isFocusEffectDisabled == true {
+            responder.baseItem!.options.insert(.platformItemDrawsFocusRingMask)
+        }
+        #endif
+        responder.updateChildren($children.changedValue())
+        responder.keyPressHandlers = keyPressHandlers
+        if geometryChanged || !hasValue {
+            responder.geometry = geometry
+        }
+        if isEnabledChanged || !hasValue {
+            responder.isEnabled = isEnabled
+        }
+        #if os(iOS) || os(visionOS)
+        responder.isPlatformFocusSystemEnabled = isPlatformFocusSystemEnabled
+        responder.groupID = focusGroupID
+        #elseif os(macOS)
+        responder.evaluateDefaultFocus = evaluateDefaultFocus
+        responder.effectiveLayoutDirection = layoutDirection
+        #endif
+        if !hasValue {
+            value = [responder]
+        }
+    }
+}
+
+// MARK: - PreferredDisabledFocusEffectKey [TBA]
+
+struct PreferredDisabledFocusEffectKey: PreferenceKey {
+    static var defaultValue: Bool { false }
+
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
+    }
+}
+
 // MARK: - FocusableOptionsKey
 
 struct FocusableOptionsKey: PreferenceKey {
