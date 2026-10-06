@@ -187,6 +187,10 @@ public struct Material: Sendable {
 extension Material: ShapeStyle {
     // FIXME
 
+    package static let ultraThin = Material(id: .ultraThin)
+
+    package static let thin = Material(id: .thin)
+
     package static let regular = Material(id: .regular)
 
     package static let thick = Material(id: .thick)
@@ -211,6 +215,18 @@ private struct BackgroundMaterialKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
+    /// The material underneath the current view.
+    ///
+    /// This value is `nil` if the current background isn't one of the standard
+    /// materials. If you set a material, the standard content styles enable
+    /// their vibrant rendering modes.
+    ///
+    /// You set this value by calling one of the background modifiers that takes
+    /// a ``ShapeStyle``, like ``View/background(_:ignoresSafeAreaEdges:)``
+    /// or ``View/background(_:in:fillStyle:)``, and passing in a
+    /// ``Material``. You can also set the value manually, using
+    /// `nil` to disable vibrant rendering, or a ``Material`` instance to
+    /// enable the vibrancy style associated with the specified material.
     public var backgroundMaterial: Material? {
         get { self[BackgroundMaterialKey.self] }
         set { self[BackgroundMaterialKey.self] = newValue }

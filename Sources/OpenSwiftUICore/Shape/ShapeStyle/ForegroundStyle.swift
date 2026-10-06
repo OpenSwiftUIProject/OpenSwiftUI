@@ -221,6 +221,12 @@ extension _ViewInputs {
 
 // MARK: - _DefaultForegroundStyleModifier
 
+extension View {
+    nonisolated package func defaultForegroundStyle<S>(_ style: S?) -> some View where S: ShapeStyle {
+        modifier(_DefaultForegroundStyleModifier(style: style))
+    }
+}
+
 struct _DefaultForegroundStyleModifier<Style>: PrimitiveViewModifier, ViewInputsModifier where Style: ShapeStyle {
     var style: Style?
 
