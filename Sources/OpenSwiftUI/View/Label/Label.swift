@@ -106,17 +106,21 @@ public struct Label<Title, Icon>: View where Title: View, Icon: View {
     }
 
     public var body: some View {
-        // FIXME
         ResolvedLabelStyle()
             .viewAlias(LabelStyleConfiguration.Icon.self) {
                 icon.modifier(
-                    AccessibilityAttachmentModifier(AccessibilityProperties())
-                        .requiring(AccessibilityHidesLabelIcon.self)
+                    AccessibilityAttachmentModifier(
+                        AccessibilityProperties(
+                            AccessibilityProperties.VisibilityKey.self,
+                            .init(adding: .hidden)
+                        )
+                    ).requiring(AccessibilityHidesLabelIcon.self)
                 )
             }
             .viewAlias(LabelStyleConfiguration.Title.self) {
                 title
             }
+            .allowsToolbarItemBridging(options: .label)
     }
 }
 
