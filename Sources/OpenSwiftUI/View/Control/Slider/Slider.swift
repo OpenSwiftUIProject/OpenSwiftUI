@@ -81,13 +81,13 @@ public struct Slider<Label, ValueLabel>: View where Label: View, ValueLabel: Vie
     public var body: some View {
         style.body(configuration: .init(self))
             .viewAlias(SliderStyleLabel.self) {
-                label.accessibilityLabel()
+                label.accessibilityConfiguration(AccessibilityLabelModifier())
             }
             .viewAlias(SliderMinimumValueLabel.self) {
-                _minimumValueLabel.accessibilityLabel()
+                _minimumValueLabel.accessibilityConfiguration(AccessibilityLabelModifier())
             }
             .viewAlias(SliderMaximumValueLabel.self) {
-                _maximumValueLabel.accessibilityLabel()
+                _maximumValueLabel.accessibilityConfiguration(AccessibilityLabelModifier())
             }
         // TODO: Accessibility
     }

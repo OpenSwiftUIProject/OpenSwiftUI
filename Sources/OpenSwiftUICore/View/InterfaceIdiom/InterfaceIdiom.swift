@@ -6,8 +6,6 @@
 //  Status: Complete
 //  ID: 39057DDA72E946BD17E1F42CCA55F7F6 (SwiftUICore)
 
-#if OPENSWIFTUI_SUPPORT_2024_API
-
 // MARK: - InterfaceIdiom
 
 package protocol InterfaceIdiom {
@@ -235,5 +233,3 @@ private struct InterfaceIdiomBox<Base>: AnyInterfaceIdiomBox where Base: Interfa
         hasher.combine(Base.hashValue)
     }
 }
-
-#endif
