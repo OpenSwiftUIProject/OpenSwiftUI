@@ -38,4 +38,33 @@ extension EventModifiers {
         self = modifiers
     }
 }
+
+// MARK: - NSEvent.ModifierFlags + EventModifiers
+
+extension NSEvent.ModifierFlags {
+    init(_ modifiers: EventModifiers) {
+        self = []
+        if modifiers.contains(.capsLock) {
+            insert(.capsLock)
+        }
+        if modifiers.contains(.shift) {
+            insert(.shift)
+        }
+        if modifiers.contains(.control) {
+            insert(.control)
+        }
+        if modifiers.contains(.option) {
+            insert(.option)
+        }
+        if modifiers.contains(.command) {
+            insert(.command)
+        }
+        if modifiers.contains(.numericPad) {
+            insert(.numericPad)
+        }
+        if modifiers.contains(._function) {
+            insert(.function)
+        }
+    }
+}
 #endif
