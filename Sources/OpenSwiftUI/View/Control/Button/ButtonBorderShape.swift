@@ -149,6 +149,8 @@ extension EnvironmentValues {
     }
 }
 
+#if os(iOS) || os(visionOS)
+
 // MARK: - BorderedButtonStyle + ButtonStyleConvertible
 
 @_spi(UIFrameworks)
@@ -156,19 +158,11 @@ extension BorderedButtonStyle: ButtonStyleConvertible {
     @MainActor
     @preconcurrency
     public var buttonStyleRepresentation: some ButtonStyle {
-        #if os(iOS) || os(visionOS)
         BorderedButtonStyle_Phone(tint: nil, isProminent: isProminent)
-        #elseif os(macOS)
-        // TODO
-        _openSwiftUIPlatformUnimplementedWarning()
-        return BorderedButtonStyle_Phone(tint: nil, isProminent: isProminent)
-        #else
-        // TODO
-        _openSwiftUIPlatformUnimplementedWarning()
-        return BorderedButtonStyle_Phone(tint: nil, isProminent: isProminent)
-        #endif
     }
 }
+
+#endif
 
 @_spi(Private)
 extension EnvironmentValues {
