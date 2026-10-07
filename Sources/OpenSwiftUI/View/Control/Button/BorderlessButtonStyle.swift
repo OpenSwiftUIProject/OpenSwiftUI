@@ -82,7 +82,7 @@ public struct BorderlessButtonStyle: PrimitiveButtonStyle {
 @available(*, unavailable)
 extension BorderlessButtonStyle: Sendable {}
 
-#if !os(macOS)
+#if os(iOS) || os(visionOS)
 
 // MARK: - BorderlessButtonStyle + ButtonStyleConvertible
 
