@@ -3,11 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 34FFA2034B9AD53E0463E3971529C5A1 (SwiftUICore)
 
 package import OpenCoreGraphicsShims
-import OpenAttributeGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _OpacityEffect
 
@@ -55,6 +55,11 @@ public struct _OpacityEffect: RendererEffect, Equatable {
                     )
                 )
             }
+            inputs.opacityAccessibilityProvider.makeOpacity(
+                effect: modifier.value,
+                inputs: inputs,
+                outputs: &outputs
+            )
             return outputs
         }
     }
@@ -93,7 +98,7 @@ extension View {
     ///
     /// ![Two overlaid rectangles, where the topmost has its opacity set to 50%,
     /// which allows the occluded portion of the bottom rectangle to be
-    /// visible.](OpenSwiftUI-View-opacity.png)
+    /// visible.](OpenSwiftUI-View-opacity)
     ///
     /// - Parameter opacity: A value between 0 (fully transparent) and 1 (fully
     ///   opaque).
@@ -215,17 +220,141 @@ extension _OpacityEffect: ProtobufMessage {
 
 // MARK: - ShapeStyle + _OpacityShapeStyle
 
-// TODO: _OpacityShapeStyle
+@available(OpenSwiftUI_v4_0, *)
+extension ShapeStyle where Self == AnyShapeStyle {
+    /// Returns a new style based on the current style that multiplies
+    /// by `opacity` when drawing.
+    ///
+    /// In most contexts the current style is the foreground but e.g.
+    /// when setting the value of the background style, that becomes
+    /// the current implicit style.
+    ///
+    /// For example, a circle filled with the current foreground
+    /// style at fifty-percent opacity:
+    ///
+    ///     Circle().fill(.opacity(0.5))
+    ///
+    @_alwaysEmitIntoClient
+    public static func opacity(_ opacity: Double) -> some ShapeStyle {
+        _OpacityShapeStyle(style: _ImplicitShapeStyle(), opacity: Float(opacity))
+    }
+}
 
-// TODO: _OpacitiesShapeStyle
+// MARK: - _OpacityShapeStyle
+
+@available(OpenSwiftUI_v3_0, *)
+@frozen
+public struct _OpacityShapeStyle<Style>: ShapeStyle, PrimitiveShapeStyle where Style: ShapeStyle {
+    public var style: Style
+
+    public var opacity: Float
+
+    @inlinable
+    public init(style: Style, opacity: Float) {
+        self.style = style
+        self.opacity = opacity
+    }
+
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        guard opacity != 1 else {
+            style._apply(to: &shape)
+            return
+        }
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .preparedText(.foregroundKeyColor)
+        case let .resolveStyle(name, levels):
+            style._apply(to: &shape)
+            shape.stylePack.modify(name: name, levels: levels) { style in
+                style.applyOpacity(opacity)
+            }
+        case .fallbackColor:
+            style._apply(to: &shape)
+            if case let .color(color) = shape.result {
+                shape.result = .color(color.opacity(Double(opacity)))
+            }
+        case .copyStyle:
+            style.mapCopiedStyle(in: &shape) { style in
+                _OpacityShapeStyle<AnyShapeStyle>(style: style, opacity: opacity)
+            }
+        case .modifyBackground, .multiLevel:
+            style._apply(to: &shape)
+        case .primaryStyle:
+            break
+        }
+    }
+
+    public static func _apply(to type: inout _ShapeStyle_ShapeType) {
+        Style._apply(to: &type)
+    }
+}
+
+// MARK: - _OpacitiesShapeStyle
+
+@_spi(Private)
+@available(OpenSwiftUI_v3_0, *)
+@frozen
+public struct _OpacitiesShapeStyle<Style>: ShapeStyle, PrimitiveShapeStyle where Style: ShapeStyle {
+    public var style: Style
+
+    public var opacities: [Double]
+
+    @inlinable
+    public init(style: Style, opacities: [Double]) {
+        self.style = style
+        self.opacities = opacities
+    }
+
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .preparedText(.foregroundKeyColor)
+        case let .resolveStyle(name, levels):
+            shape.operation = .resolveStyle(name: name, levels: 0..<1)
+            style._apply(to: &shape)
+            let style = shape.stylePack[name, 0]
+            for level in levels {
+                let index = min(level, opacities.count - 1)
+                let opacity = index >= 0 ? opacities[index] : 1.0
+                shape.stylePack[name, level] = style.applyingOpacity(Float(opacity))
+            }
+        case let .fallbackColor(level):
+            shape.operation = .fallbackColor(level: 0)
+            style._apply(to: &shape)
+            if case let .color(color) = shape.result {
+                let index = min(level, opacities.count - 1)
+                let opacity = index >= 0 ? opacities[index] : 1.0
+                shape.result = .color(color.opacity(opacity))
+            }
+        case .copyStyle:
+            style.mapCopiedStyle(in: &shape) { style in
+                _OpacitiesShapeStyle<AnyShapeStyle>(style: style, opacities: opacities)
+            }
+        case .modifyBackground:
+            style._apply(to: &shape)
+        case .multiLevel:
+            shape.result = .bool(true)
+        case .primaryStyle:
+            break
+        }
+    }
+
+    public static func _apply(to type: inout _ShapeStyle_ShapeType) {
+        Style._apply(to: &type)
+    }
+}
 
 // MARK: - OpacityTransition
 
 /// A transition from transparent to opaque on insertion, and from opaque to
 /// transparent on removal.
 @available(OpenSwiftUI_v5_0, *)
+@MainActor
+@preconcurrency
 public struct OpacityTransition: Transition {
-    public init() {}
+    public init() {
+        _openSwiftUIEmptyStub()
+    }
 
     public func body(
         content: OpacityTransition.Content,
@@ -276,7 +405,7 @@ struct OpacityResponderFilter: StatefulRule {
 
 // MARK: - OpacityAccessibilityProvider
 
-protocol OpacityAccessibilityProvider {
+package protocol OpacityAccessibilityProvider {
     static func makeOpacity(
         effect: @autoclosure () -> Attribute<_OpacityEffect>,
         inputs: _ViewInputs,
@@ -300,17 +429,17 @@ struct EmptyOpacityAccessibilityProvider: OpacityAccessibilityProvider {
 
 extension _GraphInputs {
     private struct OpacityAccessibilityProviderKey: GraphInput {
-        static let defaultValue: OpacityAccessibilityProvider.Type = EmptyOpacityAccessibilityProvider.self
+        static let defaultValue: (any OpacityAccessibilityProvider.Type) = EmptyOpacityAccessibilityProvider.self
     }
 
-    var opacityAccessibilityProvider: OpacityAccessibilityProvider.Type {
+    package var opacityAccessibilityProvider: (any OpacityAccessibilityProvider.Type) {
         get { self[OpacityAccessibilityProviderKey.self] }
         set { self[OpacityAccessibilityProviderKey.self] = newValue }
     }
 }
 
 extension _ViewInputs {
-    var opacityAccessibilityProvider: OpacityAccessibilityProvider.Type {
+    package var opacityAccessibilityProvider: (any OpacityAccessibilityProvider.Type) {
         get { base.opacityAccessibilityProvider }
         set { base.opacityAccessibilityProvider = newValue }
     }
