@@ -10,18 +10,20 @@ import SwiftUI
 
 struct BlendModeExample: View {
     var body: some View {
-        BlendModeColorBurnExample()
+        BlendModeRectanglesExample(blendMode: .colorBurn)
     }
 }
 
-struct BlendModeColorBurnExample: View {
+struct BlendModeRectanglesExample: View {
+    var blendMode: BlendMode
+
     var body: some View {
         HStack {
             Color.yellow.frame(width: 50, height: 50, alignment: .center)
             Color.red.frame(width: 50, height: 50, alignment: .center)
                 .rotationEffect(.degrees(45))
                 .padding(-20)
-                .blendMode(.colorBurn)
+                .blendMode(blendMode)
         }
     }
 }

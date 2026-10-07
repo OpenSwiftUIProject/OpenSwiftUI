@@ -1036,7 +1036,7 @@ extension DisplayList.ViewUpdater.Platform {
             CoreViewSetCompositingFilter(
                 system: viewSystem,
                 view: viewInfo.view,
-                filter: state.pointee.blend.filter
+                filter: state.pointee.blend.filter(compositingGroup: state.pointee.compositingGroup)
             )
             viewInfo.seeds.blend = state.pointee.versions.blend.seed
         }

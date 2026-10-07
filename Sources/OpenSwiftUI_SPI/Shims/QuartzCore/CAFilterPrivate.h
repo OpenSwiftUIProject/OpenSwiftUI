@@ -9,6 +9,7 @@
 
 #if __has_include(<QuartzCore/CoreAnimation.h>)
 
+#include <OpenRenderBoxShims/OpenRenderBoxShims.h>
 #import <QuartzCore/CoreAnimation.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
@@ -66,6 +67,9 @@ OPENSWIFTUI_EXPORT id _Nullable _CAFilterGetInput(CAFilter *filter, CAFilterInpu
 OPENSWIFTUI_EXPORT void _CAFilterSetInput(CAFilter * _Nullable filter, id _Nullable value, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilter.setInput(self:value:key:));
 OPENSWIFTUI_EXPORT NSMutableArray<CAFilter *> *_CAFilterArrayCreate(void) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayCreate());
 OPENSWIFTUI_EXPORT void _CAFilterArrayAppend(NSMutableArray<CAFilter *> *array, CAFilter *filter) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayAppend(_:_:));
+OPENSWIFTUI_EXPORT id _Nullable _ORBBlendModeGetCompositingFilter(ORBBlendMode blendMode, bool compositingGroup) OPENSWIFTUI_SWIFT_NAME(ORBBlendModeGetCompositingFilter(_:compositingGroup:));
+// Returns normal for nil and -1 for an unrecognized filter name.
+OPENSWIFTUI_EXPORT ORBBlendMode _CACompositingFilterGetORBBlendMode(id _Nullable filter) OPENSWIFTUI_SWIFT_NAME(CACompositingFilterGetORBBlendMode(_:));
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
