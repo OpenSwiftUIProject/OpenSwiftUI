@@ -127,6 +127,17 @@ extension StaticIf: PrimitiveViewModifier, ViewModifier where TrueBody: ViewModi
         falseBody = `else`
     }
 
+    /// Creates a new modifier that statically selects between two views based on a style context.
+    ///
+    /// - Parameters:
+    ///   - context: The style context to evaluate against the current environment.
+    ///   - then: A closure that returns the view to display when the current context accepts the specified style.
+    ///   - else: A closure that returns the view to display when the current context doesn't accept the specified style.
+    package init<Context>(in context: Context, then: () -> TrueBody, else: () -> FalseBody) where Predicate == StyleContextAcceptsPredicate<Context>, Context: StyleContext {
+        trueBody = then()
+        falseBody = `else`()
+    }
+
     nonisolated package static func _makeView(modifier: _GraphValue<Self>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
         if Predicate.evaluate(inputs: inputs.base) {
             TrueBody._makeView(modifier: modifier[offset: { .of(&$0.trueBody) }], inputs: inputs, body: body)
