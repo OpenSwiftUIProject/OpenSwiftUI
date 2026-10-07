@@ -35,4 +35,8 @@ extension View {
     nonisolated func input<Flag>(_ flag: Flag.Type) -> some View where Flag: ViewInputBoolFlag {
         modifier(ViewInputFlagModifier(flag: flag.init()))
     }
+
+    nonisolated func inputFalse<Flag>(_ flag: Flag.Type) -> some View where Flag: ViewInputBoolFlag {
+        modifier(FalseViewInputBoolFlagModifier(flag: flag.init()))
+    }
 }
