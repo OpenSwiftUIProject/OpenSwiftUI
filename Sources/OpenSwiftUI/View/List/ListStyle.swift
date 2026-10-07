@@ -9,6 +9,8 @@ import OpenSwiftUICore
 
 struct AnyListStyleContext: StyleContext {}
 
+struct SidebarSectionActionStyleContext: StyleContext {}
+
 // TODO: ListStyleContext conformance and matching rules.
 struct PlainListStyleContext: StyleContext {}
 
