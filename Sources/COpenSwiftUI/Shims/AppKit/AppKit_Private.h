@@ -12,6 +12,7 @@
 #if __has_include(<AppKit/AppKit.h>)
 
 #import <AppKit/AppKit.h>
+#import "NSButton_Private.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
