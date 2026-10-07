@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 import COpenSwiftUI
 import Foundation
@@ -14,12 +14,30 @@ import Logging
 import os.log
 #endif
 
-// MARK: - AppIntentAction [TODO]
+// MARK: - AppIntentAction
 
 struct AppIntentAction {
     @Environment(\.appIntentExecutor) private var appIntentExecutor
     var lnAction: NSObject
     var defaultExecutor: @MainActor () -> Void
+
+    init(lnAction: NSObject, defaultExecutor: @escaping @MainActor () -> Void) {
+        self.lnAction = lnAction
+        self.defaultExecutor = defaultExecutor
+    }
+
+    func perform() {
+        MainActor.assumeIsolatedIfLinkedOnOrAfter(
+            .v7,
+            context: "App Intent expects to run on the main actor."
+        ) {
+            if let appIntentExecutor {
+                appIntentExecutor.perform(lnAction)
+            } else {
+                defaultExecutor()
+            }
+        }
+    }
 
     static let logger = Logger(subsystem: "org.openswiftuiproject.openswiftui", category: "appintent")
 
