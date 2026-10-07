@@ -7,6 +7,9 @@
 
 package import OpenCoreGraphicsShims
 import OpenQuartzCoreShims
+#if canImport(QuartzCore)
+import QuartzCore_Private
+#endif
 
 package enum GraphicsFilter {
     case blur(BlurStyle)
@@ -141,14 +144,19 @@ package enum GraphicsBlendMode: Equatable {
     }
     
     @inline(__always)
-    var filter: Any? {
+    func filter(compositingGroup: Bool) -> Any? {
         switch self {
         case let .caFilter(filter):
             return filter
         case let .blendMode(mode):
-            // TODO: _ORBBlendModeGetCompositingFilter & ORBBlendMode
-            _openSwiftUIUnimplementedWarning()
+            #if canImport(QuartzCore)
+            return ORBBlendModeGetCompositingFilter(
+                .init(rawValue: mode.rawValue),
+                compositingGroup: compositingGroup
+            )
+            #else
             return nil
+            #endif
         }
     }
 }
