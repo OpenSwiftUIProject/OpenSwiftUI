@@ -163,6 +163,28 @@ extension StaticIf: PrimitiveViewModifier, ViewModifier where TrueBody: ViewModi
     }
 }
 
+// MARK: - StaticIf + Gesture
+
+extension StaticIf: PrimitiveGesture, Gesture where TrueBody: Gesture, FalseBody: Gesture, TrueBody.Value == FalseBody.Value {
+    package init(_ predicate: Predicate.Type, then: () -> TrueBody, else: () -> FalseBody) {
+        trueBody = then()
+        falseBody = `else`()
+    }
+
+    nonisolated package static func _makeGesture(
+        gesture: _GraphValue<Self>,
+        inputs: _GestureInputs
+    ) -> _GestureOutputs<TrueBody.Value> {
+        if Predicate.evaluate(inputs: inputs.viewInputs.base) {
+            TrueBody._makeGesture(gesture: gesture[offset: { .of(&$0.trueBody) }], inputs: inputs)
+        } else {
+            FalseBody._makeGesture(gesture: gesture[offset: { .of(&$0.falseBody) }], inputs: inputs)
+        }
+    }
+
+    package typealias Value = TrueBody.Value
+}
+
 extension View {
     /// Conditionally applies a modifier to a view based on a predicate type.
     ///
