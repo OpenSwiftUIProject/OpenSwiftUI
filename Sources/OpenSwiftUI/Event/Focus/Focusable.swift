@@ -403,7 +403,7 @@ private class FocusableViewResponder: DefaultLayoutViewResponder, FocusResponder
     var focusProxyResponder: ViewResponder? {
         var result: ViewResponder?
         visit { responder in
-            guard let responder = responder as? FocusEventProxyResponder else { return .next }
+            guard let responder = asFocusEventProxyResponder(responder) else { return .next }
             result = responder
             return .cancel
         }
