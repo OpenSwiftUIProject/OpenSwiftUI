@@ -13,6 +13,11 @@ This project is in active development and contains multiple Swift packages with 
 
 ## Verification Scope
 
+- After changing `Package.swift`, delete `Package.resolved` and run
+  `swift package resolve` in the same checkout to regenerate the lockfile and
+  its `originHash`. Use the normal remote dependency configuration, review the
+  diff for unintended dependency changes, and include the regenerated lockfile
+  with the manifest change. Do not edit or copy the hash manually.
 - The commands below are references, not a checklist to run after every edit.
 - Use source inspection and `git diff --check` for small Swift-only edits and
   implementation audits. Do not run package, Xcode, Tuist, XCFramework, or DocC
