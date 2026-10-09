@@ -7,6 +7,9 @@
 //  ID: CE84B1BFBEAEAB6361605407E54625A3 (SwiftUI)
 
 import Foundation
+#if os(macOS)
+import AppKit
+#endif
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
@@ -131,7 +134,30 @@ package struct PlatformItemList {
             self.systemItem = systemItem
         }
 
-        struct SelectionBehavior {}
+        struct SelectionBehavior {
+            var isMomentary: Bool = true
+            var isContainerSelection: Bool = false
+            var yieldsToContainerSelection: Bool = false
+            var isPickerOption: Bool = false
+            var visualStyle: VisualStyle = .plain
+            var onSelect: (() -> Void)?
+            var onDeselect: (() -> Void)?
+            #if os(macOS)
+            var onActivate: ((NSEvent?) -> Bool)?
+            #else
+            var onActivate: ((Void?) -> Bool)?
+            #endif
+            #if canImport(ObjectiveC)
+            var platformSelector: Selector?
+            #endif
+            var springLoadingBehavior: SpringLoadingBehavior = .automatic
+
+            enum VisualStyle: Hashable {
+                case plain
+                case checkmark
+                case selected
+            }
+        }
 
         struct SecondaryNavigationBehavior {}
 

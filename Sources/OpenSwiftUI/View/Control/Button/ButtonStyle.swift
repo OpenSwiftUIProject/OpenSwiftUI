@@ -274,7 +274,111 @@ struct ResolvedButtonStyleBody<Style>: PrimitiveView where Style: ButtonStyle {
     }
 }
 
-// TODO: ButtonBehavior
+// MARK: - ButtonBehavior [TODO]
+
+struct ButtonBehavior<Content>: View where Content: View {
+    var touchDelay: Double?
+    var action: () -> Void
+    var onPress: (Bool) -> Void
+    var content: (Bool) -> Content
+    var pressStateAnimationProvider: ((ButtonInteractionPhase) -> Animation?)?
+
+    @State private var state = StateType(
+        interactionPhase: .inactive,
+        didPerformInitialPress: false
+    )
+
+    private struct StateType {
+        var interactionPhase: ButtonInteractionPhase
+        var didPerformInitialPress: Bool
+    }
+
+    init(
+        touchDelay: Double? = nil,
+        action: @escaping () -> Void,
+        onPress: @escaping (Bool) -> Void = { _ in },
+        content: @escaping (Bool) -> Content,
+        pressStateAnimationProvider: ((ButtonInteractionPhase) -> Animation?)? = nil
+    ) {
+        self.touchDelay = touchDelay
+        self.action = action
+        self.onPress = onPress
+        self.content = content
+        self.pressStateAnimationProvider = pressStateAnimationProvider
+    }
+
+    private var animation: Animation? {
+        if let pressStateAnimationProvider {
+            return pressStateAnimationProvider(state.interactionPhase)
+        }
+        if case .active(isPressed: true, hasTriggeredInitialAction: _) = state.interactionPhase,
+           !state.didPerformInitialPress {
+            return .coreAnimationDefault(duration: 0)
+        }
+        return .coreAnimationDefault(duration: 0.47)
+    }
+
+    var body: some View {
+        let isPressed: Bool
+        switch state.interactionPhase {
+        case let .active(pressed, _):
+            isPressed = pressed
+        case .inactive:
+            isPressed = false
+        }
+        var gesture = _ButtonGesture(action: ended, pressing: pressing)
+        gesture.touchDelay = touchDelay
+        return StaticIf(_SemanticFeature_v3.self) {
+            VStack {
+                content(isPressed)
+            }
+        } else: {
+            content(isPressed)
+        }
+        .modifier(ButtonActionModifier(
+            gesture: gesture.onFailed {
+                state.interactionPhase = .inactive
+            }
+            .debugLabel("Button<\(_typeName(Content.self, qualified: false))>"),
+            action: action
+        ))
+        .animation(animation, value: state.interactionPhase)
+        // TODO: ButtonFocusInteractionModifier for FocusableCustomButtonStyleFeature.
+        // TODO: ButtonRepeatModifier for custom button repeat behavior.
+        // TODO: ButtonSpringLoadedInteraction for custom spring loading behavior.
+    }
+
+    private func ended() {
+        if case .inactive = state.interactionPhase {
+            pressing(true)
+            Transaction._core_barrier()
+        }
+        switch state.interactionPhase {
+        case .active(isPressed: _, hasTriggeredInitialAction: true):
+            break
+        default:
+            action()
+        }
+        state.interactionPhase = .inactive
+    }
+
+    private func pressing(_ isPressed: Bool) {
+        onPress(isPressed)
+        let hasTriggeredInitialAction: Bool
+        switch state.interactionPhase {
+        case let .active(_, triggered):
+            state.didPerformInitialPress = true
+            hasTriggeredInitialAction = triggered
+        case .inactive:
+            state.didPerformInitialPress = false
+            hasTriggeredInitialAction = false
+        }
+        state.interactionPhase = .active(
+            isPressed: isPressed,
+            hasTriggeredInitialAction: hasTriggeredInitialAction
+        )
+    }
+}
 
 // MARK: - WrappedButtonStyleBody [TODO]
 
@@ -288,8 +392,25 @@ private struct WrappedButtonStyleBody<Style>: ConditionallyArchivableView where 
     }
 
     var body: some View {
-        // TODO: ButtonBehavior
-        _openSwiftUIUnimplementedFailure()
+        let button = ButtonBehavior(action: configuration.trigger) { isPressed in
+            ResolvedButtonStyleBody(
+                style: style,
+                configuration: .init(isPressed: isPressed, role: configuration.role)
+            )
+        }
+        return StaticIf(idiom: .clarityUI) {
+            var button = button
+            button.pressStateAnimationProvider = { phase in
+                if case .active(isPressed: true, hasTriggeredInitialAction: _) = phase {
+                    .coreAnimationDefault(duration: 0.2)
+                } else {
+                    .coreAnimationDefault(duration: 0.47)
+                }
+            }
+            return button
+        } else: {
+            button
+        }
     }
 
     var archivedBody: some View {
@@ -306,4 +427,9 @@ private struct WrappedButtonStyleBody<Style>: ConditionallyArchivableView where 
 
 // TODO: ButtonFocusInteractionModifier
 
-// TODO: ButtonInteractionPhase
+// MARK: - ButtonInteractionPhase
+
+enum ButtonInteractionPhase: Equatable {
+    case active(isPressed: Bool, hasTriggeredInitialAction: Bool)
+    case inactive
+}

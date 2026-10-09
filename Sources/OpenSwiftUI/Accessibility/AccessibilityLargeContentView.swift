@@ -142,8 +142,14 @@ enum AccessibilityLargeContentViewTree: Equatable {
     case empty
 
     var hasValue: Bool {
-        // TODO: Check whether the tree contains an enabled large content item.
-        _openSwiftUIUnimplementedFailure()
+        switch self {
+        case let .leaf(item):
+            item.behavior == .enabled
+        case let .branch(children):
+            children.contains { $0.hasValue }
+        case .empty:
+            false
+        }
     }
 
     func hitTest(at point: CGPoint) -> AccessibilityLargeContentViewItem? {
@@ -203,18 +209,37 @@ struct AccessibilityLargeContentViewItem: Equatable {
     var behavior: AccessibilityLargeContentViewBehavior
 }
 
-// MARK: - AccessibilityLargeContentViewModifier [WIP]
+// MARK: - AccessibilityLargeContentViewModifier
 
 private struct AccessibilityLargeContentViewModifier<Content: View>: MultiViewModifier, PrimitiveViewModifier {
     var behavior: AccessibilityLargeContentViewBehavior
-    var largeContentView: Content
+    nonisolated(unsafe) var largeContentView: Content
 
     nonisolated static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        let generator = PlatformItemListGenerator(
+            flags: LabelPlatformItemListFlags.self,
+            content: modifier.value[offset: { .of(&$0.largeContentView) }],
+            inputs: inputs,
+            inputsIncludeGeometry: true
+        )
+        var outputs = body(_Graph(), inputs)
+        let platformItemList = Attribute(generator)
+        outputs.preferences.makePreferenceTransformer(
+            inputs: inputs.preferences,
+            key: AccessibilityLargeContentViewTree.Key.self,
+            transform: Attribute(AccessibilityLargeContentViewTransform(
+                behavior: modifier.value[offset: { .of(&$0.behavior) }],
+                platformItemList: platformItemList,
+                size: inputs.size,
+                position: inputs.position,
+                transform: inputs.transform
+            ))
+        )
+        return outputs
     }
 }
 
