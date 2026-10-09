@@ -1,26 +1,79 @@
 //
-//  ControlSizeKey.swift
-//  OpenSwiftUI
+//  ControlSize.swift
+//  OpenSwiftUICore
 //
-//  Audited for 3.5.2
+//  Audited for 6.5.4
 //  Status: Complete
-//  ID: 50E368DED9ACE8B6BEC08FF7781AF4B1
+//  ID: B084178BA9D46D059A1FB75185D1E85C (SwiftUICore)
 
-private struct ControlSizeKey: EnvironmentKey {
-    static let defaultValue: ControlSize = .regular
+package import OpenAttributeGraphShims
+
+/// The size classes, like regular or small, that you can apply to controls
+/// within a view.
+@available(OpenSwiftUI_v1_0, *)
+@available(OpenSwiftUI_iOS_v3_0, *)
+@available(OpenSwiftUI_watchOS_v4_0, *)
+@available(tvOS, unavailable)
+public enum ControlSize: CaseIterable, Sendable {
+    /// A control version that is minimally sized.
+    case mini
+
+    /// A control version that is proportionally smaller size for space-constrained views.
+    case small
+
+    /// A control version that is the default size.
+    case regular
+
+    /// A control version that is prominently sized.
+    @available(OpenSwiftUI_macOS_v2_0, *)
+    case large
+
+    @available(OpenSwiftUI_v5_0, *)
+    case extraLarge
+
+    public static var allCases: [ControlSize] {
+        [.mini, .small, .regular, .large, .extraLarge]
+    }
 }
 
+extension ControlSize: Hashable {}
+
+private struct ControlSizeKey: EnvironmentKey {
+    static let defaultValue: ControlSize? = nil
+}
+
+@available(OpenSwiftUI_v1_0, *)
+@available(OpenSwiftUI_iOS_v3_0, *)
+@available(OpenSwiftUI_watchOS_v4_0, *)
+@available(tvOS, unavailable)
 extension EnvironmentValues {
     /// The size to apply to controls within a view.
     ///
     /// The default is ``ControlSize/regular``.
-    @available(tvOS, unavailable)
     public var controlSize: ControlSize {
+        get { self[ControlSizeKey.self] ?? .regular }
+        set { self[ControlSizeKey.self] = newValue }
+    }
+
+    package var explicitControlSize: ControlSize? {
         get { self[ControlSizeKey.self] }
         set { self[ControlSizeKey.self] = newValue }
     }
 }
 
+extension CachedEnvironment.ID {
+    static let controlSize: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    package var controlSize: Attribute<ControlSize> {
+        mapEnvironment(id: .controlSize) { $0.controlSize }
+    }
+}
+
+@available(OpenSwiftUI_v1_0, *)
+@available(OpenSwiftUI_iOS_v3_0, *)
+@available(OpenSwiftUI_watchOS_v4_0, *)
 @available(tvOS, unavailable)
 extension View {
     /// Sets the size for controls within this view.
@@ -64,12 +117,12 @@ extension View {
     ///     }
     ///
     /// ![A screenshot showing several controls of various
-    /// sizes.](SwiftUI-View-controlSize.png)
+    /// sizes.](OpenSwiftUI-View-controlSize.png)
     ///
     /// - Parameter controlSize: One of the control sizes specified in the
     ///   ``ControlSize`` enumeration.
     @inlinable
-    public func controlSize(_ controlSize: ControlSize) -> some View {
+    nonisolated public func controlSize(_ controlSize: ControlSize) -> some View {
         environment(\.controlSize, controlSize)
     }
 }
