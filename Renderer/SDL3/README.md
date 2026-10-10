@@ -30,10 +30,11 @@ when idle. Update requests wake SDL; presentation remains on the main thread.
 Pixel size and display scale determine logical layout size. Resize/display
 scale events invalidate layout; expose events repaint even without a new DL.
 
-UI framework, drawing engine and graph engine are separate choices. This
-prototype uses SDL's 2D renderer, selected by SDL (Metal on the tested Mac,
-OpenGL/Mesa on the tested Linux host). A later Skia drawing implementation can
-replace SDLViewUpdater without replacing App/WindowGroup or the event loop.
+UI framework, drawing engine and graph engine are separate choices. SDL's 2D
+renderer presents the frame. Text is laid out and rasterized by Skia through
+the existing [ShaftSkia Swift bindings](https://github.com/ShaftUI/Shaft), then
+uploaded as a premultiplied RGBA texture. No Shaft widgets, render objects or
+event loop are instantiated. Text rasterization does not require a GL context.
 macOS uses AttributeGraph; Linux uses Compute's CI source tag
 `0.5.2-bugfix.1`. Neither choice identifies the UI framework.
 
@@ -45,17 +46,48 @@ macOS uses AttributeGraph; Linux uses Compute's CI source tag
 - Focus changes update the hosting view's scene phase.
 - Mouse button/motion events enter the existing responder and TapGesture pipeline.
 - Debug builds can read back their own rendered frame as a BMP.
+- SkParagraph text measurement, wrapping, first/last baselines, tail truncation,
+  solid run colors, fixed-size system/custom fonts, bold/italic and tracking.
 
-Text/font layout, Path, images, clipping/masks, group compositing, interpolated
+Path, images, clipping/masks, group compositing, interpolated
 animations, native representables, keyboard/control input, IME and accessibility
 are not implemented. Unsupported DL content/effects produce a diagnostic and
 are skipped, not replaced with misleading rectangles. Dynamic scene insertion,
 window titles and app-level scene-phase aggregation are also follow-ups.
-The example deliberately uses real Color views rather than placeholder text
-or the legacy Linux example. A single primary-button click toggles the top
+The example uses Text and Color views, not the legacy Linux example.
+A single primary-button click increments the text counter and toggles the top
 red/green area; a double click toggles the bottom blue/yellow area. Both use
 `onTapGesture` to mutate `@State`. The optional timer toggle is off by default
 and remains a State-update test, not an animation interpolation test.
+
+## Text layout
+
+```text
+Text + Environment
+  -> resolved styled runs + portable font requests (OpenSwiftUICore)
+  -> injected TextLayoutBackend (SDLHostingView selects Skia)
+  -> SkParagraph: shaping, font fallback, layout and line metrics
+  -> sizeThatFits / firstTextBaseline / lastTextBaseline
+  -> DisplayList.text -> same paragraph -> Skia raster -> SDL texture
+```
+
+Core does not import Skia or SDL. `OpenSwiftUITextLayout` contains only Swift
+font/run/options/metrics/pixel types and the backend protocol. Core and the
+`OpenSwiftUISkia` implementation both depend on this module; Skia never imports
+Core or its private framework headers. UIKit/AppKit keep the existing attributed-string/CoreText route
+unless a host explicitly supplies a text backend. Exact proposal sizes key a
+bounded layout cache; display scale also keys raster caching. Raster padding
+preserves glyph overhang without increasing logical layout size.
+
+This is an initial Text implementation, not full SwiftUI text parity. Semantic
+text styles currently use fixed portable sizes; Dynamic Type scaling, font
+features, rounded-design matching, underline/strikethrough, baseline offsets,
+line-spacing overrides, minimumScaleFactor, head/middle truncation, inline
+images, selection and custom TextRenderer remain unsupported. Dynamic text
+providers resolve on graph updates but do not yet schedule their own refresh.
+Fallback glyph coverage depends on installed fonts (for example Noto CJK on
+Linux). Height constraints retain at least one nonempty line, even when the
+proposed height is smaller than that line's natural height.
 
 ## Pointer input
 
@@ -82,16 +114,26 @@ pinch/rotation, hover, scrolling, keyboard focus and IME bridges are not yet
 implemented or validated. SDL may emulate mouse input for touch, but that is
 not a multi-touch implementation.
 
-The Linux input build passes 11 SDL integration tests plus the related core
+The earlier Linux input build passed 11 SDL integration tests plus the related core
 gesture/responder regression suites (60 tests total). Tests cover real State
 changes through synthetic SDL events; live RDP clicking is a separate check.
 The user subsequently confirmed that the Linux RDP interaction worked.
-This iteration has not rebuilt or validated macOS input.
+That iteration did not rebuild or validate macOS input.
+
+The Skia Text addition passes the expanded 15-test SDL suite on Linux Swift
+6.3.2 under Xvfb, including text State relayout, wrapping, baselines, line limits
+and SDL pixel readback. SwiftPM builds and actual demo framebuffer checks passed
+on Linux and macOS (Xcode 27 RC / Swift 6.4). This does not establish live RDP
+interaction, macOS input regression coverage, or a new Tuist/Xcode build.
 
 ## Build and run
 
 Requires Swift 6.3+, the normal sibling OpenSwiftUI dependencies, and the local
-`SwiftSDL3` checkout. The Linux build uses the existing SwiftSDL3 source-list
+`SwiftSDL3` and `Shaft` checkouts. ShaftSkia needs the local
+`SkiaCanvas.withRasterCanvas` Swift extension that exposes a CPU raster surface;
+paragraph/shaping bindings themselves are unchanged. Skia's pinned binary
+artifact and ICU resource bundle are resolved by Shaft's Package.swift.
+The Linux build uses the existing SwiftSDL3 source-list
 patch in that checkout; it has not been migrated into OpenSwiftUI.
 
 From the OpenSwiftUI repository:
@@ -107,6 +149,18 @@ On macOS, use a Swift 6.3-capable Xcode via `DEVELOPER_DIR` if the default
 toolchain is older. `SWIFT_COMMAND` can point to that toolchain's `usr/bin/swift`.
 Do not set `SWIFT_EXEC` to `swift`; SwiftPM expects a compiler (`swiftc`) there.
 The default build directory is `.build-sdl3`.
+
+The wrapper explicitly selects SwiftPM's `native` build engine, also with
+Swift 6.4 (whose default engine changed). Override with
+`OPENSWIFTUI_SDL_BUILD_SYSTEM` when needed.
+
+ShaftSkia and the `OpenSwiftUISkia` adapter enable C++ interoperability. Core,
+Compute and the app retain their normal import mode. Only pure Swift types
+cross the implementation-only adapter boundary. The SDL target uses Swift's
+`-disable-cxx-interop-requirement-at-import` frontend option for this boundary;
+this is a toolchain-sensitive integration detail. Do not enable C++ interop
+globally: it changes Compute's imported NS_OPTIONS representations. Native
+non-SDL builds are unchanged.
 
 On Linux, build on the VM's native filesystem when sources are shared from
 macOS. Use a distinct scratch path rather than sharing a macOS build cache:
@@ -127,6 +181,7 @@ installed; these are development artifacts, not standalone distributables.
 
 Ubuntu build prerequisites used by the sibling packages include `libssl-dev`,
 `uuid-dev`, `libdbus-1-dev`, `libibus-1.0-dev`, `libdrm-dev`, `libwayland-dev`
+`libfontconfig1-dev`, `libfreetype-dev`, `libgl-dev`, `libglx-dev`
 and X11 development packages. GUI validation additionally requires a working
 X11/Wayland session and a supported SDL rendering driver. `xvfb`, `xauth` and
 Mesa permit headless X11 testing.

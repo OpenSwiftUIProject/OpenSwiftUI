@@ -1300,6 +1300,13 @@ struct ResolvedTextHelper {
         if archiveOptions.isArchived {
             options.formUnion(.includeSupportForRepeatedResolution)
         }
+        if let backend = environment.textLayoutBackend {
+            nextUpdate = .none
+            return BackendResolvedStyledText.resolve(
+                text, environment: environment, backend: backend, options: options,
+                idiom: idiom, archiveOptions: archiveOptions
+            )
+        }
         let (storage, properties) = text.resolveAttributedStringAndProperties(
             in: environment,
             includeDefaultAttributes:

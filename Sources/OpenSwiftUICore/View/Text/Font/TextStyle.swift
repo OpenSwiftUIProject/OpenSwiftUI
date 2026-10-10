@@ -376,6 +376,28 @@ extension Font {
         var design: Font.Design?
         var weight: Font.Weight?
 
+        func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+            // Portable backend defaults, independent of an Apple platform font descriptor.
+            let size: Double
+            switch style {
+            case .largeTitle: size = 34
+            case .title: size = 28
+            case .title2: size = 22
+            case .title3: size = 20
+            case .subheadline: size = 15
+            case .callout: size = 16
+            case .footnote: size = 13
+            case .caption: size = 12
+            case .caption2: size = 11
+            default: size = 17
+            }
+            return TextLayoutFont(
+                size: size,
+                weight: weight?.value ?? (style == .headline ? Font.Weight.semibold.value : 0),
+                design: .init(design ?? .default)
+            )
+        }
+
         func resolve(in context: Font.Context) -> CTFontDescriptor {
             context.fontDefinition.base
                 .resolveTextStyleFont(

@@ -6,6 +6,7 @@
 import Foundation
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import SwiftSDL3
+@_implementationOnly import OpenSwiftUISkia
 
 final class SDLHostingView: ViewRendererHost, ViewGraphRenderHost, EventGraphHost {
     typealias RootView = ModifiedContent<AnyView, HitTestBindingModifier>
@@ -36,6 +37,7 @@ final class SDLHostingView: ViewRendererHost, ViewGraphRenderHost, EventGraphHos
         self.rootView = rootView
         self.environment = environment
         self.environment.scenePhase = .active
+        self.environment.textLayoutBackend = SkiaTextLayoutBackend()
         self.wakeEvent = wakeEvent
         let properties = SDL_CreateProperties()
         defer { SDL_DestroyProperties(properties) }

@@ -190,6 +190,10 @@ extension Font {
         var textStyle: Font.TextStyle?
         var maximumSize: CGFloat?
 
+        func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+            TextLayoutFont(size: size, weight: weight?.value ?? 0, design: .init(design ?? .default))
+        }
+
         func resolve(in context: Font.Context) -> CTFontDescriptor {
             context.fontDefinition.base
                 .resolveSystemFont(

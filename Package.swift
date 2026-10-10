@@ -604,6 +604,7 @@ let openSwiftUICoreTarget = Target.target(
     dependencies: [
         "OpenSwiftUI_SPI",
         "OpenSwiftUIMacros",
+        "OpenSwiftUITextLayout",
         .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
@@ -815,6 +816,7 @@ let package = Package(
         openSwiftUISPITarget,
         openSwiftUIMacrosTarget,
         openSwiftUICoreTarget,
+        .target(name: "OpenSwiftUITextLayout", swiftSettings: sharedSwiftSettings),
         cOpenSwiftUITarget,
         openSwiftUITarget,
         openSwiftUITestsSupportTarget,
@@ -824,10 +826,26 @@ let package = Package(
 )
 
 if sdl3Condition {
+    package.cxxLanguageStandard = .cxx17
     package.dependencies.append(.package(path: "../SwiftSDL3"))
+    package.dependencies.append(.package(path: "../Shaft"))
+    package.targets.append(.target(
+        name: "OpenSwiftUISkia",
+        dependencies: ["OpenSwiftUITextLayout", .product(name: "ShaftSkia", package: "Shaft")],
+        swiftSettings: sharedSwiftSettings + [.interoperabilityMode(.Cxx)]
+    ))
+    openSwiftUITarget.dependencies.append("OpenSwiftUISkia")
+    // Only pure Swift types cross the implementation-only Skia module boundary.
+    // Keep Compute/Core in their normal C import mode (C++ changes NS_OPTIONS).
+    let skiaImportSettings: [SwiftSetting] = [
+        .unsafeFlags(["-Xfrontend", "-disable-cxx-interop-requirement-at-import"]),
+    ]
+    openSwiftUITarget.swiftSettings = (openSwiftUITarget.swiftSettings ?? []) + skiaImportSettings
+    openSwiftUITestTarget.swiftSettings = (openSwiftUITestTarget.swiftSettings ?? []) + skiaImportSettings
     openSwiftUITarget.dependencies.append(.product(name: "SwiftSDL3", package: "SwiftSDL3"))
     openSwiftUITarget.swiftSettings = (openSwiftUITarget.swiftSettings ?? []) + [.define("OPENSWIFTUI_SDL3")]
     openSwiftUITestTarget.dependencies.append(.product(name: "SwiftSDL3", package: "SwiftSDL3"))
+    openSwiftUITestTarget.dependencies.append("OpenSwiftUISkia")
     openSwiftUITestTarget.swiftSettings = (openSwiftUITestTarget.swiftSettings ?? []) + [.define("OPENSWIFTUI_SDL3")]
     package.products.append(.executable(name: "OpenSwiftUISDL3Demo", targets: ["OpenSwiftUISDL3Demo"]))
     package.targets.append(.executableTarget(

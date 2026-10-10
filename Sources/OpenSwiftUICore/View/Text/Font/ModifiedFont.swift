@@ -694,12 +694,23 @@ extension Font._StylisticAlternative: Sendable {}
 // MARK: - FontModifier
 
 package protocol FontModifier: Hashable {
+    func modify(layoutFont: inout TextLayoutFont)
     func modify(descriptor: inout CTFontDescriptor, in context: Font.Context)
 
     func modify(traits: inout Font.ResolvedTraits)
 }
 
 extension FontModifier {
+    package func modify(layoutFont: inout TextLayoutFont) {
+        if let weight = self as? Font.WeightModifier {
+            layoutFont.weight = weight.weight.value
+        } else if let design = self as? Font.DesignModifier {
+            layoutFont.design = .init(design.design)
+        } else {
+            Log.internalWarning("Unsupported text layout font modifier: \(Self.self)")
+        }
+    }
+
     package func modify(traits: inout Font.ResolvedTraits) {
         _openSwiftUIEmptyStub()
     }
@@ -708,12 +719,25 @@ extension FontModifier {
 // MARK: - StaticFontModifier
 
 package protocol StaticFontModifier {
+    static func modify(layoutFont: inout TextLayoutFont)
     static func modify(descriptor: inout CTFontDescriptor, in context: Font.Context)
 
     static func modify(traits: inout Font.ResolvedTraits)
 }
 
 extension StaticFontModifier {
+    package static func modify(layoutFont: inout TextLayoutFont) {
+        if Self.self == Font.BoldModifier.self {
+            layoutFont.weight = Font.Weight.bold.value
+        } else if Self.self == Font.ItalicModifier.self {
+            layoutFont.italic = true
+        } else if Self.self == Font.MonospacedModifier.self {
+            layoutFont.design = .monospaced
+        } else {
+            Log.internalWarning("Unsupported text layout font modifier: \(Self.self)")
+        }
+    }
+
     package static func modify(traits: inout Font.ResolvedTraits) {
         _openSwiftUIEmptyStub()
     }
@@ -722,6 +746,10 @@ extension StaticFontModifier {
 // MARK: - AnyFontModifier
 
 package class AnyFontModifier: FontModifier {
+    package func modify(layoutFont: inout TextLayoutFont) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
     package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
         _openSwiftUIEmptyStub()
     }
@@ -775,6 +803,10 @@ extension AnyFontModifier {
 // MARK: - AnyDynamicFontModifier
 
 package final class AnyDynamicFontModifier<M>: AnyFontModifier where M: FontModifier {
+    override package func modify(layoutFont: inout TextLayoutFont) {
+        modifier.modify(layoutFont: &layoutFont)
+    }
+
     package final let modifier: M
 
     package init(_ modifier: M) {
@@ -809,6 +841,10 @@ package final class AnyDynamicFontModifier<M>: AnyFontModifier where M: FontModi
 // MARK: - AnyStaticFontModifier
 
 package final class AnyStaticFontModifier<M>: AnyFontModifier where M: StaticFontModifier {
+    override package func modify(layoutFont: inout TextLayoutFont) {
+        M.modify(layoutFont: &layoutFont)
+    }
+
     override package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
         M.modify(descriptor: &descriptor, in: context)
     }
@@ -880,6 +916,12 @@ extension Font {
         var base: Font
         var modifier: M
 
+        func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+            var font = base.resolveLayoutFont(in: context)
+            modifier.modify(layoutFont: &font)
+            return font
+        }
+
         func resolve(in context: Font.Context) -> CTFontDescriptor {
             var descriptor = base.resolve(in: context)
             modifier.modify(descriptor: &descriptor, in: context)
@@ -889,6 +931,12 @@ extension Font {
 
     private struct StaticModifierProvider<M>: FontProvider where M: StaticFontModifier {
         var base: Font
+
+        func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+            var font = base.resolveLayoutFont(in: context)
+            M.modify(layoutFont: &font)
+            return font
+        }
 
         func resolve(in context: Font.Context) -> CTFontDescriptor {
             var descriptor = base.resolve(in: context)

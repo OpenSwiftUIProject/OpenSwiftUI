@@ -10,8 +10,9 @@ let package = Package(
         .package(path: "../../../../OpenRenderBox"),
         .package(path: "../../../../DarwinPrivateFrameworks"),
         .package(path: "../../../../SwiftSDL3"),
+        .package(path: "../../../../Shaft"),
         .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
-        .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+        .package(url: "https://github.com/ShaftUI/swift-collections", from: "1.3.0"),
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0"),
     ]
@@ -42,6 +43,11 @@ let packageProductTypes: [String: ProjectDescription.Product] = [
     "BacklightServices": .framework,
     "SymbolLocator": .staticFramework,
     "SwiftSDL3": .staticFramework,
+    "OpenSwiftUISkia": .staticFramework,
+    "OpenSwiftUITextLayout": .staticFramework,
+    "ShaftSkia": .staticFramework,
+    "Shaft": .staticFramework,
+    "CSkia": .staticFramework,
 ]
 
 let packageProductDestinations: [String: Destinations] = [

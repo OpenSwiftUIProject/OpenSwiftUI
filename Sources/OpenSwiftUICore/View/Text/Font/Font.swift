@@ -26,6 +26,10 @@ public struct Font: Hashable, Sendable {
         provider.resolve(in: context)
     }
 
+    func resolveLayoutFont(in context: Context) -> TextLayoutFont {
+        provider.resolveLayoutFont(in: context)
+    }
+
     func resolveTraits(in enviroment: EnvironmentValues) -> ResolvedTraits {
         let context = enviroment.fontResolutionContext
         var traits = provider.resolveTraits(in: context)
@@ -150,11 +154,27 @@ extension Font.ResolvedTraits: Sendable {}
 // MARK: - FontProvider
 
 protocol FontProvider: Hashable {
+    func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont
     func resolve(in context: Font.Context) -> CTFontDescriptor
     func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits
 }
 
 extension FontProvider {
+    func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+        #if canImport(CoreText)
+        let font = CTFontCreateWithFontDescriptor(resolve(in: context), 0, nil)
+        return TextLayoutFont(
+            family: CTFontCopyFamilyName(font) as String,
+            size: CTFontGetSize(font),
+            weight: CTFontDescriptorGetWeight(CTFontCopyFontDescriptor(font)),
+            italic: CTFontGetSymbolicTraits(font).contains(.traitItalic)
+        )
+        #else
+        Log.internalWarning("Unsupported font provider for the text layout backend: \(Self.self)")
+        return TextLayoutFont()
+        #endif
+    }
+
     func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits {
         .init(resolve(in: context))
     }
@@ -164,6 +184,10 @@ extension FontProvider {
 
 @usableFromInline
 class AnyFontBox: @unchecked Sendable {
+    func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
     func resolve(in context: Font.Context) -> CTFontDescriptor {
         _openSwiftUIBaseClassAbstractMethod()
     }
@@ -186,6 +210,10 @@ private class FontBox<Base>: AnyFontBox, @unchecked Sendable where Base: FontPro
 
     init(base: Base) {
         self.base = base
+    }
+
+    override func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+        base.resolveLayoutFont(in: context)
     }
 
     override func resolve(in context: Font.Context) -> CTFontDescriptor {

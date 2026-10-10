@@ -8,12 +8,101 @@ import OpenCoreGraphicsShims
 @testable import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly) @_spi(Private) @testable import OpenSwiftUICore
 import OpenSwiftUITestsSupport
+@_implementationOnly import OpenSwiftUISkia
 import SwiftSDL3
 import Testing
 
 @MainActor
 @Suite(.tags(.aigc), .serialized)
 struct SDLViewUpdaterTests {
+    @Test
+    func skiaTextTapUpdatesStateAndLayout() throws {
+        try withTapHost(rootView: AnyView(SDLTextTapTestView())) { host in
+            func textItem() throws -> (String, CGRect) {
+                RunLoop.flushObservers()
+                host.renderIfNeeded()
+                let list = try #require(host.viewGraph.rootDisplayList?.0)
+                for item in list.items {
+                    if case let .content(content) = item.value,
+                       case let .text(view, _) = content.value {
+                        return (view.text.storage?.string ?? "", item.frame)
+                    }
+                }
+                Issue.record("Expected a Text display-list item")
+                return ("", .zero)
+            }
+            let before = try textItem()
+            #expect(before.0 == "One")
+            #expect(before.1.width > 0)
+            click(host, y: Float(before.1.midY))
+            let after = try textItem()
+            #expect(after.0 == "One two three four")
+            #expect(after.1.width > before.1.width)
+        }
+    }
+
+    @Test
+    func skiaMeasuresWrappingAndBaselines() {
+        let text = resolveText(Text("Hello Skia\nSecond line").font(.system(size: 20)))
+        let metrics = text.metrics(in: CGSize(width: 300, height: CGFloat.infinity), layoutMargins: nil)
+        #expect(metrics.numberOfLines == 2)
+        #expect(metrics.size.width > 60 && metrics.size.width < 300)
+        #expect(metrics.size.height > 30)
+        #expect(metrics.firstBaseline > 0)
+        #expect(metrics.lastBaseline > metrics.firstBaseline)
+        #expect(text.explicitAlignment(VerticalAlignment.firstTextBaseline.key, at: CGSize(width: 300, height: CGFloat.infinity)) == metrics.firstBaseline)
+        let narrow = text.sizeThatFits(_ProposedSize(width: 50, height: nil))
+        #expect(narrow.width <= 50)
+        #expect(narrow.height > metrics.size.height)
+        #expect(text.sizeThatFits(.zero) == .zero)
+    }
+
+    @Test
+    func skiaLineLimitAndFontSize() {
+        let defaultFont = resolveText(Text("Default font"))
+        #expect(defaultFont.sizeThatFits(.unspecified).height > 0)
+        let styled = resolveText(Text("Styled text").font(.headline).bold().italic())
+        #expect(styled.sizeThatFits(.unspecified).width > 0)
+        let small = resolveText(Text("Hello Skia").font(.system(size: 12)))
+        let large = resolveText(Text("Hello Skia").font(.system(size: 32)))
+        #expect(large.sizeThatFits(.unspecified).width > small.sizeThatFits(.unspecified).width * 2)
+        var environment = EnvironmentValues()
+        environment.lineLimit = 1
+        let text = resolveText(Text("One long line with several words").font(.system(size: 20)), environment: environment)
+        let metrics = text.metrics(in: CGSize(width: 70, height: CGFloat.infinity), layoutMargins: nil)
+        #expect(metrics.numberOfLines == 1)
+        #expect(metrics.hasTruncatedRanges)
+    }
+
+    @Test
+    func skiaRasterAndSDLPresentation() throws {
+        let text = resolveText(Text("Skia").font(.system(size: 24)).foregroundColor(.red))
+        let size = text.sizeThatFits(.unspecified)
+        let image = try #require(text.layout.rasterize(in: size, scale: 2))
+        #expect(image.width > Int(size.width * 2))
+        #expect(image.pixels.enumerated().contains { $0.offset % 4 == 3 && $0.element > 0 })
+        try withSurface { surface, updater in
+            let item = DisplayList.Item(
+                .content(.init(.text(StyledTextContentView(text: text), size), seed: .init(decodedValue: 1))),
+                frame: CGRect(origin: CGPoint(x: 10, y: 10), size: size),
+                identity: .init(decodedValue: 1), version: .init(decodedValue: 1)
+            )
+            updater.render(DisplayList(item), scale: 1)
+            let colored = (0..<100).contains { y in
+                (0..<100).contains { x in
+                    let rgba = pixel(surface, x: Int32(x), y: Int32(y))
+                    return rgba[0] > 180 && rgba[1] < 100 && rgba[2] < 100
+                }
+            }
+            #expect(colored)
+        }
+    }
+
+    private func resolveText(_ text: Text, environment: EnvironmentValues = .init()) -> BackendResolvedStyledText {
+        BackendResolvedStyledText.resolve(text, environment: environment, backend: SkiaTextLayoutBackend(),
+            options: [], idiom: nil, archiveOptions: .init()) as! BackendResolvedStyledText
+    }
+
     @Test
     func mouseTapUpdatesStateAndDisplayList() throws {
         try withTapHost { host in
@@ -203,11 +292,11 @@ struct SDLViewUpdaterTests {
                      frame: frame, identity: .init(decodedValue: 1), version: .init(decodedValue: 1))
     }
 
-    private func withTapHost(_ body: (SDLHostingView) throws -> Void) throws {
+    private func withTapHost(rootView: AnyView = AnyView(SDLTapTestView()), _ body: (SDLHostingView) throws -> Void) throws {
         try #require(SDL_Init(SDL_INIT_VIDEO))
         defer { SDL_Quit() }
         let host = Update.ensure {
-            SDLHostingView(rootView: AnyView(SDLTapTestView()), environment: EnvironmentValues(),
+            SDLHostingView(rootView: rootView, environment: EnvironmentValues(),
                            wakeEvent: SDL_RegisterEvents(1))
         }
         defer { host.close() }
@@ -264,6 +353,17 @@ struct SDLViewUpdaterTests {
         var r: UInt8 = 0, g: UInt8 = 0, b: UInt8 = 0, a: UInt8 = 0
         #expect(SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a))
         return [r, g, b, a]
+    }
+}
+
+private struct SDLTextTapTestView: View {
+    @State private var expanded = false
+
+    var body: some View {
+        Text(expanded ? "One two three four" : "One")
+            .font(.system(size: 24))
+            .onTapGesture { expanded.toggle() }
+            .frame(width: 640, height: 480)
     }
 }
 

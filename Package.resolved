@@ -1,49 +1,49 @@
 {
-  "originHash" : "caf188f2a395d2f7d1b4460b42823cf2843cacca2fee1d664e55e75cd582da46",
+  "originHash" : "bdbae604af14f87b146d03ef514031e7ca085e6d01b3dd320121a2c2fc532a29",
   "pins" : [
     {
-      "identity" : "darwinprivateframeworks",
+      "identity" : "rainbow",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
+      "location" : "https://github.com/onevcat/Rainbow",
       "state" : {
-        "branch" : "main",
-        "revision" : "545d843801b80bc5e7a59f902c84a0a786da24d0"
+        "revision" : "711ca908ca19d16e577d575c8d0a48151a16bb1b",
+        "version" : "4.2.2"
       }
     },
     {
-      "identity" : "openattributegraph",
+      "identity" : "splash",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
+      "location" : "https://github.com/ShaftUI/Splash",
       "state" : {
-        "branch" : "main",
-        "revision" : "b5d71c9e750ce92dbaad44adaae09a08cc689ee9"
+        "branch" : "master",
+        "revision" : "ed08785980b61de9b98306434410ce7fc10572ea"
       }
     },
     {
-      "identity" : "opencoregraphics",
+      "identity" : "swift-cmark",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
+      "location" : "https://github.com/swiftlang/swift-cmark.git",
       "state" : {
-        "branch" : "main",
-        "revision" : "df5ab4c4dcd0afc8fde978f6a0ad5228bb8aee17"
+        "branch" : "gfm",
+        "revision" : "0c8947bbd58c491c54aae114aca40621cddc8357"
       }
     },
     {
-      "identity" : "openobservation",
+      "identity" : "swift-collections",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "location" : "https://github.com/ShaftUI/swift-collections",
       "state" : {
-        "branch" : "main",
-        "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
+        "revision" : "52a1f698d5faa632df0e1219b1bbffa07cf65260",
+        "version" : "1.3.0"
       }
     },
     {
-      "identity" : "openrenderbox",
+      "identity" : "swift-markdown",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
+      "location" : "https://github.com/swiftlang/swift-markdown.git",
       "state" : {
         "branch" : "main",
-        "revision" : "ec856ea3d709de2624fe1324c0ef004a7f492394"
+        "revision" : "75e3df1d7b664ef3c96595de36c243b98599b3bc"
       }
     },
     {
@@ -62,6 +62,15 @@
       "state" : {
         "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
         "version" : "603.0.2"
+      }
+    },
+    {
+      "identity" : "swiftmath",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ShaftUI/SwiftMath",
+      "state" : {
+        "revision" : "29039462bcd88b9469041f2678b892d0dd7a4c6f",
+        "version" : "3.4.0"
       }
     },
     {

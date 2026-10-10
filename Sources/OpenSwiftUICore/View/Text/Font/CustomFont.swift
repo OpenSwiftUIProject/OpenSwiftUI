@@ -98,6 +98,10 @@ extension Font {
         var size: CGFloat
         var textStyle: Font.TextStyle?
 
+        func resolveLayoutFont(in context: Font.Context) -> TextLayoutFont {
+            TextLayoutFont(family: name, size: size)
+        }
+
         func resolve(in context: Font.Context) -> CTFontDescriptor {
             context.fontDefinition.base
                 .resolveCustomFont(

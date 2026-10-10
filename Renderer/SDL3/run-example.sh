@@ -35,18 +35,19 @@ esac
 
 swift_command="${SWIFT_COMMAND:-swift}"
 build_dir="${OPENSWIFTUI_SDL_BUILD_PATH:-.build-sdl3}"
+build_flags=(--scratch-path "$build_dir" --build-system "${OPENSWIFTUI_SDL_BUILD_SYSTEM:-native}")
 case "${1:-run}" in
 build)
-    exec "$swift_command" build --scratch-path "$build_dir" --product OpenSwiftUISDL3Demo
+    exec "$swift_command" build "${build_flags[@]}" --product OpenSwiftUISDL3Demo
     ;;
 run)
-    exec "$swift_command" run --scratch-path "$build_dir" OpenSwiftUISDL3Demo
+    exec "$swift_command" run "${build_flags[@]}" OpenSwiftUISDL3Demo
     ;;
 launch)
     exec "$build_dir/debug/OpenSwiftUISDL3Demo"
     ;;
 test)
-    exec "$swift_command" test --scratch-path "$build_dir" --filter "${OPENSWIFTUI_SDL_TEST_FILTER:-SDLViewUpdaterTests}"
+    exec "$swift_command" test "${build_flags[@]}" --filter "${OPENSWIFTUI_SDL_TEST_FILTER:-SDLViewUpdaterTests}"
     ;;
 *)
     printf 'Usage: %s [build|run|launch|test]\n' "$0" >&2
