@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by HoverEffectContent
+//  Status: Complete
 
 @_spi(Private)
 public import OpenSwiftUICore
@@ -100,54 +100,4 @@ extension ShapeStyle {
     public func opacities(_ array: Double...) -> some ShapeStyle {
         _OpacitiesShapeStyle(style: self, opacities: array)
     }
-}
-
-// MARK: - Placeholder types [WIP]
-
-// TODO: Move these dependencies to OpenSwiftUICore when their rendering is implemented.
-
-/// A type that describes the effects of a view for a particular hover
-/// effect phase.
-///
-///     Color.red
-///         .hoverEffect { effect, isActive, proxy in
-///             effect.opacity(isActive ? 1 : 0.5)
-///         }
-///
-///
-/// You don't conform to this protocol yourself. Instead, effects are described
-/// by calling modifier functions on other effects, like the `opacity(_:)`
-/// modifier used in the example above.
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-public protocol HoverEffectContent {}
-
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension HoverEffectContent {
-    fileprivate func rendererEffect(_ effect: some RendererEffect) -> some HoverEffectContent {
-        ModifiedContent(content: self, modifier: RendererHoverEffectContent(base: effect))
-    }
-}
-
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension ModifiedContent: HoverEffectContent where Content: HoverEffectContent, Modifier: HoverEffectContent {}
-
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-private struct RendererHoverEffectContent<Effect>: HoverEffectContent where Effect: RendererEffect {
-    var base: Effect
 }
