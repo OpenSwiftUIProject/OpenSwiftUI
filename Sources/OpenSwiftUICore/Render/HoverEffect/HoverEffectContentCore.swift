@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 1288298EF939E9CD22B6B6765530C45C (SwiftUICore)
 
 package import Foundation
@@ -389,20 +389,3 @@ package struct HoverEffectContentList: Equatable {
         item?.transform
     }
 }
-
-// MARK: - Custom hover effect dependencies [WIP]
-
-// TODO: Implement the custom hover effect context and its environment propagation.
-@available(OpenSwiftUI_v6_0, *)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-public struct _CustomHoverEffectInputs {
-    package var base: _ViewInputs
-    package private(set) var context: Attribute<HoverEffectContext>
-}
-
-@available(*, unavailable)
-extension _CustomHoverEffectInputs: Sendable {}
-
-// TODO: Implement the hover phase, group, and accessibility state.
-package struct HoverEffectContext {}
