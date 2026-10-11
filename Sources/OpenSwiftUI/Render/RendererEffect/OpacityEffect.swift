@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by AppearanceAnimationView
+//  Status: Blocked by VisualEffect and HoverEffectContent
 
 @_spi(Private)
 public import OpenSwiftUICore
@@ -105,41 +105,6 @@ extension ShapeStyle {
 // MARK: - Placeholder types [WIP]
 
 // TODO: Move these dependencies to OpenSwiftUICore when their rendering is implemented.
-
-extension View {
-    nonisolated fileprivate func appearanceAnimation<Modified>(
-        animation: Animation = Animation.default,
-        strategy: AppearanceAnimationStrategy = .withAnimation,
-        modifier: (Self, Bool) -> Modified
-    ) -> some View where Modified: View {
-        AppearanceAnimationView(
-            content: self,
-            from: modifier(self, false),
-            to: modifier(self, true),
-            animation: animation,
-            strategy: strategy
-        )
-    }
-}
-
-private enum AppearanceAnimationStrategy {
-    case withAnimation
-    case animationValue
-}
-
-private struct AppearanceAnimationView<Content, Modified> where Content: View, Modified: View {
-    var content: Content
-    var from: Modified
-    var to: Modified
-    var animation: Animation
-    var strategy: AppearanceAnimationStrategy
-}
-
-extension AppearanceAnimationView: View {
-    var body: some View {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
 
 /// Visual Effects change the visual appearance of a view without changing its
 /// ancestors or descendents.
