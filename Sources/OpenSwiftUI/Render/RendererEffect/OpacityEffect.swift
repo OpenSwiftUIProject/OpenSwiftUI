@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by VisualEffect and HoverEffectContent
+//  Status: Blocked by HoverEffectContent
 
 @_spi(Private)
 public import OpenSwiftUICore
@@ -105,44 +105,6 @@ extension ShapeStyle {
 // MARK: - Placeholder types [WIP]
 
 // TODO: Move these dependencies to OpenSwiftUICore when their rendering is implemented.
-
-/// Visual Effects change the visual appearance of a view without changing its
-/// ancestors or descendents.
-///
-/// Because effects do not impact layout, they are safe to use in situations
-/// where layout modification is not allowed. For example, effects may be
-/// applied as a function of position, accessed through a geometry proxy:
-///
-///     var body: some View {
-///         ContentRow()
-///             .visualEffect { content, geometryProxy in
-///                 content.offset(x: geometryProxy.frame(in: .global).origin.y)
-///             }
-///     }
-///
-/// You don't conform to this protocol yourself. Instead, visual effects are
-/// created by calling modifier functions (such as `.offset(x:y:)` on other
-/// effects, as seen in the example above.
-@available(OpenSwiftUI_v5_0, *)
-public protocol VisualEffect {}
-
-@available(OpenSwiftUI_v5_0, *)
-extension VisualEffect {
-    fileprivate func rendererEffect(_ effect: some RendererEffect & Sendable) -> some VisualEffect {
-        CombinedVisualEffect(first: self, second: RendererVisualEffect(base: effect))
-    }
-}
-
-@available(OpenSwiftUI_v5_0, *)
-private struct CombinedVisualEffect<First, Second>: VisualEffect where First: VisualEffect, Second: VisualEffect {
-    var first: First
-    var second: Second
-}
-
-@available(OpenSwiftUI_v5_0, *)
-private struct RendererVisualEffect<Effect>: VisualEffect where Effect: RendererEffect & Sendable {
-    var base: Effect
-}
 
 /// A type that describes the effects of a view for a particular hover
 /// effect phase.
