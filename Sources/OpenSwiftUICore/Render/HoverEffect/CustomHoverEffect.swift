@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: B2E20BEC96D7E01EE3D55A38320E6294 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -370,8 +370,3 @@ private struct ClearCustomHoverEffectContextFromEnvironment: Rule, AsyncAttribut
 private struct HoverEffectContextKey: EnvironmentKey {
     static var defaultValue: HoverEffectContext? { nil }
 }
-
-// MARK: - HoverEffectContext [WIP]
-
-// TODO: Implement the hover phase, group, and accessibility state.
-package struct HoverEffectContext {}
