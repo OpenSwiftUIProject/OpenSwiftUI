@@ -66,18 +66,6 @@ extension HoverEffectContent {
     }
 }
 
-@_spi(CustomHoverEffects)
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension HoverEffectContent {
-    public func _opacity(_ opacity: Double) -> some HoverEffectContent {
-        rendererEffect(_OpacityEffect(opacity: opacity))
-    }
-}
-
 // MARK: - ShapeStyle + opacity
 
 @available(OpenSwiftUI_v3_0, *)
