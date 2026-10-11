@@ -84,6 +84,24 @@ extension View {
     }
 }
 
+// MARK: - VisualEffect + blendMode
+
+@available(OpenSwiftUI_v6_0, *)
+extension VisualEffect {
+    /// Sets the blend mode for compositing this view with overlapping views.
+    ///
+    /// Use `blendMode(_:)` to combine overlapping views and use a different
+    /// visual effect to produce the result. The ``BlendMode`` enumeration
+    /// defines many possible effects.
+    ///
+    /// - Parameter blendMode: The ``BlendMode`` for compositing.
+    ///
+    /// - Returns: An effect that applies `blendMode` to this view.
+    public func blendMode(_ blendMode: BlendMode) -> some VisualEffect {
+        rendererEffect(_BlendModeEffect(blendMode: blendMode))
+    }
+}
+
 // MARK: - View + extendedBlendMode
 
 @_spi(Private)

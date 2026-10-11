@@ -63,19 +63,3 @@ extension HoverEffectContent {
         offset(CGSize(width: x, height: y))
     }
 }
-
-@_spi(CustomHoverEffects)
-@available(OpenSwiftUI_v6_0, *)
-@available(iOS, unavailable)
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-@available(tvOS, unavailable)
-extension HoverEffectContent {
-    public func _offset(_ offset: CGSize) -> some HoverEffectContent {
-        self.offset(offset)
-    }
-
-    public func _offset(x: CGFloat = 0, y: CGFloat = 0) -> some HoverEffectContent {
-        offset(x: x, y: y)
-    }
-}
