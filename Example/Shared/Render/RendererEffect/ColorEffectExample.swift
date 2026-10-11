@@ -92,10 +92,82 @@ struct ColorEffectPattern: View {
     }
 }
 
-#Preview("View Color Effect") {
-    ColorEffectExample()
+#Preview("ViewBrightnessNegative") {
+    ColorEffectExample(effect: .brightness, amount: -0.25, usesVisualEffect: false)
 }
 
-#Preview("Visual Color Effect") {
-    ColorEffectExample(usesVisualEffect: true)
+#Preview("ViewBrightnessPositive") {
+    ColorEffectExample(effect: .brightness, amount: 0.25, usesVisualEffect: false)
+}
+
+#Preview("ViewContrastZero") {
+    ColorEffectExample(effect: .contrast, amount: 0, usesVisualEffect: false)
+}
+
+#Preview("ViewContrastNegative") {
+    ColorEffectExample(effect: .contrast, amount: -1, usesVisualEffect: false)
+}
+
+#Preview("ViewGrayscalePartial") {
+    ColorEffectExample(effect: .grayscale, amount: 0.5, usesVisualEffect: false)
+}
+
+#Preview("ViewGrayscaleFull") {
+    ColorEffectExample(effect: .grayscale, amount: 1, usesVisualEffect: false)
+}
+
+#Preview("ViewHuePositive") {
+    ColorEffectExample(effect: .hueRotation, amount: 90, usesVisualEffect: false)
+}
+
+#Preview("ViewHueNegative") {
+    ColorEffectExample(effect: .hueRotation, amount: -90, usesVisualEffect: false)
+}
+
+#Preview("ViewSaturationZero") {
+    ColorEffectExample(effect: .saturation, amount: 0, usesVisualEffect: false)
+}
+
+#Preview("ViewSaturationIncreased") {
+    ColorEffectExample(effect: .saturation, amount: 1.5, usesVisualEffect: false)
+}
+
+#Preview("VisualBrightnessNegative") {
+    ColorEffectExample(effect: .brightness, amount: -0.25, usesVisualEffect: true)
+}
+
+#Preview("VisualBrightnessPositive") {
+    ColorEffectExample(effect: .brightness, amount: 0.25, usesVisualEffect: true)
+}
+
+#Preview("VisualContrastZero") {
+    ColorEffectExample(effect: .contrast, amount: 0, usesVisualEffect: true)
+}
+
+#Preview("VisualContrastNegative") {
+    ColorEffectExample(effect: .contrast, amount: -1, usesVisualEffect: true)
+}
+
+#Preview("VisualGrayscalePartial") {
+    ColorEffectExample(effect: .grayscale, amount: 0.5, usesVisualEffect: true)
+}
+
+#Preview("VisualGrayscaleFull") {
+    ColorEffectExample(effect: .grayscale, amount: 1, usesVisualEffect: true)
+}
+
+#Preview("VisualHuePositive") {
+    ColorEffectExample(effect: .hueRotation, amount: 90, usesVisualEffect: true)
+}
+
+#Preview("VisualHueNegative") {
+    ColorEffectExample(effect: .hueRotation, amount: -90, usesVisualEffect: true)
+}
+
+#Preview("VisualSaturationZero") {
+    ColorEffectExample(effect: .saturation, amount: 0, usesVisualEffect: true)
+}
+
+#Preview("VisualSaturationIncreased") {
+    ColorEffectExample(effect: .saturation, amount: 1.5, usesVisualEffect: true)
 }

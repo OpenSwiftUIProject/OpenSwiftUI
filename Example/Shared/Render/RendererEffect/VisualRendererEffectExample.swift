@@ -50,6 +50,26 @@ struct VisualRendererEffectExample: View {
     }
 }
 
-#Preview {
-    VisualRendererEffectExample()
+#Preview("BlurTransparent") {
+    VisualRendererEffectExample(effect: .blur(opaque: false))
+}
+
+#Preview("BlurOpaque") {
+    VisualRendererEffectExample(effect: .blur(opaque: true))
+}
+
+#Preview("BlendMultiply") {
+    VisualRendererEffectExample(effect: .blendMode(.multiply))
+}
+
+#Preview("BlendScreen") {
+    VisualRendererEffectExample(effect: .blendMode(.screen))
+}
+
+#Preview("BrightnessThenContrast") {
+    VisualRendererEffectExample(effect: .brightnessThenContrast)
+}
+
+#Preview("ContrastThenBrightness") {
+    VisualRendererEffectExample(effect: .contrastThenBrightness)
 }

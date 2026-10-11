@@ -92,7 +92,57 @@ struct VisualGeometryEffectExample: View {
     }
 }
 
-#Preview {
-    VisualGeometryEffectExample()
+#Preview("AffineTransform") {
+    VisualGeometryEffectExample(effect: .affineTransform)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("ProjectionTransform") {
+    VisualGeometryEffectExample(effect: .projectionTransform)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("ScalarScale") {
+    VisualGeometryEffectExample(effect: .scalarScale)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("SizeScale") {
+    VisualGeometryEffectExample(effect: .sizeScale)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("XYScale") {
+    VisualGeometryEffectExample(effect: .xyScale)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("Rotation") {
+    VisualGeometryEffectExample(effect: .rotation)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("Rotation3D") {
+    VisualGeometryEffectExample(effect: .rotation3D)
+        .frame(width: 300, height: 300)
+}
+
+#Preview("SizeOffset") {
+    VisualGeometryEffectExample(effect: .sizeOffset)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("XYOffset") {
+    VisualGeometryEffectExample(effect: .xyOffset)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("ScaleThenOffset") {
+    VisualGeometryEffectExample(effect: .scaleThenOffset)
+        .frame(width: 200, height: 200)
+}
+
+#Preview("OffsetThenScale") {
+    VisualGeometryEffectExample(effect: .offsetThenScale)
         .frame(width: 200, height: 200)
 }
