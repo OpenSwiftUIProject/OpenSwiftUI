@@ -28,9 +28,12 @@ struct VisualRendererEffectExample: View {
     private var content: some View {
         switch effect {
         case let .blur(opaque):
-            ColorEffectPattern().visualEffect { content, _ in
-                content.blur(radius: 8, opaque: opaque)
-            }
+            ColorEffectPattern()
+                .background(Color.white)
+                .compositingGroup()
+                .visualEffect { content, _ in
+                    content.blur(radius: 8, opaque: opaque)
+                }
         case let .blendMode(mode):
             ColorEffectPattern().visualEffect { content, _ in
                 content.blendMode(mode)

@@ -11,6 +11,9 @@ import Testing
 struct TransformEffectUITests {
     @Test
     func shearAndTranslation() {
-        openSwiftUIAssertSnapshot(of: TransformEffectExample())
+        openSwiftUIAssertSnapshot(
+            of: TransformEffectExample(),
+            rasterizeOnMacOS: true
+        )
     }
 }

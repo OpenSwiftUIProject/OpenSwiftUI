@@ -11,6 +11,10 @@ import Testing
 struct ProjectionEffectUITests {
     @Test
     func projectiveTransform() {
-        openSwiftUIAssertSnapshot(of: ProjectionEffectExample())
+        openSwiftUIAssertSnapshot(
+            of: ProjectionEffectExample(),
+            drawHierarchyInKeyWindow: true,
+            rasterizeOnMacOS: true
+        )
     }
 }

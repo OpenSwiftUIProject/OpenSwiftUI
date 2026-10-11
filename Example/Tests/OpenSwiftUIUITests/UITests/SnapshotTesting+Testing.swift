@@ -26,6 +26,7 @@ extension Snapshotting where Value == NSViewController, Format == NSImage {
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () -> V,
     drawHierarchyInKeyWindow: Bool = false,
+    rasterizeOnMacOS: Bool = false,
     precision: Float = 1,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
@@ -38,8 +39,15 @@ func openSwiftUIAssertSnapshot<V: View>(
     line: UInt = #line,
     column: UInt = #column
 ) {
+    let controller = PlatformHostingController(rootView: value())
+    #if os(macOS)
+    if rasterizeOnMacOS {
+        // AppKit's bitmap capture omits layer filters and projective transforms.
+        controller._rendererConfiguration = .rasterized()
+    }
+    #endif
     openSwiftUIAssertSnapshotValue(
-        of: PlatformHostingController(rootView: value()),
+        of: controller,
         as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
