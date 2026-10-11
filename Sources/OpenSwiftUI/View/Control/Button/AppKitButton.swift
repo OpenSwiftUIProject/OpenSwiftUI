@@ -599,7 +599,8 @@ private struct ButtonContentEnvironment: Rule {
     var value: EnvironmentValues {
         var environment = environment
         button.configuration?.appearance.updateEnvironment(&environment)
-        let style = ButtonContentStyle(contentStyle: button.contentView!.contentStyle, seed: 0, button: button)
+        let contentView = button.contentView as! OpenSwiftUIAppKitButton.ContentViewHost
+        let style = ButtonContentStyle(contentStyle: contentView.contentStyle, seed: 0, button: button)
         environment.defaultForegroundStyle = style.copyStyle(in: environment)
         return environment
     }
