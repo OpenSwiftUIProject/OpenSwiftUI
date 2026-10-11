@@ -125,8 +125,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
             }
         case .rbDisplayList(let contents, let offset):
             ctx.translateBy(x: -offset.x, y: -offset.y)
-            // TODO: RBDisplayListKey
-            // contents.render(in: ctx, options: [RBDisplayListRenderRasterizationScale: contentsScale])
+            contents.render(in: ctx, options: [ORBDisplayListRenderKey.rasterizationScale: contentsScale])
         case .rbInterpolator(let interpolator, let fraction, let offset):
             let environment = EnvironmentValues()
             GraphicsContext.renderingTo(

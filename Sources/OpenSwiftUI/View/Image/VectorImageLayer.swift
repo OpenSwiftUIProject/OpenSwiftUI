@@ -56,8 +56,7 @@ private final class NSImageContents: VectorImageContents {
             context.draw(cgImage, in: CGRect(origin: .zero, size: size), byTiling: false)
             displayList.endCGContext()
         }
-        let contents = displayList.moveContents()
-        _displayList = contents
+        _displayList = displayList.moveContents()
         return _displayList!
     }
 

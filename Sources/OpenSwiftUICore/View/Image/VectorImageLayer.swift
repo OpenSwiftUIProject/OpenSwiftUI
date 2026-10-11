@@ -254,9 +254,8 @@ private class DrawableImageContents: CachedVectorImageContents {
         let context = list.beginCGContext(withAlpha: 1.0)
         draw(in: context)
         list.endCGContext()
-        let contents = list.moveContents()!
-        _displayList = contents
-        return contents
+        _displayList = list.moveContents()
+        return _displayList!
     }
 }
 
