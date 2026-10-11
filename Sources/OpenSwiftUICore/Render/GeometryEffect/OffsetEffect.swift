@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by appearanceAnimation
+//  Status: Complete
 //  ID: 72FB21917F353796516DFC9915156779 (SwiftUICore)
 
 public import OpenCoreGraphicsShims
@@ -133,7 +133,6 @@ extension View {
         offset(CGSize(width: x, height: y))
     }
 
-    // TODO: appearanceAnimation
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     nonisolated public func repeatingOffset(
@@ -141,7 +140,9 @@ extension View {
         to: CGSize,
         animation: Animation = Animation.default
     ) -> some View {
-        _openSwiftUIUnimplementedFailure()
+        appearanceAnimation(animation: animation.repeatForever()) { view, isActive in
+            view.offset(isActive ? to : from)
+        }
     }
 }
 
