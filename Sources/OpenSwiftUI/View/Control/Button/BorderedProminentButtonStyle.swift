@@ -38,8 +38,9 @@ public struct BorderedProminentButtonStyle: PrimitiveButtonStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
+        #if canImport(Darwin)
         Button(configuration)
-            #if !os(macOS)
+            #if os(iOS) || os(visionOS)
             .modifier(StaticIf(
                 idiom: .clarityUI,
                 then: ButtonStyleContainerModifier(style: PlatterButtonStyle(isProminent: true)),
@@ -64,6 +65,9 @@ public struct BorderedProminentButtonStyle: PrimitiveButtonStyle {
             .buttonStyle(buttonStyleRepresentation)
             #endif
             .input(ButtonContainerIsBorderedInput.self)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 

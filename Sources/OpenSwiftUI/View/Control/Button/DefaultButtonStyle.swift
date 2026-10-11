@@ -45,7 +45,7 @@ public struct DefaultButtonStyle: PrimitiveButtonStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        #if os(macOS) || os(iOS) || os(visionOS)
+        #if canImport(Darwin)
         Button(configuration)
             // TODO: iOS/visionOS DefaultListButtonStyle in GroupedFormStyleContext.
             // TODO: iOS/visionOS SidebarButtonStyle in SidebarListStyleContext.
@@ -98,6 +98,7 @@ extension DefaultButtonStyle: Sendable {}
 
 struct PlatformFallbackButtonStyle: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
+        #if canImport(Darwin)
         Button(configuration)
             .modifier(StaticIf(
                 idiom: .widget,
@@ -116,6 +117,9 @@ struct PlatformFallbackButtonStyle: PrimitiveButtonStyle {
             ))
             .buttonStyle(ConditionallyBorderedStyle())
             #endif
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 

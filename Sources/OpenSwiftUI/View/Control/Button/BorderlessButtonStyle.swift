@@ -62,6 +62,7 @@ public struct BorderlessButtonStyle: PrimitiveButtonStyle {
     #endif
 
     public func makeBody(configuration: Configuration) -> some View {
+        #if canImport(Darwin)
         Button(configuration)
             .modifier(
                 StaticIf(in: .menu) {
@@ -76,6 +77,9 @@ public struct BorderlessButtonStyle: PrimitiveButtonStyle {
             .buttonStyle(buttonStyleRepresentation)
             .underline(showsShapes, color: controlTint)
             #endif
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 
