@@ -67,7 +67,7 @@ private struct ResolvedBorderedButton: View {
         }
         .defaultForegroundStyle(_OpacityShapeStyle(style: specs.labelStyle, opacity: Float(specs.labelOpacity)))
         .scaleEffect(specs.labelScale)
-        .font(defaultFont)
+        .environment(\.defaultFont, defaultFont)
         .padding(borderShape == .circle ? circleButtonPadding : borderedButtonSpec.padding)
         .background(background)
         .input(ButtonContainerIsBorderedInput.self)

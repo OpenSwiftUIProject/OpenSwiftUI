@@ -16,7 +16,7 @@ import os.log
 
 // MARK: - AppIntentAction
 
-struct AppIntentAction {
+struct AppIntentAction: DynamicProperty {
     @Environment(\.appIntentExecutor) private var appIntentExecutor
     var lnAction: NSObject
     var defaultExecutor: @MainActor () -> Void

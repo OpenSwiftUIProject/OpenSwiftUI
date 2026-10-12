@@ -594,7 +594,7 @@ extension Button {
 
 // MARK: - ButtonAction
 
-enum ButtonAction {
+enum ButtonAction: DynamicProperty {
     case closure(@MainActor () -> Void)
     case url(LinkDestination)
     case appIntent(AppIntentAction)

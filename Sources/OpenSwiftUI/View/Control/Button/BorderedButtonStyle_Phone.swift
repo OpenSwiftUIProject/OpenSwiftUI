@@ -91,7 +91,7 @@ private struct ResolvedBorderedButton: View {
         let label = HStack {
             configuration.label
         }
-        .font(borderedButtonSpec.defaultFont)
+        .environment(\.defaultFont, borderedButtonSpec.defaultFont)
         .multilineTextAlignment(.center)
         .buttonDefaultRenderingMode()
         return StaticIf(UseImageBackground.self) {
