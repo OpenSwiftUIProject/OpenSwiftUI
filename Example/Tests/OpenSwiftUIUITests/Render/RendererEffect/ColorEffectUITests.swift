@@ -37,7 +37,6 @@ struct ColorEffectUITests {
                 usesVisualEffect: usesVisualEffect
             ),
             drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true,
             testName: "\(path)_\(name)"
         )
     }

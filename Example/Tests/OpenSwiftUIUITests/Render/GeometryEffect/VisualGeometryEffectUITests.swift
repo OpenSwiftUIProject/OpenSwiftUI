@@ -14,7 +14,6 @@ struct VisualGeometryEffectUITests {
         openSwiftUIAssertSnapshot(
             of: VisualGeometryEffectExample(effect: effect),
             drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true,
             size: effect == .rotation3D ? CGSize(width: 300, height: 300) : defaultSize,
             named: effect.rawValue
         )

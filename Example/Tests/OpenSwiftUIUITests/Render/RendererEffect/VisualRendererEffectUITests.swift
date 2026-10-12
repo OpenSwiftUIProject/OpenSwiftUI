@@ -14,7 +14,6 @@ struct VisualRendererEffectUITests {
         openSwiftUIAssertSnapshot(
             of: VisualRendererEffectExample(effect: .blur(opaque: opaque)),
             drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true,
             testName: opaque ? "blur_opaque" : "blur_transparent"
         )
     }
@@ -24,7 +23,6 @@ struct VisualRendererEffectUITests {
         openSwiftUIAssertSnapshot(
             of: VisualRendererEffectExample(effect: .blendMode(mode)),
             drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true,
             testName: "blend_mode_\(name)"
         )
     }
@@ -39,7 +37,6 @@ struct VisualRendererEffectUITests {
         openSwiftUIAssertSnapshot(
             of: VisualRendererEffectExample(effect: effect),
             drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true,
             testName: name
         )
     }

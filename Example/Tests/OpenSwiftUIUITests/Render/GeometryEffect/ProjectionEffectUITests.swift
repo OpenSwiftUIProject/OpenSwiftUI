@@ -13,8 +13,7 @@ struct ProjectionEffectUITests {
     func projectiveTransform() {
         openSwiftUIAssertSnapshot(
             of: ProjectionEffectExample(),
-            drawHierarchyInKeyWindow: true,
-            rasterizeOnMacOS: true
+            drawHierarchyInKeyWindow: true
         )
     }
 }
