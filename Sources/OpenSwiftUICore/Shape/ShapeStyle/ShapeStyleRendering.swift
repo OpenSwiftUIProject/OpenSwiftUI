@@ -300,6 +300,24 @@ package struct _ShapeStyle_RenderedShape {
         name: ShapeStyle.Name,
         layers: inout ShapeStyle.RenderedLayers
     ) {
+        #if os(macOS)
+        // Font smoothing on macOS depends on the fill color, even in an alpha-only context.
+        // See https://developer.apple.com/documentation/coregraphics/cgcontext/setshouldsmoothfonts(_:)
+        let maskColor: ORBColor
+        switch style.fill {
+        case let .color(color):
+            maskColor = ORBColor(
+                red: color.linearRed,
+                green: color.linearGreen,
+                blue: color.linearBlue,
+                alpha: 1
+            )
+        default:
+            maskColor = environment.colorScheme == .dark ? .white : .black
+        }
+        #else
+        let maskColor = ORBColor.white
+        #endif
         let resolved = text.text
         let textLayers = resolved.layers(
             for: frame.size,
@@ -327,7 +345,7 @@ package struct _ShapeStyle_RenderedShape {
             keyColor: ORBColor
         ) {
             transform.removeAll()
-            transform.addColorReplacement(from: keyColor, to: .white, colorSpace: .linearSRGB)
+            transform.addColorReplacement(from: keyColor, to: maskColor, colorSpace: .linearSRGB)
             let mask = transform.copyApplying(toDisplayList: list)
             let drawing = makeDrawingItem(from: mask, offset: offset, flags: flags.union(.alphaOnly))
             layers.beginLayer(id: id, style: style, shape: &self)
