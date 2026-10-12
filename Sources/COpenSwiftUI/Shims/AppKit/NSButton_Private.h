@@ -17,6 +17,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @interface NSControl (OpenSwiftUI_SPI)
 - (void)addTarget:(id)target action:(SEL)action forControlEvents:(unsigned long long)events;
 - (void)removeTarget:(id)target action:(SEL)action forControlEvents:(unsigned long long)events;
+- (BOOL)_shouldShowFirstResponderForCell:(NSCell *)cell;
 @end
 
 @interface NSButton (OpenSwiftUI_SPI)
