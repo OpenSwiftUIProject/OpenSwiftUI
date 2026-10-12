@@ -8,6 +8,7 @@
 
 package import OpenAttributeGraphShims
 package import OpenCoreGraphicsShims
+import OpenRenderBoxShims
 
 extension ShapeStyle {
     package typealias RenderedShape = _ShapeStyle_RenderedShape
@@ -138,6 +139,7 @@ package struct _ShapeStyle_RenderedShape {
             opacity = 1.0
             layerNeedes = []
             item.value = .empty
+            item.frame = frame
         }
         guard opacity != .zero, !frame.isEmpty else {
             item.value = .empty
@@ -298,7 +300,75 @@ package struct _ShapeStyle_RenderedShape {
         name: ShapeStyle.Name,
         layers: inout ShapeStyle.RenderedLayers
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let resolved = text.text
+        let textLayers = resolved.layers(
+            for: frame.size,
+            renderer: text.renderer,
+            deviceScale: environment.displayScale
+        )
+        let offset = resolved.frameOffset()
+        var flags: RasterizationOptions.Flags = text.needsDrawingGroup ? .isAccelerated : []
+        if text.renderer != nil {
+            flags.insert(.highRes)
+        }
+        if let unstyled = textLayers.unstyled {
+            let drawing = makeDrawingItem(from: unstyled, offset: offset, flags: flags)
+            layers.beginLayer(id: .unstyled, style: nil, shape: &self)
+            item.value = drawing.value
+            item.frame.origin += CGSize(drawing.frame.origin)
+            item.frame.size = drawing.frame.size
+            layers.endLayer(shape: &self)
+        }
+        let transform = ORBDisplayListTransform()
+        func drawStyled(
+            list: any ORBDisplayListContents,
+            id: ShapeStyle.LayerID,
+            style: ShapeStyle.Pack.Style,
+            keyColor: ORBColor
+        ) {
+            transform.removeAll()
+            transform.addColorReplacement(from: keyColor, to: .white, colorSpace: .linearSRGB)
+            let mask = transform.copyApplying(toDisplayList: list)
+            let drawing = makeDrawingItem(from: mask, offset: offset, flags: flags.union(.alphaOnly))
+            layers.beginLayer(id: id, style: style, shape: &self)
+            shape = .alphaMask(drawing)
+            render(style: style)
+            layers.endLayer(shape: &self)
+        }
+        for (index, list) in textLayers.custom.reversed() {
+            drawStyled(
+                list: list,
+                id: .customStyle(UInt32(truncatingIfNeeded: index)),
+                style: resolved.styles[index],
+                keyColor: ORBColor(red: -1, green: -1, blue: Float(index) / 1024, alpha: ORBColor.invalidComponent)
+            )
+        }
+        if let foreground = textLayers.foreground {
+            drawStyled(
+                list: foreground,
+                id: .styled(name, 0),
+                style: style,
+                keyColor: .foregroundKeyColorAnyAlpha
+            )
+        }
+    }
+
+    private func makeDrawingItem(
+        from list: any ORBDisplayListContents,
+        offset: CGSize,
+        flags: RasterizationOptions.Flags
+    ) -> DisplayList.Item {
+        let bounds = list.boundingRect
+        let rect = (bounds.isNull ? CGRect.zero : bounds).integral
+        return DisplayList.Item(
+            .content(DisplayList.Content(
+                .drawing(list, rect.origin, RasterizationOptions(flags: flags.union(.defaultFlags))),
+                seed: contentSeed
+            )),
+            frame: rect.offset(by: offset),
+            identity: .none,
+            version: item.version
+        )
     }
 
     private mutating func renderUnstyledText(
@@ -348,17 +418,23 @@ package struct _ShapeStyle_RenderedLayers {
         if let group {
             _openSwiftUIUnimplementedWarning()
         }
+        defer { layers = .empty }
         switch layers {
         case .empty:
             return .init()
         case let .item(item):
             let displayList = DisplayList(item)
-            layers = .empty
             return displayList
         case let .items(items):
             let displayList = DisplayList(items)
-            _openSwiftUIUnimplementedFailure()
-            layers = .empty
+            var item = DisplayList.Item(
+                .effect(.identity, displayList),
+                frame: shape.frame,
+                identity: shape.item.identity,
+                version: shape.item.version
+            )
+            item.canonicalize(options: options)
+            return DisplayList(item)
         }
     }
 
@@ -380,7 +456,7 @@ package struct _ShapeStyle_RenderedLayers {
     }
 
     mutating func endLayer(shape: inout ShapeStyle.RenderedShape) {
-        let newItem = shape.commitItem()
+        var newItem = shape.commitItem()
         switch layers {
         case .empty:
             layers = .item(newItem)
@@ -388,15 +464,18 @@ package struct _ShapeStyle_RenderedLayers {
             var oldItem = item
             let offset = CGSize(shape.frame.origin)
             oldItem.frame.origin -= offset
+            oldItem.identity = .none
+            newItem.frame.origin -= offset
+            newItem.identity = .none
             layers = .items([
                 oldItem,
                 newItem,
             ])
         case let .items(items):
             var items = items
-            // TODO
             let offset = CGSize(shape.frame.origin)
-            items[0].frame.origin -= offset
+            newItem.frame.origin -= offset
+            newItem.identity = .none
             items.append(newItem)
             layers = .items(items)
         }

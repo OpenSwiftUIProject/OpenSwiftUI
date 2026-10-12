@@ -10,6 +10,7 @@ package import Foundation
 package import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
+import OpenSwiftUI_SPI
 import UIFoundation_Private
 #if canImport(CoreText)
 package import CoreText
@@ -907,8 +908,66 @@ package class ResolvedStyledText: CustomStringConvertible {
         renderer: TextRendererBoxBase?,
         deviceScale: CGFloat
     ) -> any ORBDisplayListContents {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        let list = ORBDisplayList()
+        list.defaultColorSpace = .SRGB
+        list.deviceScale = deviceScale
+        let context = CoreGraphicsContext(cgContext: list.beginCGContext(withAlpha: 1))
+        context.push()
+        draw(in: CGRect(origin: .zero, size: size), with: size, renderer: renderer)
+        context.pop()
+        list.endCGContext()
+        return list.moveContents()
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
+
+    struct Layers {
+        var foreground: (any ORBDisplayListContents)?
+        var custom: [(Int, any ORBDisplayListContents)]
+        var unstyled: (any ORBDisplayListContents)?
+    }
+
+    final func layers(
+        for size: CGSize,
+        renderer: TextRendererBoxBase?,
+        deviceScale: CGFloat
+    ) -> Layers {
+        let list = makeRBDisplayList(for: size, renderer: renderer, deviceScale: deviceScale)
+        guard needsStyledRendering else {
+            return Layers(foreground: nil, custom: [], unstyled: list)
+        }
+        let predicate = ORBDisplayListPredicate()
+        predicate.addCondition(withFill: .foregroundKeyColorAnyAlpha, colorSpace: .linearSRGB)
+        let foreground = predicate.copyFilteredDisplayList(list)
+        var custom: [(Int, any ORBDisplayListContents)] = []
+        for index in styles.indices {
+            predicate.removeAll()
+            predicate.addCondition(
+                withFill: ORBColor(red: -1, green: -1, blue: Float(index) / 1024, alpha: ORBColor.invalidComponent),
+                colorSpace: .linearSRGB
+            )
+            let layer = predicate.copyFilteredDisplayList(list)
+            if !layer.isEmpty() {
+                custom.append((index, layer))
+            }
+        }
+        predicate.removeAll()
+        predicate.addCondition(withFill: .keyColorAnyAlpha, colorSpace: .linearSRGB)
+        predicate.invertsResult = true
+        let unstyled = predicate.copyFilteredDisplayList(list)
+        return Layers(
+            foreground: foreground.isEmpty() ? nil : foreground,
+            custom: custom,
+            unstyled: unstyled.isEmpty() ? nil : unstyled
+        )
+    }
+}
+
+extension ORBColor {
+    static let foregroundKeyColorAnyAlpha = ORBColor(red: -1, green: -1, blue: -1, alpha: invalidComponent)
+    static let keyColorAnyAlpha = ORBColor(red: -1, green: -1, blue: invalidComponent, alpha: invalidComponent)
 }
 
 extension ResolvedStyledText {

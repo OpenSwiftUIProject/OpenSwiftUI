@@ -176,14 +176,14 @@ private protocol AnyStyleModifierType {
 
 // MARK: - AutomaticStyleOverrideModifier
 
-struct AutomaticStyleOverrideModifier<I, M>: PrimitiveViewModifier, _GraphInputsModifier where M: StyleModifier {
+package struct AutomaticStyleOverrideModifier<I, M>: PrimitiveViewModifier, _GraphInputsModifier where M: StyleModifier {
     var styleModifier: M
 
-    init(_: I.Type, modifier: M) {
+    package init(_: I.Type, modifier: M) {
         self.styleModifier = modifier
     }
 
-    static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
+    package static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
         inputs[StyleOverrideInput<I>.self] = AnyStyleModifier(
             value: modifier[offset: { .of(&$0.styleModifier) }].value.identifier,
             type: StyleModifierType<M>.self

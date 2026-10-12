@@ -506,7 +506,7 @@ extension AccessibilityCore {
     }
 }
 
-private extension NSView {
+extension NSView {
     var enclosingViewRendererHost: (any ViewRendererHost)? {
         if let host = self as? any ViewRendererHost {
             return host
