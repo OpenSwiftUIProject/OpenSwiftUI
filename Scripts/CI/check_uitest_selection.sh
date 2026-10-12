@@ -28,6 +28,7 @@ xcrun xcresulttool get test-results summary --path "$result_bundle" --compact |
         abort("::error::Unable to read all test failures.") unless $?.success?
 
         def failure_messages(node)
+          return [] if ["Skipped", "Expected Failure"].include?(node["result"])
           return [node.fetch("name", "")] if node["nodeType"] == "Failure Message"
           messages = node.fetch("children", []).flat_map { |child| failure_messages(child) }
           if messages.empty? && node["result"] == "Failed" && ["Test Case", "Arguments"].include?(node["nodeType"])

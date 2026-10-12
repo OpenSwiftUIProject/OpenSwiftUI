@@ -93,6 +93,63 @@ test('SwiftUI recording accepts Tuist exit status 1 only for recording issues', 
   assert.match(result.stdout, /Accepted 1 snapshot recording issue\(s\)/);
 });
 
+for (const nodeType of ['Test Case', 'Arguments']) {
+  test(`SwiftUI recording ignores skipped and expected-failure ${nodeType} nodes`, async t => {
+    const nodes = [
+      { nodeType, name: 'skipped', result: 'Skipped', children: [
+        { nodeType: 'Failure Message', name: 'Test skipped: Text is not supported yet' },
+      ] },
+      { nodeType, name: 'known issue', result: 'Expected Failure', children: [
+        { nodeType: 'Failure Message', name: 'clipShape rect bug' },
+      ] },
+      { nodeType, name: 'recorded', result: 'Failed', children: [
+        { nodeType: 'Failure Message', name: recordingFailure.failureText },
+      ] },
+    ];
+    const result = await runTests(t, {
+      SUI_InteractionTests: {
+        summary: nodeType === 'Test Case'
+          ? { ...recordingSummary, totalTestCount: 3, skippedTests: 1, expectedFailures: 1 }
+          : recordingSummary,
+        testTree: { testNodes: nodeType === 'Test Case' ? nodes : [
+          { nodeType: 'Test Case', result: 'Failed', children: nodes },
+        ] },
+      },
+    }, { update: true });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), schemes);
+    assert.match(result.stdout, /Accepted 1 snapshot recording issue\(s\)/);
+  });
+}
+
+test('verification reports real failures without skipped or expected-failure messages', async t => {
+  const result = await runTests(t, {
+    OSUI_InteractionTests: {
+      status: 1,
+      summary: { ...recordingSummary, testFailures: [{ failureText: 'Expectation failed: count == 1' }] },
+      testTree: {
+        testNodes: [{
+          nodeType: 'Test Case', result: 'Failed', children: [
+            { nodeType: 'Arguments', result: 'Skipped', children: [
+              { nodeType: 'Failure Message', name: 'Test skipped: Text is not supported yet' },
+            ] },
+            { nodeType: 'Arguments', result: 'Expected Failure', children: [
+              { nodeType: 'Failure Message', name: 'clipShape rect bug' },
+            ] },
+            { nodeType: 'Arguments', result: 'Failed', children: [
+              { nodeType: 'Failure Message', name: 'Expectation failed: count == 1' },
+            ] },
+          ],
+        }],
+      },
+    },
+  });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  const output = result.stdout + result.stderr;
+  assert.match(output, /Expectation failed: count == 1/);
+  assert.doesNotMatch(output, /Test skipped|clipShape rect bug/);
+});
+
 test('SwiftUI recording rejects real test failures behind Tuist exit status 1', async t => {
   const result = await runTests(t, {
     SUI_InteractionTests: {
