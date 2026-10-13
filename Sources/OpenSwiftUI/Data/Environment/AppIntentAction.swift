@@ -7,6 +7,7 @@
 
 import COpenSwiftUI
 import Foundation
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 #if OPENSWIFTUI_SWIFT_LOG
 import Logging
@@ -87,4 +88,14 @@ extension EnvironmentValues {
         get { self[AppIntentExecutor.Key.self] }
         set { self[AppIntentExecutor.Key.self] = newValue }
     }
+}
+
+extension _GraphInputs {
+    var appIntentExecutor: Attribute<AppIntentExecutor?> {
+        mapEnvironment(id: .appIntentExecutor) { $0.appIntentExecutor }
+    }
+}
+
+extension CachedEnvironment.ID {
+    static let appIntentExecutor = CachedEnvironment.ID()
 }
