@@ -19,3 +19,5 @@ Follow the nearest test under `Example/Tests/OpenSwiftUIUITests`.
   requests snapshot recording.
 - Run `git diff --check`. Run the relevant UI-test scheme or snapshot command only
   when requested and as directed by `AGENTS.md`.
+- After the PR exists, follow the `Snapshot Test CI` section of `AGENTS.md` to
+  ask the user to record CI references for the new or changed cases.

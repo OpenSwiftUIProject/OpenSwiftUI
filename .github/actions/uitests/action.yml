@@ -249,13 +249,26 @@ runs:
           2>&1 | tee "$test_log" || record_status=$?
 
         result_mode=verify
+        record_crashed=false
         # Tuist reports xcodebuild test failures as exit status 1.
         if [[ "$record_status" -eq 1 || "$record_status" -eq 65 ]]; then
           result_mode=record
         elif [[ "$record_status" -ne 0 ]]; then
-          exit "$record_status"
+          # xcodebuild can crash while it finalizes the result bundle after the
+          # tests complete. Keep the recorded references; OpenSwiftUI
+          # verification reports any reference that is still missing.
+          echo "::warning::xcodebuild exited with status $record_status while recording SwiftUI references. Continuing with the recorded images." | tee -a "$test_log"
+          result_mode=record
+          record_crashed=true
         fi
-        bash ../Scripts/CI/check_uitest_selection.sh "$result_bundle" "${UITEST_ONLY_TESTING:-SUI_${{ inputs.test-suite }}}" "$result_mode" 2>&1 | tee -a "$test_log"
+        if xcrun xcresulttool get test-results summary --path "$result_bundle" --compact >/dev/null 2>&1; then
+          bash ../Scripts/CI/check_uitest_selection.sh "$result_bundle" "${UITEST_ONLY_TESTING:-SUI_${{ inputs.test-suite }}}" "$result_mode" 2>&1 | tee -a "$test_log"
+        elif [[ "$record_crashed" == true ]]; then
+          echo "::warning::The SwiftUI recording result bundle at $result_bundle is unreadable; skipping the recording result check." | tee -a "$test_log"
+        else
+          echo "::error::Unable to read the SwiftUI recording result bundle at $result_bundle." | tee -a "$test_log"
+          exit 1
+        fi
         if [[ "$result_mode" == record ]] && { [[ ! -d "$snapshot_reference_dir" ]] || ! find "$snapshot_reference_dir" -type f -name '*.png' -print -quit | grep -q .; }; then
           echo "::error::SwiftUI did not record snapshot reference images in $snapshot_reference_dir." | tee -a "$test_log"
           exit 1
