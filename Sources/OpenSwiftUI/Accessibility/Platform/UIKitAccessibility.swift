@@ -286,7 +286,50 @@ extension AccessibilityProperties {
         get { self[UIKitTraitsKey.self] }
         set { self[UIKitTraitsKey.self] = newValue }
     }
+}
 
+// MARK: - View + UIKit Traits
+
+extension View {
+    nonisolated func accessibilityAddTraits(
+        uiTraits: UIAccessibilityTraits
+    ) -> ModifiedContent<Self, AccessibilityAttachmentModifier> {
+        accessibility(
+            AccessibilityProperties.UIKitTraitsKey.self,
+            AccessibilityUIKitTraits(removed: [], added: uiTraits)
+        )
+    }
+
+    nonisolated func accessibilityRemoveTraits(
+        uiTraits: UIAccessibilityTraits
+    ) -> ModifiedContent<Self, AccessibilityAttachmentModifier> {
+        accessibility(
+            AccessibilityProperties.UIKitTraitsKey.self,
+            AccessibilityUIKitTraits(removed: uiTraits, added: [])
+        )
+    }
+}
+
+// MARK: - ModifiedContent + UIKit Traits
+
+extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
+    nonisolated func accessibilityAddTraits(
+        uiTraits: UIAccessibilityTraits
+    ) -> ModifiedContent<Content, Modifier> {
+        update(
+            AccessibilityProperties.UIKitTraitsKey.self,
+            combining: AccessibilityUIKitTraits(removed: [], added: uiTraits)
+        )
+    }
+
+    nonisolated func accessibilityRemoveTraits(
+        uiTraits: UIAccessibilityTraits
+    ) -> ModifiedContent<Content, Modifier> {
+        update(
+            AccessibilityProperties.UIKitTraitsKey.self,
+            combining: AccessibilityUIKitTraits(removed: uiTraits, added: [])
+        )
+    }
 }
 
 // MARK: - UIKitAccessibilityPropertyApplicator
