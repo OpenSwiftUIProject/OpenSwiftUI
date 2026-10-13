@@ -294,7 +294,7 @@ extension Button where Label == OpenSwiftUI.Label<Text, Image> {
     }
 }
 
-#if canImport(Darwin) && canImport(DeveloperToolsSupport)
+#if canImport(DeveloperToolsSupport)
 @available(OpenSwiftUI_v5_0, *)
 extension Button where Label == OpenSwiftUI.Label<Text, Image> {
     /// Creates a button that generates its label from a localized string key
@@ -506,7 +506,7 @@ extension Button where Label == OpenSwiftUI.Label<Text, Image> {
     }
 }
 
-#if canImport(Darwin) && canImport(DeveloperToolsSupport)
+#if canImport(DeveloperToolsSupport)
 @available(OpenSwiftUI_v5_0, *)
 extension Button where Label == OpenSwiftUI.Label<Text, Image> {
     /// Creates a button with a specified role that generates its label from a

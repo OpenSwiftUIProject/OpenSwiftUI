@@ -1698,7 +1698,7 @@ extension LayoutDirection {
 
 #endif
 
-#if canImport(Darwin) && canImport(DeveloperToolsSupport)
+#if canImport(DeveloperToolsSupport)
 
 public import DeveloperToolsSupport
 
