@@ -13,6 +13,19 @@ import OpenSwiftUICore
 
 // MARK: - View + TemporalState
 
+/// Tags a view's rendered content with the state it represents.
+///
+/// Use this modifier inside the archived body of a control that can
+/// present several states, such as a toggle driven by an app intent.
+/// The archive renders every state ahead of time, and the host selects
+/// the content to display by matching the hash of the live state against
+/// the tags that this modifier writes.
+///
+/// When the view hierarchy requires a display list, the modifier wraps the
+/// content in a state effect keyed by the strong hash of `state`, and it
+/// records an archived view state so that the host can animate between
+/// states with the current transaction. Outside of an archive, the modifier
+/// has no effect.
 extension View {
     func temporalState<State>(_ state: State) -> some View where State: StronglyHashable {
         modifier(TemporalStateViewModifier(state: state))
@@ -21,6 +34,14 @@ extension View {
 
 // MARK: - TemporalStateViewModifier
 
+/// A modifier that wraps its content in a state effect and reports the
+/// state to the enclosing archive.
+///
+/// The modifier only produces work when the inputs require a display list.
+/// It stores the strong hash of the state together with the content display
+/// list, appends an ``ArchivedViewState`` for the archived view states
+/// preference, and replaces the display list with a single state effect item
+/// that the host resolves at display time.
 private struct TemporalStateViewModifier<State>: PrimitiveViewModifier, MultiViewModifier where State: StronglyHashable {
     var state: State
 
@@ -82,11 +103,46 @@ private struct TemporalStateViewModifier<State>: PrimitiveViewModifier, MultiVie
 
 // MARK: - TemporalStack
 
+/// A view that renders one child for each possible state of an archived
+/// control and stacks them at the same position.
+///
+/// A temporal stack is the archived counterpart of a stateful control. The
+/// host that displays an archive cannot evaluate view bodies, so the archive
+/// must contain every presentation the control can take. The stack builds a
+/// child view for each element of `states` by calling `content`, keeps each
+/// child in its own subgraph, and records all children in a single display
+/// list item whose entries are keyed by the strong hash of their state.
+///
+/// For example, an archived toggle that an app intent drives renders its
+/// on, off, and mixed presentations at once:
+///
+///     TemporalStack(states: ToggleState.allCases) { state in
+///         // Build the toggle presentation for `state` with a constant binding.
+///     }
+///     .temporalState(toggleState)
+///
+/// The children share the layout of a Z-stack with the given alignment, so
+/// the stack takes the size of its largest state and every state reports the
+/// same geometry. Preferences from the children reduce into one value per key
+/// in state order.
+///
+/// The host chooses the child to show by matching the hash that the
+/// ``View/temporalState(_:)`` modifier writes for the live state.
 struct TemporalStack<States, Content>: UnaryView, PrimitiveView where States: Collection, States.Element: Equatable & StronglyHashable, Content: View {
     var states: States
     var alignment: Alignment
     var content: (States.Element) -> Content
 
+    /// Creates a temporal stack for the given states.
+    ///
+    /// - Parameters:
+    ///   - states: The collection of states to render. Each state must be
+    ///     equatable so that the stack can reuse children across updates,
+    ///     and strongly hashable so that the archive can identify them.
+    ///   - alignment: The alignment that positions every child within the
+    ///     stack. The default is ``Alignment/center``.
+    ///   - content: A view builder that creates the presentation for one
+    ///     state.
     init(states: States, alignment: Alignment = .center, @ViewBuilder content: @escaping (States.Element) -> Content) {
         self.states = states
         self.alignment = alignment
@@ -140,6 +196,7 @@ struct TemporalStack<States, Content>: UnaryView, PrimitiveView where States: Co
 
 // MARK: - TemporalState
 
+/// The hash of a state together with the display list that presents it.
 private struct TemporalState: Equatable {
     var hash: StrongHash
     var content: DisplayList
@@ -147,6 +204,12 @@ private struct TemporalState: Equatable {
 
 // MARK: - TemporalStackChild
 
+/// The graph resources that a temporal stack keeps for one state.
+///
+/// Each child owns a subgraph so that the stack can invalidate it in
+/// isolation when the state disappears from the collection. The identifier
+/// is stable for the lifetime of the child and lets geometry lookups survive
+/// reordering.
 private struct TemporalStackChild<State> {
     var state: State
     var hash: StrongHash
@@ -157,6 +220,21 @@ private struct TemporalStackChild<State> {
 
 // MARK: - TemporalStackChildren
 
+/// A rule that reconciles the children of a temporal stack with its states.
+///
+/// The rule walks the states in order. It reuses an existing child whose
+/// state matches, moving it forward when the order changed, and it creates a
+/// new child for a state that has no match. Children for states that no
+/// longer exist are removed from the end and their subgraphs are invalidated.
+/// The rule only publishes a new value when the children changed.
+///
+/// A new child is built in its own subgraph with a copy of the stack inputs.
+/// Every child pushes the same stable index because all states stand for the
+/// same view in the archive. When geometry is required, the child reads its
+/// size and origin from the stack's layout through a
+/// ``TemporalStackChildGeometry`` rule. When accessibility nodes are
+/// required, the child's nodes carry the hash of the state so that the host
+/// can select the nodes that match the live state.
 private struct TemporalStackChildren<States, Content>: StatefulRule where States: Collection, States.Element: Equatable & StronglyHashable, Content: View {
     @Attribute var view: TemporalStack<States, Content>
     let inputs: _ViewInputs
@@ -236,6 +314,7 @@ private struct TemporalStackChildren<States, Content>: StatefulRule where States
 
 // MARK: - TemporalStackChildView
 
+/// A rule that evaluates the stack's content builder for one state.
 private struct TemporalStackChildView<States, Content>: Rule where States: Collection, States.Element: Equatable & StronglyHashable, Content: View {
     @Attribute var view: TemporalStack<States, Content>
     var state: States.Element
@@ -247,6 +326,12 @@ private struct TemporalStackChildView<States, Content>: Rule where States: Colle
 
 // MARK: - TemporalStackChildGeometry
 
+/// A rule that reads the geometry of one child from the stack's child
+/// geometries.
+///
+/// The rule looks the child up by its identifier rather than by index, so it
+/// stays valid when the stack reorders its children. It returns a zero
+/// geometry while the child is not part of the layout.
 private struct TemporalStackChildGeometry<State>: Rule {
     @Attribute var children: [TemporalStackChild<State>]
     var childID: UInt32
@@ -260,6 +345,8 @@ private struct TemporalStackChildGeometry<State>: Rule {
 
 // MARK: - TemporalStackLayoutComputer
 
+/// A rule that lays the children out as a Z-stack with the stack's
+/// alignment.
 private struct TemporalStackLayoutComputer<State>: StatefulRule {
     @Attribute var children: [TemporalStackChild<State>]
     @Attribute var alignment: Alignment
@@ -278,6 +365,11 @@ private struct TemporalStackLayoutComputer<State>: StatefulRule {
 
 // MARK: - TemporalStateDisplayList
 
+/// A rule that produces the display list for a single tagged state.
+///
+/// The list contains one item whose value is a state effect keyed by the
+/// hash of the state and whose content is the original display list. The
+/// item spans the view's size at a zero origin.
 private struct TemporalStateDisplayList: StatefulRule {
     let identity: DisplayList.Identity
     @Attribute var state: TemporalState
@@ -300,6 +392,12 @@ private struct TemporalStateDisplayList: StatefulRule {
 
 // MARK: - TemporalStackDisplayList
 
+/// A rule that produces the display list for a temporal stack.
+///
+/// The list contains one states item that pairs the hash of every child
+/// with that child's display list, in state order. The item is positioned
+/// relative to the container so that the host can place the selected state
+/// without further layout.
 private struct TemporalStackDisplayList<State>: Rule {
     let identity: DisplayList.Identity
     @Attribute var children: [TemporalStackChild<State>]
@@ -321,6 +419,12 @@ private struct TemporalStackDisplayList<State>: Rule {
 
 // MARK: - TemporalStackPreference
 
+/// A rule that reduces one preference key across the children of a
+/// temporal stack.
+///
+/// The first child that provides the preference seeds the value, and later
+/// children fold into it through the key's reduce function. Children that do
+/// not provide the preference are skipped.
 private struct TemporalStackPreference<State, Key>: Rule where Key: PreferenceKey {
     @Attribute var children: [TemporalStackChild<State>]
 
@@ -340,6 +444,8 @@ private struct TemporalStackPreference<State, Key>: Rule where Key: PreferenceKe
     }
 }
 
+/// A visitor that installs a ``TemporalStackPreference`` rule for every
+/// preference key the inputs request.
 private struct TemporalStackPreferenceVisitor<State>: PreferenceKeyVisitor {
     var children: Attribute<[TemporalStackChild<State>]>
     var outputs: _ViewOutputs
