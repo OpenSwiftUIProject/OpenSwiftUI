@@ -6,7 +6,120 @@
 //  Status: Complete
 //  ID: FF4B74ECD76D5B0E580D510DA1FEC43C (SwiftUI)
 
+import Foundation
+import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
+
+// MARK: - View + AccessibilityArchivableAttachmentModifier
+
+extension View {
+    func accessibilityAction(
+        _ kind: AccessibilityActionKind,
+        ln lnAction: NSObject,
+        perform: @escaping () -> Void
+    ) -> ModifiedContent<Self, AccessibilityArchivableAttachmentModifier> {
+        let action = AccessibilityAppIntentAction(
+            kind: kind,
+            intent: AppIntentAction(lnAction: lnAction, defaultExecutor: perform)
+        )
+        return modifier(AccessibilityArchivableAttachmentModifier(storage: MutableBox([action])))
+    }
+
+    func accessibilityAction(
+        named name: Text,
+        ln lnAction: NSObject,
+        perform: @escaping () -> Void
+    ) -> ModifiedContent<Self, AccessibilityArchivableAttachmentModifier> {
+        accessibilityAction(AccessibilityActionKind(named: name), ln: lnAction, perform: perform)
+    }
+}
+
+// MARK: - ModifiedContent + AccessibilityArchivableAttachmentModifier
+
+extension ModifiedContent where Modifier == AccessibilityArchivableAttachmentModifier {
+    func accessibilityAction(
+        _ kind: AccessibilityActionKind,
+        ln lnAction: NSObject,
+        perform: @escaping () -> Void
+    ) -> ModifiedContent<Content, Modifier> {
+        append(kind: kind, intent: AppIntentAction(lnAction: lnAction, defaultExecutor: perform))
+    }
+
+    func accessibilityAction(
+        named name: Text,
+        ln lnAction: NSObject,
+        perform: @escaping () -> Void
+    ) -> ModifiedContent<Content, Modifier> {
+        append(
+            kind: AccessibilityActionKind(named: name),
+            intent: AppIntentAction(lnAction: lnAction, defaultExecutor: perform)
+        )
+    }
+
+    private func append(kind: AccessibilityActionKind, intent: AppIntentAction) -> ModifiedContent<Content, Modifier> {
+        modifier.storage.value.append(AccessibilityAppIntentAction(kind: kind, intent: intent))
+        return self
+    }
+}
+
+// MARK: - AccessibilityArchivableAttachmentModifier
+
+struct AccessibilityArchivableAttachmentModifier: MultiViewModifier, PrimitiveViewModifier {
+    var storage: MutableBox<[AccessibilityAppIntentAction]>
+
+    nonisolated static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        guard inputs.preferences.requiresAccessibilityNodes else {
+            return body(_Graph(), inputs)
+        }
+        let transform = Attribute(ArchivableTransform(
+            modifier: modifier.value,
+            environment: inputs.environment
+        ))
+        return ArchivableAccessibilityActionModifier.makeArchivableView(
+            modifier: _GraphValue(transform),
+            inputs: inputs,
+            body: body
+        )
+    }
+
+    private struct ArchivableTransform: Rule {
+        @Attribute var modifier: AccessibilityArchivableAttachmentModifier
+        @Attribute var environment: EnvironmentValues
+
+        var value: ArchivableAccessibilityActionModifier {
+            let environment = environment
+            guard environment.accessibilityEnabled else {
+                return ArchivableAccessibilityActionModifier(actions: CodableAccessibilityActionList(storage: []))
+            }
+            let actions = modifier.storage.value
+            guard !actions.isEmpty else {
+                return ArchivableAccessibilityActionModifier(actions: CodableAccessibilityActionList(storage: []))
+            }
+            return ArchivableAccessibilityActionModifier(actions: CodableAccessibilityActionList(
+                storage: actions.compactMap { $0.asCodableAction(in: environment) }
+            ))
+        }
+    }
+}
+
+// MARK: - ArchivableAccessibilityActionModifier
+
+struct ArchivableAccessibilityActionModifier: _ArchivableViewModifier {
+    let actions: CodableAccessibilityActionList
+
+    func body(content: Content) -> some View {
+        content.modifier(ArchivedAttachmentModifier(
+            attachment: AccessibilityAttachment(properties: AccessibilityProperties(
+                AccessibilityProperties.ActionsKey.self, actions.actions
+            ))
+        ))
+    }
+}
 
 // MARK: - AccessibilityAppIntentAction
 
