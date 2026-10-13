@@ -1032,7 +1032,7 @@ extension DisplayList.Transform {
 extension DisplayList {
     // FIXME
     package class InterpolatorGroup {
-        var maxDuration: Double = .zero
+        package var maxDuration: Double = .zero
 
         private struct Contents {
             var list: DisplayList
@@ -1068,7 +1068,7 @@ extension DisplayList {
 //        var supportsVFD: Bool
 //        var needsUpdate: Bool
 
-        init() {
+        package init() {
 //            _openSwiftUIUnimplementedFailure()
         }
 
