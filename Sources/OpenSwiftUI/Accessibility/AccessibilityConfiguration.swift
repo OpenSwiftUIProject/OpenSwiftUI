@@ -174,19 +174,13 @@ struct AccessibilityToggleModifier<Content: View>: AccessibilityConfigurationMod
         content
             .modifier(MacDefaultModifier(configuration: configuration))
             .accessibilityAddTraits(.isButton)
-            .update(
-                AccessibilityProperties.ValueKey.self,
-                combining: AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty)
-            )
+            .accessibilityValue(AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty))
         #else
         content
             .accessibilityCombinedElement(options: [.allActionsCustom, .includeHiddenChild], ignoredTraits: [.isImage, .isStaticText])
             .accessibilityActions(configuration.accessibilityActions)
             .accessibilityAddTraits(.isButton)
-            .update(
-                AccessibilityProperties.ValueKey.self,
-                combining: AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty)
-            )
+            .accessibilityValue(AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty))
             .staticIf(StyleContextAcceptsPredicate<AccessibilityRepresentableStyleContext>.self) {
                 $0.modifier(RepresentationModifier(label: configuration.label, intent: configuration.appIntent))
             }
@@ -239,6 +233,29 @@ struct AccessibilityToggleModifier<Content: View>: AccessibilityConfigurationMod
             }
         }
     }
+
+    #if os(macOS)
+    struct Radio: AccessibilityConfigurationModifier {
+        struct Configuration {
+            var isSelected: ToggleState
+        }
+
+        var configuration: Configuration
+
+        init(_ state: ToggleState) {
+            configuration = Configuration(isSelected: state)
+        }
+
+        func body(content: Content) -> some View {
+            content
+                .accessibilityCaptureViewResponders()
+                .accessibilityAddTraits(.isRadioButton)
+                .accessibilityAddTraits(configuration.isSelected == .on ? .isSelected : [])
+                .accessibilityValue(AccessibilityToggleValue(configuration.isSelected))
+                .accessibilityIgnoreViewResponders()
+        }
+    }
+    #endif
 }
 
 // MARK: - ToggleStyleConfiguration + Accessibility
