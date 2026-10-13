@@ -101,7 +101,7 @@ public struct EmptyVisualEffect: VisualEffect {
 // MARK: - VisualEffectModifier
 
 struct VisualEffectModifier<Effect>: PrimitiveViewModifier where Effect: VisualEffect {
-    var effect: @Sendable (EmptyVisualEffect, GeometryProxy) -> Effect
+    var effect: (EmptyVisualEffect, GeometryProxy) -> Effect
 
     nonisolated static func _makeView(
         modifier: _GraphValue<Self>,
