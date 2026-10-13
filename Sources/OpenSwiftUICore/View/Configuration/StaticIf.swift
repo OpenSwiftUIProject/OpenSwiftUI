@@ -269,6 +269,23 @@ extension ViewModifier {
         StaticIf(predicate, then: self)
     }
 
+    /// Creates a conditional modifier that only applies when both predicates evaluate to true.
+    ///
+    /// - Parameters:
+    ///   - predicate: The first predicate type used to evaluate against view inputs.
+    ///   - other: The second predicate type used to evaluate against view inputs.
+    /// - Returns: A conditional modifier that applies the current modifier only when both predicates are true.
+    package func requiring<Predicate, Other>(
+        _ predicate: Predicate.Type,
+        and other: Other.Type
+    ) -> StaticIf<
+        AndOperationViewInputPredicate<Predicate, Other>,
+        Self,
+        EmptyModifier
+    > where Predicate: ViewInputPredicate, Other: ViewInputPredicate {
+        StaticIf(AndOperationViewInputPredicate<Predicate, Other>.self, then: self)
+    }
+
     package func requiring<each Q>(
         _ queries: repeat (each Q).Type
     ) -> StaticIf<
