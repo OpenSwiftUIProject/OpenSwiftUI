@@ -160,11 +160,7 @@ struct ResolvedButtonStyle: StyleableView {
     var body: some View {
         Button(configuration)
             // TODO: Apply ShowsNavigationIndicatorDisclosureIndicatorModifier.
-            .transformPlatformItemList(LayoutPlatformItemListFlags.self) { [role = configuration.role] list in
-                for index in list.items.indices {
-                    list.items[index].buttonRole = role
-                }
-            }
+            .platformItemButtonRole(configuration.role)
             // TODO: Apply AccessibilityButtonModifier, including the app-intent action.
             .accessibilityShowsLargeContentViewer(.placeholder) {
                 configuration.label

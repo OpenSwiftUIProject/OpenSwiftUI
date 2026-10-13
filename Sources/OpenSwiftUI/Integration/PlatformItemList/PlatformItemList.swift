@@ -16,6 +16,22 @@ import OpenAttributeGraphShims
 import OpenSwiftUICore
 
 extension View {
+    func platformItemToggleState(_ state: ToggleState) -> some View {
+        transformPlatformItemList(LayoutPlatformItemListFlags.self) { list in
+            for index in list.items.indices {
+                list.items[index].toggleState = state
+            }
+        }
+    }
+
+    func platformItemButtonRole(_ role: ButtonRole?) -> some View {
+        transformPlatformItemList(LayoutPlatformItemListFlags.self) { list in
+            for index in list.items.indices {
+                list.items[index].buttonRole = role
+            }
+        }
+    }
+
     func platformItemLabel<Label, Flags>(_ label: Label, flags: Flags) -> some View where Label: View, Flags: PlatformItemListFlags {
         PlatformItemLabelView(flags: flags, label: label, content: self)
     }
