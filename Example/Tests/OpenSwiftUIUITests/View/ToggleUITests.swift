@@ -6,9 +6,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(
-    .snapshots(record: .never, diffTool: diffTool)
-)
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ToggleUITests {
     @Test
     func onAndOffWithDefaultStyle() {
@@ -20,15 +18,7 @@ struct ToggleUITests {
                 }
             }
         }
-        #if os(iOS) || os(visionOS)
-        withKnownIssue(isIntermittent: true) {
-            openSwiftUIAssertSnapshot(of: ContentView())
-        }
-        #else
-        withKnownIssue("checkBox style is not supported yet") {
-            openSwiftUIAssertSnapshot(of: ContentView())
-        }
-        #endif
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 
     @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/518", id: 518, "UIViewRepresentable size issue"))
@@ -47,12 +37,6 @@ struct ToggleUITests {
                 .background { Color.green }
             }
         }
-        #if os(iOS) || os(visionOS)
         openSwiftUIAssertSnapshot(of: ContentView())
-        #else
-        withKnownIssue("checkBox style is not supported yet") {
-            openSwiftUIAssertSnapshot(of: ContentView())
-        }
-        #endif
     }
 }
