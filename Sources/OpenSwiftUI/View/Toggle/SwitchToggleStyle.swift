@@ -116,9 +116,7 @@ public struct SwitchToggleStyle: ToggleStyle {
             Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, thumbTint: placementTint[.switchThumb], font: font)
                 .fixedSize()
                 .contentShape(Capsule())
-                .accessibilityCaptureViewResponders()
-                .accessibility(AccessibilityProperties.TraitsKey.self, .init(adding: .isSwitch))
-                .accessibilityIgnoreViewResponders()
+                .accessibilityConfiguration(AccessibilityToggleModifier.Switch())
             #elseif os(macOS)
             Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, font: font)
                 .fixedSize()
@@ -155,6 +153,21 @@ extension SwitchToggleStyle: Sendable {}
 import UIKit
 #elseif os(macOS)
 import AppKit
+#endif
+
+// MARK: - AccessibilityToggleModifier.Switch
+
+#if os(iOS) || os(visionOS)
+extension AccessibilityToggleModifier {
+    struct Switch: AccessibilityConfigurationModifier {
+        func body(content: Content) -> some View {
+            content
+                .accessibilityCaptureViewResponders()
+                .accessibilityAddTraits(.isSwitch)
+                .accessibilityIgnoreViewResponders()
+        }
+    }
+}
 #endif
 
 // MARK: - Switch
