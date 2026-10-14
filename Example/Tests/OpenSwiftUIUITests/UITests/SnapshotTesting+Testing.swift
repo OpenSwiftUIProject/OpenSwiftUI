@@ -38,7 +38,32 @@ func openSwiftUIAssertSnapshot<V: View>(
     line: UInt = #line,
     column: UInt = #column
 ) {
+    #if os(macOS)
+    // FIXME: Temporary workaround for order-dependent macOS snapshots.
+    // SwiftUI on macOS 15 can lose labels after a windowless host is released.
+    // Recording LabelsHiddenModifierUITests.toggleLabelsHidden first can make
+    // ProgressViewUITests.indeterminateInitializers lose its localized label.
+    // Keep a window attached through capture, with the original layout scale.
+    let controller = PlatformHostingController(
+        rootView: value()
+            .frame(width: size.width, height: size.height)
+            .environment(\.displayScale, 1)
+    )
+    controller.sizingOptions = []
+    let window = NSWindow(
+        contentRect: CGRect(origin: .zero, size: size),
+        styleMask: .borderless,
+        backing: .buffered,
+        defer: false
+    )
+    // Preserve the color space used by windowless snapshots.
+    window.colorSpace = .genericRGB
+    window.contentViewController = controller
+    window.setContentSize(size)
+    defer { window.contentViewController = nil }
+    #else
     let controller = PlatformHostingController(rootView: value())
+    #endif
     openSwiftUIAssertSnapshotValue(
         of: controller,
         as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
