@@ -150,11 +150,9 @@ struct FlowLayoutDemo: View {
                        rowSpacing: 10,
                        alignment: alignments[alignIndex],
                        maxRowWidth: nil) {
-//                ForEach(tags, id: \.self) { tag in
-//                    TagChip(text: tag)
-//                }
-                TagChip(text: tags[0])
-                TagChip(text: tags[1])
+                ForEach(tags, id: \.self) { tag in
+                    TagChip(text: tag)
+                }
             }
             .padding()
 //            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
