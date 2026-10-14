@@ -254,7 +254,7 @@ private class OpenSwiftUIAppKitButton: NSButton, RecursiveIgnoreHitTestCustomizi
         let stateMask: NSCell.StyleMask
         if let isOn = configuration.isOn {
             cell.state = isOn ? .on : .off
-            stateMask = .contentsCellMask
+            stateMask = .changeBackgroundCellMask
         } else {
             stateMask = []
         }
