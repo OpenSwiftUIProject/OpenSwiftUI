@@ -36,6 +36,14 @@ extension View {
         PlatformItemLabelView(flags: flags, label: label, content: self)
     }
 
+    func platformItemHierarchicalLevel(_ level: Int) -> some View {
+        transformPlatformItemList(LabelPlatformItemListFlags.self) { list in
+            for index in list.items.indices {
+                list.items[index].hierarchicalLevel = level
+            }
+        }
+    }
+
     func transformPlatformItemList<Flags>(
         _ flags: Flags.Type,
         _ transform: @escaping (inout PlatformItemList) -> Void
