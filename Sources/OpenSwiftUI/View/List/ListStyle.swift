@@ -62,6 +62,8 @@ extension StyleContext where Self == GroupedFormStyleContext {
 
 struct ColumnsFormStyleContext: StyleContext {}
 
+struct AnyFormStyleContext: StyleContext {}
+
 struct GroupedFormValueStyleContext: StyleContext {}
 
 struct GroupedFormTextFieldStyleContext: StyleContext {}
