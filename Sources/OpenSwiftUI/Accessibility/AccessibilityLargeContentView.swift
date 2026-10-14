@@ -247,6 +247,25 @@ package struct AccessibilityLargeContentViewerKey: EnvironmentKey {
     package static var defaultValue: Bool { false }
 }
 
+// MARK: - ViewModifier + makeAccessibilityHitTestingModifier
+
+extension ViewModifier {
+    nonisolated static func _makeAccessibilityHitTestingModifier(
+        modifier: _GraphValue<_AllowsHitTestingModifier>,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    ) {
+        let allowsHitTesting = modifier[offset: { .of(&$0.allowsHitTesting) }].value
+        outputs.preferences.makePreferenceTransformer(
+            inputs: inputs.preferences,
+            key: AccessibilityLargeContentViewTree.Key.self,
+            transform: Attribute(AccessibilityLargeContentViewHitTestingTransform(
+                allowsHitTesting: allowsHitTesting
+            ))
+        )
+    }
+}
+
 // MARK: - AccessibilityLargeContentViewHitTestingTransform
 
 private struct AccessibilityLargeContentViewHitTestingTransform: Rule {
