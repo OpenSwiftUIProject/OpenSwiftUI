@@ -18,13 +18,11 @@ struct LabelsHiddenModifierUITests {
             var body: some View {
                 VStack {
                     Toggle(isOn: $toggle1) {
-                        // Text("Toggle 1")
-                        Color.red
+                        Text("Toggle 1")
                     }
                     .labelsHidden()
                     Toggle(isOn: $toggle2) {
-                        // Text("Toggle 2")
-                        Color.blue
+                        Text("Toggle 2")
                     }
                 }
             }

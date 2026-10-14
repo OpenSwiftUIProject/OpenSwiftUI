@@ -19,7 +19,7 @@ struct MatchedGeometryEffectUITests {
             }
 
             var body: some View {
-                MatchedGeometryEffectModifierExample()
+                MatchedGeometryEffectModifierExample(initialToggle: true)
             }
         }
         openSwiftUIAssertAnimationSnapshot(
@@ -37,7 +37,7 @@ struct MatchedGeometryEffectUITests {
             }
 
             var body: some View {
-                MatchedGeometryEffectClipShapeModifierExample()
+                MatchedGeometryEffectClipShapeModifierExample(initialToggle: true)
             }
         }
         withKnownIssue("clipShape rect bug") {

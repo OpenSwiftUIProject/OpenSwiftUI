@@ -150,11 +150,9 @@ struct FlowLayoutDemo: View {
                        rowSpacing: 10,
                        alignment: alignments[alignIndex],
                        maxRowWidth: nil) {
-//                ForEach(tags, id: \.self) { tag in
-//                    TagChip(text: tag)
-//                }
-                TagChip(text: tags[0])
-                TagChip(text: tags[1])
+                ForEach(tags, id: \.self) { tag in
+                    TagChip(text: tag)
+                }
             }
             .padding()
 //            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -191,14 +189,14 @@ struct FlowLayoutDemo: View {
 private struct TagChip: View {
     let text: String
     var body: some View {
-//        Text(text)
-//            .font(.callout)
-//            .padding(.horizontal, 12)
-//            .padding(.vertical, 6)
-//            .background(Color.accentColor.opacity(0.12), in: Capsule())
+        Text(text)
+            .font(.callout)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.accentColor.opacity(0.12), in: Capsule())
+            // TODO: strokePath is not supported yet.
 //            .overlay {
 //                Capsule().strokeBorder(Color.accentColor.opacity(0.35))
 //            }
-        Color.red
     }
 }

@@ -12,7 +12,7 @@ import SwiftUI
 #endif
 
 #if OPENSWIFTUI
-// FIXME: Missing LinearGradient, Shape, Text and safeArea.
+// FIXME: Missing LinearGradient and Material.
 // We use a simplified version for OpenSwiftUI now.
 struct AnimatedColorTimelineView: View {
     var body: some View {
@@ -29,20 +29,20 @@ struct AnimatedColorTimelineView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 30) {
-//                    Text("Animated Colors")
-//                        .font(.largeTitle)
-//                        .fontWeight(.bold)
-//                        .foregroundColor(.white)
+                    Text("Animated Colors")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
 
                     // Pulsing circle that changes color
-//                    Circle()
-//                        .fill(
+                    Circle()
+                        .fill(
                             Color(
                                 hue: (cos(time * 2) + 1) / 2,
                                 saturation: 1.0,
                                 brightness: 1.0
                             )
-//                        )
+                        )
                         .frame(
                             width: 100 + sin(time * 3) * 20,
                             height: 100 + sin(time * 3) * 20
@@ -50,13 +50,12 @@ struct AnimatedColorTimelineView: View {
 
                     // Display current color values
                     let currentHue = (sin(time * 0.5) + 1) / 2
-                    let _ = print(currentHue)
-//                    Text("Background Hue: \(currentHue, specifier: "%.2f")")
-//                        .font(.headline)
-//                        .foregroundColor(.white)
-//                        .padding()
-//                        .background(Color.black.opacity(0.3))
-//                        .cornerRadius(10)
+                    Text("Background Hue: \(currentHue, specifier: "%.2f")")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.black.opacity(0.3))
+                        .cornerRadius(10)
                 }
             }
         }

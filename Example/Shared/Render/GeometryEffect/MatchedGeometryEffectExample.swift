@@ -25,6 +25,7 @@ struct MatchedGeometryEffectExample: View {
 struct MatchedGeometryEffectModifierExample: View {
     @Namespace var nspace
     @State private var flag: Bool = true
+    var initialToggle = false
 
     var body: some View {
         HStack {
@@ -34,18 +35,18 @@ struct MatchedGeometryEffectModifierExample: View {
                     .frame(width: 100, height: 100)
             }
             Spacer()
-            // FIXME: change to button
-            // Button("Switch") { withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() } }
-            Text("Switch")
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() }
-                }
+            Button("Switch") { withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() } }
             Spacer()
             if !flag {
                 Circle()
                     .fill(Color.blue)
                     .matchedGeometryEffect(id: "geoeffect1", in: nspace)
                     .frame(width: 50, height: 50)
+            }
+        }
+        .onAppear {
+            if initialToggle {
+                withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() }
             }
         }
         .frame(width: 250).padding(10)
@@ -57,6 +58,7 @@ struct MatchedGeometryEffectModifierExample: View {
 struct MatchedGeometryEffectClipShapeModifierExample: View {
     @Namespace var nspace
     @State private var flag: Bool = true
+    var initialToggle = false
 
     var body: some View {
         HStack {
@@ -71,12 +73,7 @@ struct MatchedGeometryEffectClipShapeModifierExample: View {
                     .frame(width: 100, height: 100)
             }
             Spacer()
-            // FIXME: change to button
-            // Button("Switch") { withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() } }
-            Text("Switch")
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() }
-                }
+            Button("Switch") { withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() } }
             Spacer()
             if !flag {
                 Circle()
@@ -88,6 +85,11 @@ struct MatchedGeometryEffectClipShapeModifierExample: View {
                         properties: [.frame, .clipRect]
                     )
                     .frame(width: 50, height: 50)
+            }
+        }
+        .onAppear {
+            if initialToggle {
+                withAnimation(.easeInOut(duration: 2.0)) { flag.toggle() }
             }
         }
         .frame(width: 250).padding(10)
