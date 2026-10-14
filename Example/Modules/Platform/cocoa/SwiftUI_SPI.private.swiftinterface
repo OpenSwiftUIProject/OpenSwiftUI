@@ -201,6 +201,12 @@ extension SwiftUI.View {
 
 @_spi(Private)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension SwiftUI.View {
+  nonisolated public func extendedBlendMode(_ blendMode: SwiftUI.GraphicsContext.BlendMode) -> some SwiftUI.View
+}
+
+@_spi(Private)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension SwiftUI.MatchedGeometryProperties {
   @_alwaysEmitIntoClient public static var clipRect: SwiftUI.MatchedGeometryProperties {
     return SwiftUI.MatchedGeometryProperties(rawValue: 1 << 2)
