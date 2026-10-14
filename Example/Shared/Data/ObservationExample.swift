@@ -31,10 +31,9 @@ struct ObservationColorExample: View {
     var body: some View {
         VStack {
             Color(model.showRed ? .red : .blue)
-            Text("Toggle")
-                .onTapGesture {
-                    model.showRed.toggle()
-                }
+            Button("Toggle") {
+                model.showRed.toggle()
+            }
         }
     }
 }
@@ -52,10 +51,9 @@ struct ObservationCounterExample: View {
     @State private var model = CounterModel()
 
     var body: some View {
-        Text("Tap to increase: \(model.count)")
-            .onTapGesture {
-                model.count += 1
-            }
+        Button("Tap to increase: \(model.count)") {
+            model.count += 1
+        }
     }
 }
 

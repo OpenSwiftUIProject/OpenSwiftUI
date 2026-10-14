@@ -11,7 +11,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if !OPENSWIFTUI // FIXME: Missing Shape and Text
 struct BreathingColorView: View {
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -46,4 +45,3 @@ struct BreathingColorView: View {
         }
     }
 }
-#endif

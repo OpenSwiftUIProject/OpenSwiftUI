@@ -15,21 +15,19 @@ struct TransactionExample: View {
     var body: some View {
         VStack(spacing: 50) {
             HStack(spacing: 30) {
-                // Text("Rotation")
-                Color.red.frame(width: 30, height: 60)
+                Text("Rotation")
                     .rotationEffect(Angle(degrees:
                         self.flag ? 360 : 0))
 
-                // Text("Rotation\nModified")
-                Color.green.frame(width: 60, height: 60)
+                Text("Rotation\nModified")
                     .rotationEffect(Angle(degrees:
                         self.flag ? 360 : 0))
                     .transaction { view in
                         view.animation =
                             view.animation?.delay(2.0).speed(2)
                     }
-                // Text("Animation\nReplaced")
-                Color.blue.frame(width: 60, height: 60)
+
+                Text("Animation\nReplaced")
                     .rotationEffect(Angle(degrees:
                         self.flag ? 360 : 0))
                     .transaction { view in
@@ -40,24 +38,11 @@ struct TransactionExample: View {
                         )
                     }
             }
-            //            Button("Animate") {
-            //                withAnimation(.easeIn(duration: 2.0)) {
-            //                    self.flag.toggle()
-            //                }
-            //            }
-            .onTapGesture {
-                toggle(first: true)
-            }
-        }
-    }
 
-    func toggle(first: Bool = false) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + (first ? 1 : 3)) {
-            withAnimation(.easeIn(duration: 2.0)) {
-                self.flag.toggle()
-                toggle()
-            } completion: {
-                print("Complete")
+            Button("Animate") {
+                withAnimation(.easeIn(duration: 2.0)) {
+                    self.flag.toggle()
+                }
             }
         }
     }

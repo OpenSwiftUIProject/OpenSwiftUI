@@ -11,7 +11,7 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if !OPENSWIFTUI // FIXME: Missing Shape and Text
+#if !OPENSWIFTUI // FIXME: Missing LinearGradient and Material
 struct ColorCodedClockView: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1.0)) { timeline in
