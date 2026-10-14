@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: TBA
+//  Status: Complete
 //  ID: 9FEBA96B0BC70E1682E82D239F242E73 (SwiftUI)
 
 #if os(macOS)
@@ -439,7 +439,7 @@ extension OpenSwiftUIAppKitButton.ContentViewHost: CustomRecursiveStringConverti
     var defaultDescriptionAttributes: Set<DefaultDescriptionAttribute> { [] }
 
     var descriptionChildren: [any CustomRecursiveStringConvertible] {
-        subviews.compactMap { $0 as? any CustomRecursiveStringConvertible }
+        layer?.sublayers?.compactMap { $0 as? any CustomRecursiveStringConvertible } ?? []
     }
 }
 
@@ -564,7 +564,17 @@ private struct AppKitButton<Label: View>: PrimitiveView, UnaryView {
                 contentList: .init(outputs.displayList)
             ))
         }
-        // TODO: AccessibilityPlatformViewModifier
+        if inputs.preferences.requiresAccessibilityNodes {
+            let modifier = _GraphValue(Attribute(value: AccessibilityPlatformViewModifier(
+                platformView: nativeButton,
+                properties: AccessibilityProperties()
+            )))
+            outputs.accessibilityNodes = AccessibilityPlatformViewModifier.makeAccessibilityTransform(
+                modifier: modifier,
+                inputs: inputs,
+                outputs: outputs
+            )
+        }
         return outputs
     }
 
