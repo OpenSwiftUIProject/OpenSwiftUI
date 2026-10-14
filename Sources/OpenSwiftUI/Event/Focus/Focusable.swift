@@ -197,11 +197,9 @@ public struct _FocusableModifier: ViewModifier, MultiViewModifier, PrimitiveView
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        #if os(macOS)
-        _openSwiftUIUnimplementedFailure()
-        #else
-        _openSwiftUIUnimplementedFailure()
-        #endif
+        // TODO: Install the focus item, responder, and onFocusChange callback.
+        _openSwiftUIUnimplementedWarning()
+        return body(_Graph(), inputs)
     }
 }
 
