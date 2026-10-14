@@ -38,8 +38,9 @@ func openSwiftUIAssertSnapshot<V: View>(
     line: UInt = #line,
     column: UInt = #column
 ) {
+    let controller = PlatformHostingController(rootView: value())
     openSwiftUIAssertSnapshotValue(
-        of: PlatformHostingController(rootView: value()),
+        of: controller,
         as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,

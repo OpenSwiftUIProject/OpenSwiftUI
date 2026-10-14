@@ -224,3 +224,12 @@ extension SwiftUI.View {
 extension SwiftUI.View {
   nonisolated public func unanimatable() -> some SwiftUI.View
 }
+
+@_spi(Private)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension SwiftUI.View {
+  nonisolated public func repeatingScaleEffect(from: CoreGraphics.CGFloat, to: CoreGraphics.CGFloat, anchor: SwiftUI.UnitPoint = .center, animation: SwiftUI.Animation = .default) -> some SwiftUI.View
+  nonisolated public func repeatingScaleEffect(from: CoreGraphics.CGSize, to: CoreGraphics.CGSize, anchor: SwiftUI.UnitPoint = .center, animation: SwiftUI.Animation = .default) -> some SwiftUI.View
+  nonisolated public func repeatingRotationEffect(anchor: SwiftUI.UnitPoint = .center, duration: Swift.Double = 1.0) -> some SwiftUI.View
+  nonisolated public func repeatingRotationEffect(from: SwiftUI.Angle, to: SwiftUI.Angle, anchor: SwiftUI.UnitPoint = .center, animation: SwiftUI.Animation = .linear(duration: 1.0)) -> some SwiftUI.View
+}
