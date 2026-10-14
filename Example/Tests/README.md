@@ -85,6 +85,8 @@ reference storage, and recording locks.
 
 The default configurations use the SwiftUI renderer with AttributeGraph and the
 OpenSwiftUI renderer with Compute. CI accepts recording issues only when no
-other failures are present; a recording failure stops verification.
+other failures are present; a recording failure stops verification. An abnormal
+`xcodebuild` exit after the recording run has written reference images does not
+stop verification, which then reports any missing reference.
 See [Optional CI workflows](../../Docs/CI/README.md) for dispatch and PR comment
 commands.

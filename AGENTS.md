@@ -106,6 +106,30 @@ the diff and validation results before committing or pushing, unless the user
 has already explicitly authorized those actions for the fix. A request to
 investigate or fix CI alone does not authorize a commit or push.
 
+## Snapshot Test CI
+
+UI tests under `Example/Tests/OpenSwiftUIUITests` and interaction tests under
+`Example/Tests/OpenSwiftUIInteractionTests` compare OpenSwiftUI output against
+SwiftUI reference images that live only in the CI reference store. A new or
+changed case has no reference until CI records one, so verification fails until
+`update` runs.
+
+After a PR that adds or changes such a case is created or updated, ask the user
+to trigger the matching snapshot workflow with the `openswiftui-renderer-iag`
+configuration and `update`. Leave the platform unset so both iOS and macOS run.
+Present the exact comment; post it only when the user approves.
+
+- UI tests: `/uitest osui-iag update [only-testing=<identifier>]`
+- Interaction tests: `/interactiontest osui-iag update [only-testing=<identifier>]`
+
+Each command accepts one `only-testing` identifier. Add it when the change
+touches only one suite, using the suite identifier such as
+`OpenSwiftUIUITests/<Suite>`, or the full test identifier
+`OpenSwiftUIUITests/<Suite>/<test>()` for a single case. Omit the filter when
+the cases span several suites, so one comment covers the whole change. See
+[Docs/CI/UITest.md](Docs/CI/UITest.md) for the command grammar and
+configuration aliases.
+
 ## Dependencies Setup
 
 The project requires cloning additional repositories in the same parent directory:

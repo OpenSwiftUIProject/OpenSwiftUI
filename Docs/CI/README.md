@@ -83,7 +83,9 @@ SnapshotTesting reports recording issues as test failures. CI accepts Tuist
 exit status 1 or xcodebuild exit status 65 from SwiftUI only when every failure
 is a recording issue and reference images exist. A successful interaction test
 without snapshots does not need to produce images. Other recording failures stop
-verification.
+verification, except when `xcodebuild` itself exits abnormally after the
+recording run has written reference images; CI then continues with a warning and
+OpenSwiftUI verification reports any reference that is still missing.
 Missing results, zero executed tests, and skipped-only selections fail the
 check. Test execution is serial. Failed runs upload logs, snapshot differences,
 and zipped `.xcresult` bundles for seven days; temporary build files are removed.
