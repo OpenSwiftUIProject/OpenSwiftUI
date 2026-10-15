@@ -71,8 +71,7 @@ func settings(base: SettingsDictionary = [:], xcconfig: Path) -> Settings {
     .settings(
         base: base,
         configurations: targetConfigurations(xcconfig),
-        defaultSettings: .essential,
-        defaultConfiguration: "OpenSwiftUIDebug"
+        defaultSettings: .essential
     )
 }
 
