@@ -4,6 +4,7 @@ import Foundation
 import JNI
 import UIKit
 import OpenSwiftUIDemoContent
+import OpenSwiftUICore
 
 nonisolated(unsafe) private var didConfigureNativeLoaders = false
 
@@ -53,6 +54,7 @@ private final class AndroidOpenSwiftUIAppDelegate: UIResponder, UIApplicationDel
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        PlatformTextSystems.current = AndroidTextSystem()
         let window = UIWindow()
         window.rootViewController = AndroidOpenSwiftUIViewController()
         window.makeKeyAndVisible()

@@ -192,7 +192,7 @@ extension NSAttributedString {
         package var capHeight: CGFloat, ascender: CGFloat, descender: CGFloat, leading: CGFloat
         package var outsets: EdgeInsets
 
-        init(capHeight: CGFloat, ascender: CGFloat, descender: CGFloat, leading: CGFloat, outsets: EdgeInsets) {
+        package init(capHeight: CGFloat, ascender: CGFloat, descender: CGFloat, leading: CGFloat, outsets: EdgeInsets) {
             self.capHeight = capHeight
             self.ascender = ascender
             self.descender = descender
@@ -200,7 +200,7 @@ extension NSAttributedString {
             self.outsets = outsets
         }
 
-        init() {
+        package init() {
             self.capHeight = .zero
             self.ascender = .zero
             self.descender = .zero
@@ -263,6 +263,9 @@ extension NSAttributedString {
             outsets: outsets
         )
         #else
+        if let system = PlatformTextSystems.current {
+            return system.fontMetrics(self)
+        }
         _openSwiftUIPlatformUnimplementedWarning()
         return EncodedFontMetrics()
         #endif

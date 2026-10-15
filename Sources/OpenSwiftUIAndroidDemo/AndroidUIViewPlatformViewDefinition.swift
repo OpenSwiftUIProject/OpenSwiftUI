@@ -9,12 +9,22 @@ class AndroidUIKitView: UIView {
     let displayListLayer = OpenQuartzCoreShims.CALayer()
 }
 
+private final class AndroidShapeView: AndroidUIKitView {
+    let fillView = UIView(frame: .zero)
+
+    override init(frame: UIKit.CGRect) {
+        super.init(frame: frame)
+        fillView.isUserInteractionEnabled = false
+        addSubview(fillView)
+    }
+}
+
 final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override static var system: System { .uiView }
 
     override static func makeView(kind: ViewKind) -> AnyObject {
         MainActor.assumeIsolated {
-            let view = AndroidUIKitView(frame: .zero)
+            let view = kind == .shape ? AndroidShapeView(frame: .zero) : AndroidUIKitView(frame: .zero)
             view.layer.anchorPoint = .zero
             view.isUserInteractionEnabled = false
             return view
@@ -23,6 +33,35 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
 
     override static func makeLayerView(type: OpenQuartzCoreShims.CALayer.Type, kind: ViewKind) -> AnyObject {
         makeView(kind: kind)
+    }
+
+    override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
+        MainActor.assumeIsolated { AndroidDrawingView(options: options) }
+    }
+
+    override static func setShape(_ path: Path, color: Color.Resolved, style: FillStyle, of view: AnyObject) -> Bool {
+        MainActor.assumeIsolated {
+            guard let view = view as? AndroidShapeView else { return false }
+            let rect: Foundation.CGRect
+            let radius: Foundation.CGFloat
+            switch path.storage {
+            case let .rect(bounds):
+                rect = bounds
+                radius = 0
+            case let .ellipse(bounds) where bounds.width == bounds.height:
+                rect = bounds
+                radius = bounds.width / 2
+            case let .roundedRect(rounded) where rounded.isUniform:
+                rect = rounded.rect
+                radius = rounded.clampedCornerRadius
+            default:
+                return false
+            }
+            view.fillView.frame = rect.uiRect
+            view.fillView.layer.cornerRadius = Double(radius)
+            setBackgroundColor(color, of: view.fillView)
+            return true
+        }
     }
 
     override static func viewLayer(_ view: AnyObject) -> OpenQuartzCoreShims.CALayer {
@@ -58,7 +97,7 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
     }
 
     override static func setClipsToBounds(_ clips: Bool, of view: AnyObject) {
-        MainActor.assumeIsolated { (view as! UIView).clipsToBounds = clips }
+        MainActor.assumeIsolated { (view as! UIView).clipsToBounds = clips || view is AndroidDrawingView }
     }
 
     override static func setGeometry(position: Foundation.CGPoint, bounds: Foundation.CGRect, of view: AnyObject) {
@@ -66,6 +105,7 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
             let view = view as! UIView
             view.bounds = bounds.uiRect
             view.layer.position = UIKit.CGPoint(x: Double(position.x), y: Double(position.y))
+            view.setNeedsLayout()
         }
     }
 

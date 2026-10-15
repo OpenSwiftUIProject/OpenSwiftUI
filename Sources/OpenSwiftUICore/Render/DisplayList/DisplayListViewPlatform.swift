@@ -72,6 +72,7 @@ open class PlatformViewDefinition: @unchecked Sendable {
 
     #if !canImport(QuartzCore)
     // Non-QuartzCore backends share the updater's traversal, state, and view cache.
+    open class func setShape(_ path: Path, color: Color.Resolved, style: FillStyle, of view: AnyObject) -> Bool { false }
     open class func viewLayer(_ view: AnyObject) -> CALayer { _openSwiftUIBaseClassAbstractMethod() }
     open class func subviews(_ view: AnyObject) -> [AnyObject] { _openSwiftUIBaseClassAbstractMethod() }
     open class func removeFromSuperview(_ view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
@@ -504,20 +505,29 @@ extension DisplayList.ViewUpdater.Platform {
                 }
                 var options = RasterizationOptions()
                 options.isAccelerated = text.needsDrawingGroup
+                let content: PlatformDrawableContent.Storage
+                #if !canImport(CoreText)
+                content = .text(.init(
+                    string: text.text.storage ?? NSAttributedString(string: ""),
+                    lineLimit: text.text.layoutProperties.lineLimit
+                ))
+                #else
+                content = .platformCallback { size in
+                    text.text.draw(
+                        in: CGRect(origin: .zero, size: size),
+                        with: textSize,
+                        applyingMarginOffsets: true,
+                        containsResolvable: text.text.isDynamic,
+                        context: .shared,
+                        renderer: text.renderer
+                    )
+                }
+                #endif
                 updateDrawingView(
                     &viewInfo,
                     options: options,
                     contentsScale: state.pointee.globals.pointee.environment.contentsScale,
-                    content: .platformCallback { size in
-                        text.text.draw(
-                            in: CGRect(origin: .zero, size: size),
-                            with: textSize,
-                            applyingMarginOffsets: true,
-                            containsResolvable: text.text.isDynamic,
-                            context: .shared,
-                            renderer: text.renderer
-                        )
-                    },
+                    content: content,
                     sizeChanged: viewInfo.state.size != item.size
                 )
                 viewInfo.nextUpdate.formMin(
@@ -1355,6 +1365,15 @@ extension DisplayList.ViewUpdater.Platform {
         style: FillStyle,
         contentsChanged: Bool
     ) {
+        #if !canImport(QuartzCore)
+        let color = paint.as(type: Color.Resolved.self)
+            ?? paint.as(type: AnchoredResolvedPaint<Color.Resolved>.self)?.paint
+        if let color, definition.setShape(path, color: color, style: style, of: viewInfo.view) {
+            // The backend draws in item coordinates, independently of inherited clips.
+            viewInfo.state.isContentGeometryEnabled = true
+            return
+        }
+        #endif
         let currentLayerType = type(of: viewInfo.layer)
         let originalSize = size
         let contentsScale = state.globals.pointee.environment.contentsScale

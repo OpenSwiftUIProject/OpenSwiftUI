@@ -2,7 +2,7 @@
 //  PlatformImage.swift
 //  OpenSwiftUI
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 import UIKit
 typealias PlatformImage = UIImage
 #elseif canImport(AppKit)

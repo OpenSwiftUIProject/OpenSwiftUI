@@ -49,10 +49,20 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         case displayList(DisplayList, CGPoint, Time)
         case rbDisplayList(any ORBDisplayListContents, CGPoint)
         case rbInterpolator(ORBDisplayListInterpolator, Float, CGPoint)
+        #if !canImport(CoreText)
+        case text(PlatformTextContent)
+        #endif
         case empty
     }
 
     var storage: Storage = .empty
+
+    #if !canImport(CoreText)
+    package var textContent: PlatformTextContent? {
+        guard case let .text(text) = storage else { return nil }
+        return text
+    }
+    #endif
 
     // MARK: - PlatformDrawableContent.State
 
@@ -137,6 +147,10 @@ public struct PlatformDrawableContent: @unchecked Sendable {
                 // TODO: GraphicsContext
                 // interpolator.draw(inState: graphicsContext.drawingState, by: fraction)
             }
+        #if !canImport(CoreText)
+        case .text:
+            _openSwiftUIPlatformUnimplementedFailure()
+        #endif
         case .empty:
             break
         }

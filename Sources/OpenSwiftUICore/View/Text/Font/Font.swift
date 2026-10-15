@@ -88,7 +88,11 @@ public struct Font: Hashable, Sendable {
             self.weight = weight?.value ?? w
             self.width = nil
             #else
-            _openSwiftUIPlatformUnimplementedFailure()
+            guard let system = PlatformTextSystems.current else {
+                _openSwiftUIPlatformUnimplementedFailure()
+            }
+            self = system.textStyleTraits(textStyle, size: dynamicTypeSize)
+            if let weight { self.weight = weight.value }
             #endif
         }
 
@@ -382,7 +386,11 @@ extension Font {
                 nil
             )
             #else
-            _openSwiftUIPlatformUnimplementedFailure()
+            var traits = resolved.font.resolveTraits(in: resolved.context)
+            for modifier in resolved.modifiers {
+                modifier.modify(traits: &traits)
+            }
+            return CTFont(pointSize: traits.pointSize, weight: traits.weight)
             #endif
         }
         return cache

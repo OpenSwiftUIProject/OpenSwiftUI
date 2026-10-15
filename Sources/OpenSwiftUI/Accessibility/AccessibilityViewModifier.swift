@@ -512,7 +512,7 @@ private struct DisplayListTransform<Modifier>: Rule, CustomStringConvertible whe
         }
         let nodeAttachments = attachments.map { attachment in
             let platformStorage: AccessibilityPlatformPropertyStorage
-            #if canImport(UIKit)
+            #if !os(Android) && canImport(UIKit)
             platformStorage = .init(explicitTraits: attachment.properties.uiKitTraits.map {
                 CodableAccessibilityUIKitTraits(removed: $0.removed.rawValue, added: $0.added.rawValue)
             })
@@ -574,7 +574,7 @@ private struct DisplayListTransform<Modifier>: Rule, CustomStringConvertible whe
         }
         let nodeAttachment = nodeAttachments[0]
         let attachment: AccessibilityAttachment
-        #if canImport(UIKit)
+        #if !os(Android) && canImport(UIKit)
         attachment = nodeAttachment.makeAttachment(with: UIKitAccessibilityPropertyApplicator.self)
         #elseif os(macOS)
         attachment = nodeAttachment.makeAttachment(with: AppKitAccessibilityPropertyApplicator.self)
