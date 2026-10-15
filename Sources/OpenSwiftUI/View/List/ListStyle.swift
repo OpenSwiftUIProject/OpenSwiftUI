@@ -9,6 +9,8 @@ import OpenSwiftUICore
 
 struct AnyListStyleContext: StyleContext {}
 
+struct SidebarSectionActionStyleContext: StyleContext {}
+
 // TODO: ListStyleContext conformance and matching rules.
 struct PlainListStyleContext: StyleContext {}
 
@@ -60,7 +62,7 @@ extension StyleContext where Self == GroupedFormStyleContext {
 
 struct ColumnsFormStyleContext: StyleContext {}
 
-struct FormBoxStyleContext: StyleContext {}
+struct AnyFormStyleContext: StyleContext {}
 
 struct GroupedFormValueStyleContext: StyleContext {}
 
@@ -69,12 +71,6 @@ struct GroupedFormTextFieldStyleContext: StyleContext {}
 struct RadioGroupStyleContext: StyleContext {}
 
 struct ColumnarLabeledContentStyle: LabeledContentStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
-
-struct FormBoxLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         _openSwiftUIUnimplementedFailure()
     }

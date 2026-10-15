@@ -163,8 +163,130 @@ struct AccessibilityLabelModifier<Content: View>: AccessibilityConfigurationModi
 // TODO: AccessibilityButtonModifier.Attachment
 // TODO: AccessibilityDefaultActionRepresentableConfiguration
 // TODO: AccessibilityNavigationLinkButtonModifier.Attachment
-// TODO: AccessibilityToggleModifier
-// TODO: AccessibilityToggleModifier.RepresentationModifier
+
+// MARK: - AccessibilityToggleModifier
+
+struct AccessibilityToggleModifier<Content: View>: AccessibilityConfigurationModifier {
+    var configuration: ToggleStyleConfiguration
+
+    func body(content: Content) -> some View {
+        #if os(macOS)
+        content
+            .modifier(MacDefaultModifier(configuration: configuration))
+            .accessibilityAddTraits(.isButton)
+            .accessibilityValue(AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty))
+        #else
+        content
+            .accessibilityCombinedElement(options: [.allActionsCustom, .includeHiddenChild], ignoredTraits: [.isImage, .isStaticText])
+            .accessibilityActions(configuration.accessibilityActions)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityValue(AccessibilityValueStorage(AccessibilityToggleValue(configuration.toggleState), description: .empty))
+            .staticIf(StyleContextAcceptsPredicate<AccessibilityRepresentableStyleContext>.self) {
+                $0.modifier(RepresentationModifier(label: configuration.label, intent: configuration.appIntent))
+            }
+        #endif
+    }
+
+    #if os(macOS)
+    private struct MacDefaultModifier: ViewModifier {
+        var configuration: ToggleStyleConfiguration
+
+        func body(content: MacDefaultModifier.Content) -> some View {
+            StaticIf(StyleContextAcceptsPredicate<GroupedFormStyleContext>.Inverted.self) {
+                content
+                    .accessibilityCombinedElement(
+                        options: [.reuseLabelNodes, .allActionsCustom, .includeHiddenChild],
+                        ignoredTraits: [.isImage, .isStaticText]
+                    )
+                    .accessibilityActions(configuration.accessibilityActions)
+                    .staticIf(StyleContextAcceptsPredicate<AccessibilityRepresentableStyleContext>.self) {
+                        $0.modifier(RepresentationModifier(label: configuration.label, intent: configuration.appIntent))
+                    }
+            } else: {
+                content.accessibilityCombinedElement(
+                    options: [.reuseLabelNodes, .includeHiddenChild],
+                    ignoredTraits: [.isImage, .isStaticText]
+                )
+            }
+        }
+    }
+    #endif
+
+    private struct RepresentationModifier<Label: View>: ViewModifier {
+        var label: Label
+        var intent: AppIntentAction?
+
+        func body(content: RepresentationModifier.Content) -> some View {
+            content.accessibilityAttachment(content: label) { tree in
+                guard let intent else { return }
+                let properties = tree.attachment?.properties
+                let action = AnyAccessibilityAction(AccessibilityAppIntentHandler(
+                    action: AccessibilityAppIntentAction(kind: .default, intent: intent),
+                    category: nil,
+                    label: properties?.labelStorage?.texts.first,
+                    image: properties?.images.first,
+                    supportsEncoding: true
+                ), bridged: true)
+                tree = .leaf(AccessibilityAttachment(properties: AccessibilityProperties(
+                    AccessibilityProperties.ActionsKey.self, [action]
+                )))
+            }
+        }
+    }
+
+    #if os(macOS)
+    struct Radio: AccessibilityConfigurationModifier {
+        struct Configuration {
+            var isSelected: ToggleState
+        }
+
+        var configuration: Configuration
+
+        init(_ state: ToggleState) {
+            configuration = Configuration(isSelected: state)
+        }
+
+        func body(content: Content) -> some View {
+            content
+                .accessibilityCaptureViewResponders()
+                .accessibilityAddTraits(.isRadioButton)
+                .accessibilityAddTraits(configuration.isSelected == .on ? .isSelected : [])
+                .accessibilityValue(AccessibilityToggleValue(configuration.isSelected))
+                .accessibilityIgnoreViewResponders()
+        }
+    }
+    #endif
+}
+
+// MARK: - ToggleStyleConfiguration + Accessibility
+
+extension ToggleStyleConfiguration {
+    fileprivate var appIntent: AppIntentAction? {
+        switch effect {
+        case let .appIntent(action): action
+        case .binding: nil
+        }
+    }
+
+    fileprivate var accessibilityActions: [AnyAccessibilityAction] {
+        switch effect {
+        case let .appIntent(action):
+            [AnyAccessibilityAction(AccessibilityAppIntentHandler(
+                action: AccessibilityAppIntentAction(kind: .default, intent: action),
+                category: nil,
+                label: nil,
+                image: nil,
+                supportsEncoding: false
+            ), bridged: true)]
+        case .binding:
+            [AnyAccessibilityAction(action: AccessibilityVoidAction(kind: .default), label: nil, image: nil, handler: {
+                isOn.toggle()
+                return .success
+            }, bridged: false)]
+        }
+    }
+}
+
 // TODO: AccessibilityButtonModifier
 // TODO: AccessibilityButtonModifier.Representable
 // TODO: AccessibilityBadgedViewNeedsValue

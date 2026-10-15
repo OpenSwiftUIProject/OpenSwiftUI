@@ -2,16 +2,59 @@
 //  SwitchToggleStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 6.5.4
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 1246D37251EA3A918B392E2B95F8B7EF (SwiftUI)
 
 @_spi(Private)
+@_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
-// MARK: - SwitchToggleStyle [WIP]
+// MARK: - ToggleStyle + SwitchToggleStyle
 
 extension ToggleStyle where Self == SwitchToggleStyle {
+    /// A toggle style that displays a leading label and a trailing switch.
+    ///
+    /// Apply this style to a ``Toggle`` or to a view hierarchy that contains
+    /// toggles using the ``View/toggleStyle(_:)`` modifier:
+    ///
+    ///     Toggle("Enhance Sound", isOn: $isEnhanced)
+    ///         .toggleStyle(.switch)
+    ///
+    /// The style produces a label that describes the purpose of the toggle
+    /// and a switch that shows the toggle's state. The user taps or clicks
+    /// the switch to change the toggle's state. The default appearance is
+    /// similar across platforms, although the way you use switches in your
+    /// user interface varies a little, as described in
+    /// [Toggles](https://developer.apple.com/design/human-interface-guidelines/toggles)
+    /// in the Human Interface Guidelines.
+    ///
+    /// @TabNavigator {
+    ///     @Tab("iOS") {
+    ///         @Image(source: "ToggleStyle-switch-1-iOS", alt: "A screenshot of the text On appearing to the left of a toggle switch that's on. The toggle's tint color is green. The toggle and its text appear in a rounded rectangle, and are aligned with opposite edges of the rectangle.")
+    ///     }
+    ///     @Tab("macOS") {
+    ///         @Image(source: "ToggleStyle-switch-1-macOS", alt: "A screenshot of the text On appearing to the left of a toggle switch that's on. The toggle's tint color is blue. The toggle and its text are adjacent to each other.")
+    ///     }
+    ///     @Tab("watchOS") {
+    ///         @Image(source: "ToggleStyle-switch-1-watchOS", alt: "A screenshot of the text On appearing to the left of a toggle switch that's on. The toggle's tint color is green. The toggle and its text appear in a rounded rectangle, and are aligned with opposite edges of the rectangle.")
+    ///     }
+    ///     @Tab("tvOS") {
+    ///         @Image(source: "ToggleStyle-automatic-2-tvOS", alt: "A screenshot of three buttons labeled Show Lyrics, Shuffle, and Repeat, stacked vertically. The first is highlighted. The second is on, while the others are off.")
+    ///     }
+    /// }
+    ///
+    /// In iOS, iPadOS, watchOS, and tvOS, the label and switch fill as much
+    /// horizontal space as the toggle's parent offers by aligning the label's
+    /// leading edge and the switch's trailing edge with the containing view's
+    /// respective leading and trailing edges. In macOS, the style uses a
+    /// minimum of horizontal space by aligning the trailing edge of the label
+    /// with the leading edge of the switch. OpenSwiftUI helps you to manage the
+    /// spacing and alignment when this style appears in a ``Form``.
+    ///
+    /// OpenSwiftUI uses this style as the default for iOS, iPadOS, watchOS, and
+    /// tvOS in most contexts when you don't set a style, or when you apply
+    /// the ``ToggleStyle/automatic`` style.
     @_alwaysEmitIntoClient
     @MainActor
     @preconcurrency
@@ -19,6 +62,8 @@ extension ToggleStyle where Self == SwitchToggleStyle {
         .init()
     }
 }
+
+// MARK: - SwitchToggleStyle
 
 /// A toggle style that displays a leading label and a trailing switch.
 ///
@@ -65,31 +110,39 @@ public struct SwitchToggleStyle: ToggleStyle {
         self.tint = tint
     }
 
-    // TODO: iOS gesture
     public func makeBody(configuration: Configuration) -> some View {
-        let switchView = {
+        LabeledContent {
             #if os(iOS) || os(visionOS)
-            Switch(isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
+            Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, thumbTint: placementTint[.switchThumb], font: font)
+                .fixedSize()
+                .contentShape(Capsule())
+                .accessibilityConfiguration(AccessibilityToggleModifier.Switch())
             #elseif os(macOS)
-            Switch(isOn: configuration.$isOn, tint: tint, font: font)
+            Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, font: font)
+                .fixedSize()
+                .modifier(
+                    _EnvironmentKeyTransformModifier(keyPath: \.explicitControlSize) { size in
+                        if size == nil {
+                            size = .mini
+                        }
+                    }
+                    .requiring(GroupedFormStyleContext.self)
+                )
+                .layoutValue(key: TopAlignedFormValueKey.self, value: controlSize == .large)
             #else
             _openSwiftUIPlatformUnimplementedFailure()
             #endif
-        }
-        LabeledContent {
-            switchView()
-                .fixedSize()
-                .modifier(
-                    _EnvironmentKeyWritingModifier(keyPath: \.controlSize, value: controlSize)
-                        .requiring(GroupedFormStyleContext.self),
-                )
-                // TODO:
-                .layoutValue(key: TopAlignedFormValueKey.self, value: false)
         } label: {
             configuration.label
         }
         .listLabeledContentPrefersHorizontalLayout()
         .accessibilityLabeledContent()
+        #if os(iOS) || os(visionOS)
+        .modifier(FocusEventProxyModifier())
+        .gesture(PhysicalButtonPressGesture(allowedButtonTypes: [.select]).onEnded { _ in
+            configuration.isOn.toggle()
+        })
+        #endif
     }
 }
 
@@ -100,6 +153,21 @@ extension SwitchToggleStyle: Sendable {}
 import UIKit
 #elseif os(macOS)
 import AppKit
+#endif
+
+// MARK: - AccessibilityToggleModifier.Switch
+
+#if os(iOS) || os(visionOS)
+extension AccessibilityToggleModifier {
+    struct Switch: AccessibilityConfigurationModifier {
+        func body(content: Content) -> some View {
+            content
+                .accessibilityCaptureViewResponders()
+                .accessibilityAddTraits(.isSwitch)
+                .accessibilityIgnoreViewResponders()
+        }
+    }
+}
 #endif
 
 // MARK: - Switch
@@ -124,7 +192,6 @@ private struct Switch: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: PlatformSwitch, context: Context) {
-        let isOn = isOn
         let transaction = context.transaction
         Update.enqueueAction(reason: nil) { [transaction] in
             uiView.setOn(isOn, animated: !transaction.disablesAnimations)
@@ -172,6 +239,7 @@ private struct Switch: NSViewRepresentable {
     func makeNSView(context: Context) -> PlatformSwitch {
         let view = PlatformSwitch()
         view.target = context.coordinator
+        view.action = #selector(PlatformSwitchCoordinator.isOnChanged)
         return view
     }
 
@@ -200,7 +268,6 @@ private struct Switch: NSViewRepresentable {
     }
 }
 #endif
-
 
 // MARK: - PlatformSwitchCoordinator
 

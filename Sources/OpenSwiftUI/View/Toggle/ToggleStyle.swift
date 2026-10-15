@@ -3,10 +3,12 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by ArchivedView
+//  Status: Complete
 //  ID: FB08626C1326F7E32DC674FF8C676196 (SwiftUI)
 
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
+@_spi(Private)
 public import OpenSwiftUICore
 
 // MARK: - ToggleStyle
@@ -183,7 +185,7 @@ public protocol ToggleStyle {
     typealias Configuration = ToggleStyleConfiguration
 }
 
-// MARK: - ToggleStyleConfiguration [WIP]
+// MARK: - ToggleStyleConfiguration
 
 /// The properties of a toggle instance.
 ///
@@ -210,6 +212,7 @@ public protocol ToggleStyle {
 /// when the property is `false`. Change the value when the user performs
 /// an action that's meant to change the toggle, like the button does when
 /// tapped or clicked by the user.
+@available(OpenSwiftUI_v1_0, *)
 public struct ToggleStyleConfiguration {
     /// A type-erased label of a toggle.
     ///
@@ -269,7 +272,7 @@ public struct ToggleStyleConfiguration {
     public var isOn: Bool
 
     @Binding
-    private var toggleState: ToggleState
+    var toggleState: ToggleState
 
     /// Whether the ``Toggle`` is currently in a mixed state.
     ///
@@ -299,7 +302,7 @@ public struct ToggleStyleConfiguration {
     public var isMixed: Bool
 
     enum Effect {
-        // case appIntent(AppIntentAction)
+        case appIntent(AppIntentAction)
         case binding
     }
 
@@ -342,51 +345,77 @@ struct ToggleStateBool: Projection {
     }
 }
 
-// MARK: - ResolvedToggleStyle [WIP]
+// MARK: - ResolvedToggleStyle
 
 struct ResolvedToggleStyle: StyleableView {
     var configuration: ToggleStyleConfiguration
 
-    // WIP
     var body: some View {
-        ResolvedToggleStyleBody(configuration: configuration).body
-            // AccessibilityToggleModifier
+        ResolvedToggleStyleBody(configuration: configuration)
+            .accessibilityConfiguration(AccessibilityToggleModifier(configuration: configuration))
+            #if os(iOS)
+            .accessibilityShowsLargeContentViewer(.placeholder) {
+                configuration.label
+            }
+            #endif
+            .platformItemToggleState(configuration.toggleState)
+            .keyboardShortcutBindingBehavior(action: {
+                configuration.isOn.toggle()
+            }) {
+                configuration.label
+            }
     }
 
-    // FIXME: DefaultToggleStyle
-    static let defaultStyleModifier = ToggleStyleModifier(style: .switch)
+    static let defaultStyleModifier = ToggleStyleModifier(style: DefaultToggleStyle())
 }
 
-// MARK: - ResolvedToggleStyleBody [WIP]
+// MARK: - ResolvedToggleStyleBody
 
-private struct ResolvedToggleStyleBody: View /*ConditionallyArchivableView*/ {
+private struct ResolvedToggleStyleBody: ConditionallyArchivableView {
     let configuration: ToggleStyleConfiguration
 
     var body: some View {
-        Toggle(isOn: configuration.$isOn) {
-            configuration.label
+        Toggle(configuration)
+    }
+
+    var archivedBody: some View {
+        ArchiveBody(configuration: configuration)
+            .modifier(ArchivesInteractiveControlsEffect())
+            .modifier(HandGestureShortcutInteractiveControl())
+    }
+
+    struct ArchiveBody: View {
+        let configuration: ToggleStyleConfiguration
+        @Environment(\.isEnabled) private var isEnabled
+
+        var body: some View {
+            switch configuration.effect {
+            case .binding:
+                Toggle(configuration)
+            case let .appIntent(action):
+                TemporalStack(states: ToggleState.allCases) { state in
+                    let binding = Binding.constant(state)
+                    Toggle(ToggleStyleConfiguration(
+                        label: .init(),
+                        isOn: binding.projecting(ToggleStateBool()),
+                        toggleState: binding,
+                        isMixed: state == .mixed,
+                        effect: .binding
+                    ))
+                }
+                .modifier(ArchivableToggleAppIntentModifier(
+                    toggleState: configuration.toggleState,
+                    appIntentAction: action,
+                    isEnabled: isEnabled
+                ))
+            }
         }
     }
-//    struct ArchiveBody {
-//        let configuration: ToggleStyleConfiguration
-//        @Environment(\.isEnabled) private var isEnabled
-//    }
 }
 
-// MARK: - ToggleStyleModifier
+// MARK: - View + toggleStyle
 
-struct ToggleStyleModifier<Style>: StyleModifier where Style: ToggleStyle {
-    init(style: Style) {
-        self.style = style
-    }
-
-    var style: Style
-
-    func styleBody(configuration: Style.Configuration) -> Style.Body {
-        style.makeBody(configuration: configuration)
-    }
-}
-
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Sets the style for toggles in a view hierarchy.
     ///
@@ -483,4 +512,143 @@ extension View {
     }
 }
 
-// TODO: Toggle + Archive stuff
+// MARK: - ToggleStyleModifier
+
+struct ToggleStyleModifier<Style>: StyleModifier where Style: ToggleStyle {
+    init(style: Style) {
+        self.style = style
+    }
+
+    var style: Style
+
+    func styleBody(configuration: Style.Configuration) -> Style.Body {
+        style.makeBody(configuration: configuration)
+    }
+}
+
+// MARK: - ArchivableToggleAppIntentModifier
+
+struct ArchivableToggleAppIntentModifier: _ArchivableViewModifier {
+    @ArchivableAppIntentToggle var toggleState: ToggleState
+    var isEnabled: Bool
+
+    init(toggleState: ToggleState, appIntentAction: AppIntentAction, isEnabled: Bool) {
+        _toggleState = ArchivableAppIntentToggle(value: toggleState, appIntentAction: appIntentAction)
+        self.isEnabled = isEnabled
+    }
+
+    func body(content: Content) -> some View {
+        ButtonBehavior(action: {
+            toggleState.toggle()
+        }) { isPressed in
+            content
+                .temporalState(toggleState)
+                .modifier(OpacityButtonHighlightModifier(highlighted: isPressed))
+                .contentShape(Rectangle())
+        }
+        .environment(\.isEnabled, isEnabled)
+    }
+}
+
+// MARK: - ArchivableAppIntentToggle
+
+@propertyWrapper
+struct ArchivableAppIntentToggle: DynamicProperty, Codable {
+    var value: ToggleState
+    var location: AnyLocation<ToggleState>?
+    var appIntentAction: AppIntentAction
+
+    var wrappedValue: ToggleState {
+        get {
+            if Update.threadIsUpdating {
+                location?.wasRead = true
+            } else if let location {
+                return location.get()
+            }
+            return value
+        }
+        nonmutating set {
+            guard let location else {
+                Log.internalError("mutating an ArchivableAppIntentToggle that is not mounted in a view, this will be a no-op.")
+                return
+            }
+            location.set(newValue, transaction: Transaction())
+        }
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case value
+        case appIntentAction
+    }
+
+    static func _makeProperty<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        let signal = Attribute(value: ())
+        buffer.append(Box(
+            signal: WeakAttribute(signal),
+            executor: inputs.appIntentExecutor,
+            executorBox: MutableBox(nil)
+        ), fieldOffset: fieldOffset)
+    }
+
+    private struct Box: DynamicPropertyBox {
+        let signal: WeakAttribute<Void>
+        @Attribute var executor: AppIntentExecutor?
+        var location: LocationBox<AppIntentLocation>?
+        let executorBox: MutableBox<AppIntentExecutor?>
+
+        mutating func update(property: inout ArchivableAppIntentToggle, phase: _GraphInputs.Phase) -> Bool {
+            let locationChanged = location == nil
+            if location == nil {
+                location = LocationBox(AppIntentLocation(
+                    storage: StoredLocation(initialValue: property.value, host: .currentHost, signal: signal),
+                    executorBox: executorBox,
+                    appIntentAction: property.appIntentAction
+                ))
+            }
+            let (executor, executorChanged) = $executor.changedValue()
+            executorBox.value = executor
+            let (value, changed) = location!.update()
+            property.value = value
+            property.location = location
+            return (changed && location!.wasRead) || locationChanged || executorChanged
+        }
+    }
+
+    private struct AppIntentLocation: Location {
+        let storage: StoredLocation<ToggleState>
+        let executorBox: MutableBox<AppIntentExecutor?>
+        let appIntentAction: AppIntentAction
+
+        var wasRead: Bool {
+            get { storage.wasRead }
+            nonmutating set { storage.wasRead = newValue }
+        }
+
+        func get() -> ToggleState {
+            storage.get()
+        }
+
+        func set(_ value: ToggleState, transaction: Transaction) {
+            storage.set(value, transaction: transaction)
+            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v7) {
+                executorBox.value?.perform(appIntentAction.lnAction)
+            }
+            Log.archivedToggle.debug("Executed LNAction \(appIntentAction.lnAction.debugDescription) when setting value \(value.debugDescription).")
+        }
+
+        func update() -> (ToggleState, Bool) {
+            storage.update()
+        }
+
+        static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.storage === rhs.storage
+                && lhs.executorBox === rhs.executorBox
+                && lhs.appIntentAction.lnAction === rhs.appIntentAction.lnAction
+        }
+    }
+}

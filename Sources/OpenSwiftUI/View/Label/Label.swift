@@ -189,7 +189,7 @@ extension Label where Title == Text, Icon == Image {
     }
 }
 
-#if canImport(Darwin) && canImport(DeveloperToolsSupport)
+#if canImport(DeveloperToolsSupport)
 // MARK: - Label + ImageResource
 
 @available(OpenSwiftUI_v5_0, *)

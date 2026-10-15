@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: D603B70BAAC92B7EC91530E54167B115 (SwiftUI)
 
 // MARK: - LabelGroupStyle_v0
@@ -60,7 +60,7 @@ struct ResolvedLabelGroupStyle: StyleableView {
     var configuration: LabelGroupStyleConfiguration { .init(content: .init()) }
 }
 
-// MARK: - StyleApplicator [WIP]
+// MARK: - StyleApplicator
 
 private struct StyleApplicator<S>: _VariadicView.MultiViewRoot where S: LabelGroupStyle_v0 {
 
@@ -77,9 +77,9 @@ private struct StyleApplicator<S>: _VariadicView.MultiViewRoot where S: LabelGro
             id: \.view.id
         ) { view in
             view.view
-            // defaultForegroundStyle
-            // font
-            // platformItem
+                .defaultForegroundStyle(style.foregroundStyle(at: view.offset))
+                .font(style.font(at: view.offset))
+                .platformItemHierarchicalLevel(view.offset)
         }
     }
 }
