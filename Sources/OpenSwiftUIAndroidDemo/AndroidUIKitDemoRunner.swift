@@ -4,9 +4,12 @@ import Foundation
 import JNI
 import UIKit
 import OpenSwiftUIDemoContent
-import OpenSwiftUICore
+public import OpenSwiftUICore
 
 nonisolated(unsafe) private var didConfigureNativeLoaders = false
+@MainActor private var makeRootViewController: () -> UIViewController = {
+    AndroidOpenSwiftUIViewController(rootView: ContentView())
+}
 
 @_cdecl("OpenSwiftUIAndroidDemoConfigureUIKit")
 public func OpenSwiftUIAndroidDemoConfigureUIKit() {
@@ -37,6 +40,15 @@ private func configureNativeLoaders(env: UnsafeMutablePointer<JNIEnv>?) {
 public struct AndroidUIKitDemoRunner {
     public init() {}
 
+    public static func configure<Content: View>(
+        rootView: Content,
+        javaEnvironment: UnsafeMutableRawPointer?
+    ) {
+        configureNativeLoaders(env: javaEnvironment?.assumingMemoryBound(to: JNIEnv.self))
+        makeRootViewController = { AndroidOpenSwiftUIViewController(rootView: rootView) }
+        OpenSwiftUIAndroidDemoConfigureUIKit()
+    }
+
     public func run() -> Int32 {
         UIKitAndroid.UIApplicationDelegateClass = AndroidOpenSwiftUIAppDelegate.self
         let application = UIApplication()
@@ -56,7 +68,7 @@ private final class AndroidOpenSwiftUIAppDelegate: UIResponder, UIApplicationDel
     ) -> Bool {
         PlatformTextSystems.current = AndroidTextSystem()
         let window = UIWindow()
-        window.rootViewController = AndroidOpenSwiftUIViewController()
+        window.rootViewController = makeRootViewController()
         window.makeKeyAndVisible()
         self.window = window
         return true
@@ -64,19 +76,26 @@ private final class AndroidOpenSwiftUIAppDelegate: UIResponder, UIApplicationDel
 }
 
 @MainActor
-private final class AndroidOpenSwiftUIViewController: UIViewController {
+private final class AndroidOpenSwiftUIViewController<Content: View>: UIViewController {
+    private let rootView: Content
+
+    init(rootView: Content) {
+        self.rootView = rootView
+        super.init(nibName: nil, bundle: nil)
+    }
+
     override func loadView() {
-        view = AndroidHostingView(rootView: ContentView())
+        view = AndroidHostingView(rootView: rootView)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        (view as? AndroidHostingView<ContentView>)?.startRendering()
+        (view as? AndroidHostingView<Content>)?.startRendering()
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        (view as? AndroidHostingView<ContentView>)?.stopRendering()
+        (view as? AndroidHostingView<Content>)?.stopRendering()
     }
 }
 #endif

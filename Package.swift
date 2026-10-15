@@ -892,6 +892,7 @@ if !buildForDarwinPlatform {
 }
 if androidUIKitCondition {
     products.append(.library(name: "OpenSwiftUIAndroidDemo", type: .dynamic, targets: ["OpenSwiftUIAndroidDemo"]))
+    products.append(.library(name: "OpenSwiftUIAndroidHost", targets: ["OpenSwiftUIAndroidDemo"]))
 }
 
 // MARK: - Package

@@ -99,6 +99,12 @@ private final class AndroidViewGraphHost<Content: View>: ViewRendererHost, ViewG
         }
     }
 
+    func beginTransaction() {
+        // SDL drives frames instead of the CoreFoundation run-loop observer.
+        // The shared render() entry flushes pending graph transactions.
+        requestUpdate(after: 0)
+    }
+
     func updateRootView() { viewGraph.setRootView(Self.makeRootView(rootView)) }
     func updateEnvironment() { viewGraph.setEnvironment(EnvironmentValues()) }
     func updateTransform() { viewGraph.invalidateTransform() }
