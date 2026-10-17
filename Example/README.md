@@ -115,8 +115,7 @@ Run the overlay script again after you switch Xcode. To use another overlay
 file, set `OPENSWIFTUI_XR_OVERLAY`.
 
 Only the visionOS Simulator is supported. CoreSVG, SFSymbols, and Gestures are
-not linked on visionOS. HostingExample disables foreground vibrancy on visionOS
-until foreground material rendering is implemented.
+not linked on visionOS.
 
 #### Simulator Runtime
 
