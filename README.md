@@ -101,7 +101,7 @@ for various platforms:
 | **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye), [@Mx-Iris](https://github.com/Mx-Iris) |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 | **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ✅[^3] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
-| **visionOS** | None | ⭐️ *[^4] | ✅ | Not tested in CI | ✅[^4] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **visionOS** | [![visionOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/visionos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/visionos.yml) | ⭐️ *[^4] | ✅ | Not tested in CI | ✅[^4] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 | **Android** | None | Not supported yet | ❌ | ❌ | ❌ | |
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ | |
 | **Embedded** | None | Preview[^6] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye) |
@@ -112,7 +112,7 @@ for various platforms:
 
 [^3]: Build, test, and deployment with the [stdout renderer](Renderer/Stdout/README.md) are supported. Linux UI framework integration is not available yet.
 
-[^4]: visionOS Simulator support is experimental and has no CI coverage. Physical device support has not been verified.
+[^4]: visionOS Simulator support is experimental. CI builds for the visionOS Simulator but does not run tests. A visionOS Simulator build needs a UIKit header overlay. See [visionOS Simulator Build](Example/README.md#visionos-simulator-build). visionOS device builds are not supported.
 
 [^5]: iOS Simulator is supported. iOS device builds require the Compute backend. Apple's AttributeGraph backend is limited to the simulator because required device symbols are missing.
 
