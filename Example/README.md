@@ -93,11 +93,12 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 - Choose `SwiftUIDebug` configuration to run with SwiftUI
 - Choose `OpenSwiftUIDebug` configuration to run with OpenSwiftUI
 
-### visionOS Simulator Build
+### visionOS Build
 
-The public visionOS SDK marks `UIScreen` unavailable. OpenSwiftUI builds for the
-visionOS Simulator with a UIKit header overlay from `DarwinPrivateFrameworks`.
-Run from `OpenSwiftUI/Example`, with the same Xcode for all steps:
+The public visionOS SDKs mark `UIScreen` unavailable. OpenSwiftUI builds for
+visionOS devices and the visionOS Simulator with a UIKit header overlay from
+`DarwinPrivateFrameworks`. Run from `OpenSwiftUI/Example`, with the same Xcode
+for all steps:
 
 ```shell
 ../../DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh
@@ -111,11 +112,13 @@ xcodebuild build \
     CODE_SIGNING_ALLOWED=NO
 ```
 
+For a visionOS device, use `-destination 'generic/platform=visionOS'`.
+
 The `--compute` setup uses the Compute backend, whose binary includes visionOS
 slices. Run the overlay script again after you switch Xcode. To use another
 overlay file, set `OPENSWIFTUI_XR_OVERLAY`.
 
-Only the visionOS Simulator is supported. Gestures is not linked on visionOS.
+Gestures is not linked on visionOS.
 
 #### Simulator Runtime
 

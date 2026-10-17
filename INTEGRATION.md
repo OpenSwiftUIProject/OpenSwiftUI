@@ -170,7 +170,7 @@ See [Docs/Preview.md](Docs/Preview.md) for Xcode Preview support details.
 
 ## Platform-Specific Notes
 
-The current supported platforms are macOS and iOS simulators. The visionOS Simulator is also supported, but it is not tested extensively. CI builds it but does not run tests. A visionOS Simulator build needs a UIKit header overlay. See [visionOS Simulator Build](Example/README.md#visionos-simulator-build).
+The current supported platforms are macOS and iOS simulators. visionOS devices and the visionOS Simulator are also supported, but they are not tested extensively. CI builds for the visionOS Simulator but does not run tests. A visionOS build needs a UIKit header overlay. See [visionOS Build](Example/README.md#visionos-build).
 
 ## Known Limitations
 
