@@ -101,7 +101,7 @@ Run from `OpenSwiftUI/Example`, with the same Xcode for all steps:
 
 ```shell
 ../../DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh
-./setup.sh
+./setup.sh --compute
 
 xcodebuild build \
     -workspace Example.xcworkspace \
@@ -111,8 +111,9 @@ xcodebuild build \
     CODE_SIGNING_ALLOWED=NO
 ```
 
-Run the overlay script again after you switch Xcode. To use another overlay
-file, set `OPENSWIFTUI_XR_OVERLAY`.
+The `--compute` setup uses the Compute backend, whose binary includes visionOS
+slices. Run the overlay script again after you switch Xcode. To use another
+overlay file, set `OPENSWIFTUI_XR_OVERLAY`.
 
 Only the visionOS Simulator is supported. CoreSVG, SFSymbols, and Gestures are
 not linked on visionOS.
