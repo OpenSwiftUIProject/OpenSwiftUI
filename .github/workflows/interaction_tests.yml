@@ -76,10 +76,11 @@ jobs:
       update_reference: ${{ inputs.update_reference || false }}
       only-testing: ${{ inputs.only-testing || '' }}
 
-  ios_interaction_test:
-    name: Execute interaction tests on iOS (${{ matrix.configuration.id }})
-    outputs:
-      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+  # SwiftUI reference images do not depend on the OpenSwiftUI configuration,
+  # so an update records them once per platform before the configuration
+  # matrix verifies with OpenSwiftUI.
+  ios_interaction_record:
+    name: Record SwiftUI interaction references on iOS
     needs: prepare_interaction_tests
     permissions:
       contents: read
@@ -88,6 +89,70 @@ jobs:
       statuses: write
       id-token: write
     if: >-
+      needs.prepare_interaction_tests.outputs.ios-requested == 'true' &&
+      needs.prepare_interaction_tests.outputs.update-reference == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ["26.6"]
+        release: [2024]
+        ios-version: ["18.5"]
+        include:
+          - ios-version: "18.5"
+            ios-simulator-name: "iPhone 16 Pro"
+    timeout-minutes: 90
+    runs-on:
+      - xcode-26.6
+      - ios-simulator-18.5
+    env:
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 0
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.prepare_interaction_tests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_interaction_tests.outputs.ref || github.sha }}
+          persist-credentials: false
+      - name: Record SwiftUI references
+        id: record
+        uses: ./.github/actions/interactiontests
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+          platform: ios
+          destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
+          artifact-name: ios-interactiontest-references-${{ matrix.ios-version }}
+          mode: record
+          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
+          compute: 'false'
+      - name: Require recorded references
+        if: steps.record.outputs.record-result != 'success'
+        run: exit 1
+
+  ios_interaction_test:
+    name: Execute interaction tests on iOS (${{ matrix.configuration.id }})
+    outputs:
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: [prepare_interaction_tests, ios_interaction_record]
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+      id-token: write
+    # Runs when the record job was skipped (no update). After a cancelled
+    # recording it still starts, so the gate step resolves the PR statuses.
+    if: >-
+      (!cancelled() || needs.ios_interaction_record.result == 'cancelled') &&
       needs.prepare_interaction_tests.outputs.ios-requested == 'true'
     strategy:
       fail-fast: false
@@ -108,6 +173,8 @@ jobs:
       STATUS_ENABLED: ${{ needs.prepare_interaction_tests.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_interaction_tests.outputs.ref }}
       CONFIGURATION_NAME: ${{ matrix.configuration.id }}
+      RECORD_REQUESTED: ${{ needs.prepare_interaction_tests.outputs.update-reference }}
+      RECORD_RESULT: ${{ needs.ios_interaction_record.result }}
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
       OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.configuration.compute }}
@@ -135,6 +202,11 @@ jobs:
               description: `iOS interaction tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
+      - name: Require recorded SwiftUI references
+        if: needs.prepare_interaction_tests.outputs.update-reference == 'true' && needs.ios_interaction_record.result != 'success'
+        run: |
+          echo "::error::SwiftUI reference recording for iOS ended with '$RECORD_RESULT', so the interaction tests did not run."
+          exit 1
       - uses: actions/checkout@v4
         id: checkout
         with:
@@ -149,7 +221,6 @@ jobs:
           platform: ios
           destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
           artifact-name: ios-interactiontest-snapshots-${{ matrix.ios-version }}-${{ matrix.configuration.id }}
-          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
           only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
           compute: ${{ matrix.configuration.compute == 1 }}
       - name: Require successful tests
@@ -166,8 +237,11 @@ jobs:
             const state = process.env.JOB_STATUS === "success" ? "success" :
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
+            const recordingFailed = process.env.RECORD_REQUESTED === "true" && process.env.RECORD_RESULT !== "success";
             const description = process.env.JOB_STATUS === "cancelled" ?
               "iOS interaction tests were cancelled." :
+              recordingFailed ?
+              `iOS interaction tests (${process.env.CONFIGURATION_NAME}) did not run because SwiftUI reference recording ended with ${process.env.RECORD_RESULT}.` :
               `iOS interaction tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
@@ -179,10 +253,8 @@ jobs:
               context: process.env.STATUS_CONTEXT,
             });
 
-  macos_interaction_test:
-    name: Execute interaction tests on macOS (${{ matrix.configuration.id }})
-    outputs:
-      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+  macos_interaction_record:
+    name: Record SwiftUI interaction references on macOS
     needs: prepare_interaction_tests
     permissions:
       contents: read
@@ -191,6 +263,68 @@ jobs:
       statuses: write
       id-token: write
     if: >-
+      needs.prepare_interaction_tests.outputs.macos-requested == 'true' &&
+      needs.prepare_interaction_tests.outputs.update-reference == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        xcode-version: ["26.6"]
+        release: [2024]
+    timeout-minutes: 90
+    runs-on:
+      - self-hosted
+      - ${{ matrix.os }}
+      - xcode-26.6
+    env:
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 0
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.prepare_interaction_tests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_interaction_tests.outputs.ref || github.sha }}
+          persist-credentials: false
+      - name: Record SwiftUI references
+        id: record
+        uses: ./.github/actions/interactiontests
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+          platform: macos
+          destination: "platform=macOS"
+          artifact-name: macos-interactiontest-references
+          mode: record
+          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
+          compute: 'false'
+      - name: Require recorded references
+        if: steps.record.outputs.record-result != 'success'
+        run: exit 1
+
+  macos_interaction_test:
+    name: Execute interaction tests on macOS (${{ matrix.configuration.id }})
+    outputs:
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: [prepare_interaction_tests, macos_interaction_record]
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+      id-token: write
+    # Runs when the record job was skipped (no update). After a cancelled
+    # recording it still starts, so the gate step resolves the PR statuses.
+    if: >-
+      (!cancelled() || needs.macos_interaction_record.result == 'cancelled') &&
       needs.prepare_interaction_tests.outputs.macos-requested == 'true'
     strategy:
       fail-fast: false
@@ -209,6 +343,8 @@ jobs:
       STATUS_ENABLED: ${{ needs.prepare_interaction_tests.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_interaction_tests.outputs.ref }}
       CONFIGURATION_NAME: ${{ matrix.configuration.id }}
+      RECORD_REQUESTED: ${{ needs.prepare_interaction_tests.outputs.update-reference }}
+      RECORD_RESULT: ${{ needs.macos_interaction_record.result }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
       OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.configuration.compute }}
@@ -236,6 +372,11 @@ jobs:
               description: `macOS interaction tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
+      - name: Require recorded SwiftUI references
+        if: needs.prepare_interaction_tests.outputs.update-reference == 'true' && needs.macos_interaction_record.result != 'success'
+        run: |
+          echo "::error::SwiftUI reference recording for macOS ended with '$RECORD_RESULT', so the interaction tests did not run."
+          exit 1
       - uses: actions/checkout@v4
         id: checkout
         with:
@@ -250,7 +391,6 @@ jobs:
           platform: macos
           destination: "platform=macOS"
           artifact-name: macos-interactiontest-snapshots-${{ matrix.configuration.id }}
-          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
           only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
           compute: ${{ matrix.configuration.compute == 1 }}
       - name: Require successful tests
@@ -267,8 +407,11 @@ jobs:
             const state = process.env.JOB_STATUS === "success" ? "success" :
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
+            const recordingFailed = process.env.RECORD_REQUESTED === "true" && process.env.RECORD_RESULT !== "success";
             const description = process.env.JOB_STATUS === "cancelled" ?
               "macOS interaction tests were cancelled." :
+              recordingFailed ?
+              `macOS interaction tests (${process.env.CONFIGURATION_NAME}) did not run because SwiftUI reference recording ended with ${process.env.RECORD_RESULT}.` :
               `macOS interaction tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,

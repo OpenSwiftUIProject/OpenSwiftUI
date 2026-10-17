@@ -38,11 +38,18 @@ inputs:
   record-if-missing:
     description: 'Record a baseline when the test suite has no reference images'
     default: 'true'
+  mode:
+    description: 'test records references when needed and then verifies with OpenSwiftUI; record only records SwiftUI references'
+    required: false
+    default: test
 
 outputs:
   test-result:
-    description: 'Test execution result (success or failure)'
+    description: 'OpenSwiftUI test execution result (success, failure, or skipped in record mode)'
     value: ${{ steps.uitest.outcome }}
+  record-result:
+    description: 'SwiftUI reference recording result (success, failure, or skipped)'
+    value: ${{ steps.record-baseline.outcome }}
 
 runs:
   using: composite
@@ -96,6 +103,7 @@ runs:
         TEST_PLATFORM: ${{ inputs.platform }}
         TEST_DESTINATION: ${{ inputs.destination }}
         TEST_SUITE: ${{ inputs.test-suite }}
+        TEST_MODE: ${{ inputs.mode }}
         UPDATE_REFERENCE: ${{ inputs.update-reference }}
         RECORD_IF_MISSING: ${{ inputs.record-if-missing }}
       run: |
@@ -103,6 +111,10 @@ runs:
         case "$TEST_SUITE" in
           UITests|InteractionTests) ;;
           *) echo "::error::Unsupported test suite: $TEST_SUITE"; exit 1 ;;
+        esac
+        case "$TEST_MODE" in
+          test|record) ;;
+          *) echo "::error::Unsupported test mode: $TEST_MODE"; exit 1 ;;
         esac
         case "$TEST_PLATFORM" in
           macos)
@@ -189,25 +201,36 @@ runs:
 
         remove_completed_run_lock() {
           if [[ ! -f "$lockfile" ]]; then
-            return
+            return 1
           fi
 
           local existing_lock existing_run existing_status
           existing_lock="$(cat "$lockfile" 2>/dev/null || true)"
           existing_run="$(sed -n 's/^run=\([^ ]*\).*/\1/p' <<< "$existing_lock")"
           if [[ -z "$existing_run" ]] || ! command -v gh >/dev/null 2>&1; then
-            return
+            return 1
           fi
 
           existing_status="$(gh run view "$existing_run" --repo "$GITHUB_REPOSITORY" --json status --jq .status 2>/dev/null || true)"
           if [[ "$existing_status" == "completed" ]] && [[ "$(cat "$lockfile" 2>/dev/null || true)" == "$existing_lock" ]]; then
             echo "::notice::Removing stale snapshot reference lock from completed run $existing_run."
             rm -f "$lockfile"
+            return 0
           fi
+          return 1
         }
 
         acquire_lock() {
-          ( set -o noclobber; printf '%s\n' "$lock_owner" > "$lockfile" ) 2>/dev/null
+          # Create the lock with O_CREAT|O_EXCL so the host file system decides.
+          # Bash noclobber checks stat() first, which a Tart guest answers from a
+          # stale virtiofs name cache after another runner removed the lock. A
+          # failed exclusive create also refreshes that cache entry for the reads below.
+          perl -e '
+            use Fcntl;
+            sysopen(my $lock, $ARGV[0], O_WRONLY | O_CREAT | O_EXCL) or exit 1;
+            print $lock "$ARGV[1]\n";
+            close $lock or exit 1;
+          ' "$lockfile" "$lock_owner"
         }
 
         # Baseline images are shared by every configuration for a platform, so
@@ -217,9 +240,11 @@ runs:
         lock_wait_started=$SECONDS
         next_lock_notice_at=0
         while true; do
-          remove_completed_run_lock
           if acquire_lock; then
             break
+          fi
+          if remove_completed_run_lock; then
+            continue
           fi
 
           lock_wait_elapsed=$((SECONDS - lock_wait_started))
@@ -291,6 +316,7 @@ runs:
 
     - name: Run tests with OpenSwiftUI
       id: uitest
+      if: inputs.mode != 'record'
       continue-on-error: true
       shell: bash
       env:

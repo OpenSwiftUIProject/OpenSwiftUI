@@ -17,6 +17,12 @@ Requests without a platform or configuration selection run the default matrix on
 | `swiftui-renderer-ag` | SwiftUI | AttributeGraph |
 | `openswiftui-renderer-iag` | OpenSwiftUI | Compute |
 
+## Reference Recording
+
+An `update` request records SwiftUI reference images once per selected platform. The `Record SwiftUI references on iOS` and `Record SwiftUI references on macOS` jobs run `SUI_UITests` with the default SwiftUI renderer and AttributeGraph setup, because reference images do not depend on the renderer or attribute graph configuration. Each platform's configuration matrix waits for its record job and then runs `OSUI_UITests` only. The recording job has no commit status of its own; if recording fails, each configuration status reports the failure and its tests do not run.
+
+Without `update`, the configuration jobs reuse existing references and record only when the platform reference directory is empty.
+
 ## Manual Dispatch
 
 Manual workflow dispatch supports these inputs:

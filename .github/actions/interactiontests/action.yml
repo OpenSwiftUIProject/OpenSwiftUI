@@ -31,11 +31,18 @@ inputs:
     description: 'Generate the Example project with the Compute backend'
     required: false
     default: 'false'
+  mode:
+    description: 'test records references when requested and then verifies with OpenSwiftUI; record only records SwiftUI references'
+    required: false
+    default: test
 
 outputs:
   test-result:
-    description: Test execution result (success or failure)
+    description: OpenSwiftUI test execution result (success, failure, or skipped in record mode)
     value: ${{ steps.tests.outputs.test-result }}
+  record-result:
+    description: SwiftUI reference recording result (success, failure, or skipped)
+    value: ${{ steps.tests.outputs.record-result }}
 
 runs:
   using: composite
@@ -54,3 +61,4 @@ runs:
         compute: ${{ inputs.compute }}
         test-suite: InteractionTests
         record-if-missing: 'false'
+        mode: ${{ inputs.mode }}

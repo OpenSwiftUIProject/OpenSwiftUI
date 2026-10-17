@@ -288,19 +288,37 @@ test('UI and interaction tests expose the same snapshot inputs and configuration
   for (const name of ['uitests', 'interaction_tests']) {
     const [prepareName, caller] = Object.entries(workflows[name].jobs).find(([, job]) => job.uses);
     assert.equal(caller.uses, './.github/workflows/prepare_snapshot_tests.yml');
-    for (const job of Object.values(workflows[name].jobs).filter(job => !job.uses)) {
+    for (const [jobName, job] of Object.entries(workflows[name].jobs).filter(([, job]) => !job.uses)) {
       assert.equal(job.env.OPENSWIFTUI_LINK_TESTING, 0);
       assert.equal(job.permissions['id-token'], 'write');
       assert.equal(job.strategy['fail-fast'], false);
       const step = job.steps.find(step => step.uses === `./.github/actions/${name.replace('_', '')}`);
-      for (const key of ['only-testing', 'update-reference']) assert.ok(step.with[key].includes(`needs.${prepareName}.outputs.${key}`));
-      assert.equal(step.with.compute, '${{ matrix.configuration.compute == 1 }}');
-      assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, '${{ matrix.configuration.swiftui_renderer }}');
-      assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH, '${{ matrix.configuration.attributegraph }}');
-      assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE, '${{ matrix.configuration.compute }}');
+      assert.ok(step.with['only-testing'].includes(`needs.${prepareName}.outputs.only-testing`));
+      if (isRecordJob(jobName)) {
+        // SwiftUI references are recorded once per platform with a fixed setup.
+        assert.equal(step.with.mode, 'record');
+        assert.ok(step.with['update-reference'].includes(`needs.${prepareName}.outputs.update-reference`));
+        assert.equal(step.with.compute, 'false');
+        assert.equal(job.strategy.matrix.configuration, undefined);
+        assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, 1);
+        assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH, 1);
+        assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE, 0);
+        assert.equal(job.needs, prepareName);
+      } else {
+        assert.equal(step.with.mode, undefined);
+        assert.equal(step.with['update-reference'], undefined);
+        assert.equal(step.with.compute, '${{ matrix.configuration.compute == 1 }}');
+        assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, '${{ matrix.configuration.swiftui_renderer }}');
+        assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH, '${{ matrix.configuration.attributegraph }}');
+        assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE, '${{ matrix.configuration.compute }}');
+        assert.deepEqual(job.needs, [prepareName, recordJobName(name, jobName)]);
+      }
     }
   }
 });
+
+const isRecordJob = jobName => jobName.endsWith('_record');
+const recordJobName = (workflowName, testJobName) => `${testJobName.split('_')[0]}_${workflowName === 'uitests' ? 'record' : 'interaction_record'}`;
 
 test('reusable workflow outputs reach callers through the prepare job', () => {
   const outputs = workflows.prepare_optional_ci.on.workflow_call.outputs;
@@ -424,7 +442,8 @@ for (const name of ['uitests', 'interaction_tests']) {
       for (const [jobName, job] of Object.entries(workflows[name].jobs).filter(([, job]) => !job.uses)) {
         const needs = { [prepareName]: { outputs: result.outputs } };
         const requested = platform === 'all' || jobName.startsWith(platform);
-        assert.equal(Boolean(expression(job.if, { needs })), requested);
+        // Without update, the record jobs stay skipped and verification still runs.
+        assert.equal(Boolean(expression(job.if, { needs, cancelled: () => false })), requested && !isRecordJob(jobName));
         const checkout = job.steps.find(step => step.uses === 'actions/checkout@v4');
         assert.equal(expression(checkout.with.repository, { needs }), repository);
         assert.equal(expression(checkout.with.ref, { needs }), headSha);
@@ -489,7 +508,57 @@ for (const name of ['uitests', 'interaction_tests']) {
       await assert.rejects(snapshotRequest(name, { event, ref: 'main' }), /full commit SHA/);
     });
   }
-  for (const job of Object.values(workflows[name].jobs).filter(job => !job.uses)) {
+  test(`${command}: update records once per platform before the configuration matrix`, async () => {
+    const updated = await snapshotRequest(name, { body: `${command} update` });
+    const [prepareName] = Object.entries(workflows[name].jobs).find(([, job]) => job.uses);
+    for (const [jobName, job] of Object.entries(workflows[name].jobs).filter(([id, job]) => !job.uses && !isRecordJob(id))) {
+      const recordName = recordJobName(name, jobName);
+      const record = workflows[name].jobs[recordName];
+      assert.ok(record, recordName);
+      assert.equal(Boolean(expression(record.if, { needs: { [prepareName]: { outputs: updated.outputs } } })), true);
+      const gate = job.steps.find(step => step.name === 'Require recorded SwiftUI references');
+      assert.ok(gate, 'recording gate step');
+      assert.ok(job.steps.indexOf(gate) < job.steps.findIndex(step => step.uses === 'actions/checkout@v4'), 'gate runs before checkout');
+      assert.equal(job.env.RECORD_RESULT, `\${{ needs.${recordName}.result }}`);
+      for (const [recordResult, blocked] of [['success', false], ['failure', true], ['cancelled', true], ['skipped', true]]) {
+        const needs = { [prepareName]: { outputs: updated.outputs }, [recordName]: { result: recordResult } };
+        assert.equal(Boolean(expression(job.if, { needs, cancelled: () => false })), true);
+        // After a cancelled recording the job still starts, so its gate step resolves the PR status.
+        assert.equal(Boolean(expression(job.if, { needs, cancelled: () => true })), recordResult === 'cancelled', recordResult);
+        assert.equal(Boolean(expression(gate.if, { needs })), blocked, recordResult);
+      }
+      for (const platform of ['ios', 'macos']) {
+        const single = await snapshotRequest(name, { body: `${command} ${platform} update` });
+        const needs = { [prepareName]: { outputs: single.outputs } };
+        assert.equal(Boolean(expression(record.if, { needs })), recordName.startsWith(platform), `${recordName} on ${platform} update`);
+      }
+      assert.equal(job.env.RECORD_REQUESTED, `\${{ needs.${prepareName}.outputs.update-reference }}`);
+      const plain = await snapshotRequest(name, { body: command });
+      const needs = { [prepareName]: { outputs: plain.outputs }, [recordName]: { result: 'skipped' } };
+      assert.equal(Boolean(expression(record.if, { needs })), false);
+      assert.equal(Boolean(expression(job.if, { needs, cancelled: () => false })), true);
+      assert.equal(Boolean(expression(gate.if, { needs })), false);
+    }
+  });
+  test(`${command}: a failed recording is reported on the configuration status`, async () => {
+    const job = workflows[name].jobs[name === 'uitests' ? 'ios_uitest' : 'ios_interaction_test'];
+    const step = job.steps.find(step => step.name === 'Complete PR status');
+    const statusContext = `${label} / iOS / openswiftui-renderer-iag / Selected`;
+    const env = { STATUS_SHA: headSha, STATUS_CONTEXT: statusContext, JOB_STATUS: 'failure', CONFIGURATION_NAME: 'openswiftui-renderer-iag' };
+    for (const [recordEnv, reported] of [
+      [{ RECORD_REQUESTED: 'true', RECORD_RESULT: 'failure' }, true],
+      [{ RECORD_REQUESTED: 'true', RECORD_RESULT: 'skipped' }, true],
+      [{ RECORD_REQUESTED: 'true', RECORD_RESULT: 'success' }, false],
+      [{ RECORD_REQUESTED: 'false', RECORD_RESULT: 'skipped' }, false],
+    ]) {
+      const result = await scriptRun(step.with.script, { repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, runId: 123 }, { ...env, ...recordEnv });
+      assert.equal(result.statuses[0].state, 'failure');
+      assert.equal(result.statuses[0].context, statusContext);
+      assert.equal(/recording ended with/.test(result.statuses[0].description), reported, JSON.stringify(recordEnv));
+      assert.ok(result.statuses[0].description.length <= 140);
+    }
+  });
+  for (const [jobName, job] of Object.entries(workflows[name].jobs).filter(([id, job]) => !job.uses && !isRecordJob(id))) {
     for (const status of ['success', 'failure', 'cancelled']) {
       test(`${job.name}: reports ${status} on the selected configuration status`, async () => {
         const step = job.steps.find(step => step.name === 'Complete PR status');
