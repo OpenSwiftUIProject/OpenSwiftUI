@@ -74,3 +74,25 @@ package func mix(_ lhs: CGSize, _ rhs: CGSize, by t: Double) -> CGSize {
         height: (rhs.height - lhs.height) * t + lhs.height
     )
 }
+
+extension CGSize {
+    package var magnitude: Double {
+        (width * width + height * height).squareRoot()
+    }
+
+    package mutating func normalize() {
+        let magnitudeSquared = width * width + height * height
+        guard magnitudeSquared != 0 else {
+            return
+        }
+        let scale = 1 / magnitudeSquared.squareRoot()
+        width *= scale
+        height *= scale
+    }
+
+    package func normalized() -> CGSize {
+        var result = self
+        result.normalize()
+        return result
+    }
+}

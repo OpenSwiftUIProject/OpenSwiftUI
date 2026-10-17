@@ -59,7 +59,8 @@ The default content size is 200×200 points, shared with UI tests through
 `defaultSize` in [Shared/SnapshotTesting.swift](Shared/SnapshotTesting.swift).
 Pass `size` only when a test needs another content size. The hosted view and its
 snapshots use that size on both macOS and iOS, independently of the screen size.
-Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
+Call the helper, `tap()`, `drag(by:duration:)`, and `waitUntil(_:timeout:)` with
+`try await`.
 `assertSnapshot(named:)` captures the current hosted view and preserves its
 state for later interactions:
 

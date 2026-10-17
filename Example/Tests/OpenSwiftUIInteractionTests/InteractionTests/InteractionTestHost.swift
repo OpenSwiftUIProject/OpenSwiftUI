@@ -107,6 +107,22 @@ struct InteractionTestHost {
         #endif
     }
 
+    /// Drags from the center of the hosted view by `translation`, in view coordinates.
+    func drag(by translation: CGSize, duration: TimeInterval = 0.3) async throws {
+        #if os(macOS)
+        let start = try view.windowHitPoint(for: events)
+        // AppKit window coordinates use a bottom-left origin.
+        let end = CGPoint(x: start.x + translation.width, y: start.y - translation.height)
+        try await events.mouseDrag(from: start, to: end, duration: duration)
+        #else
+        try await onMainRunLoop {
+            let start = try view.windowHitPoint(for: events)
+            let end = CGPoint(x: start.x + translation.width, y: start.y + translation.height)
+            try events.fingerDrag(from: start, to: end, duration: duration)
+        }
+        #endif
+    }
+
     func waitUntil(
         _ condition: @autoclosure @escaping () -> Bool,
         timeout: TimeInterval = 3
