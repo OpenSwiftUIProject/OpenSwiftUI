@@ -204,7 +204,9 @@ package struct ForegroundMaterialStyle: ShapeStyle, PrimitiveShapeStyle {
     }
 
     package func _apply(to shape: inout _ShapeStyle_Shape) {
-        _openSwiftUIUnimplementedFailure()
+        // TODO: CoreMaterial
+        _openSwiftUIUnimplementedWarning()
+        SystemColorsStyle()._apply(to: &shape)
     }
 
     package typealias Resolved = Swift.Never

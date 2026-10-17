@@ -20,12 +20,7 @@ struct ExampleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            #if OPENSWIFTUI && os(visionOS)
-            // Foreground material rendering is not implemented yet.
-            ContentView().environment(\.backgroundMaterial, nil)
-            #else
             ContentView()
-            #endif
         }
     }
 }
