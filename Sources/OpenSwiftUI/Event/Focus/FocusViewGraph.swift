@@ -26,6 +26,40 @@ extension _GraphInputs {
     }
 }
 
+// MARK: - ViewGraph + Focus
+
+extension ViewGraph {
+    func setFocusedItem(_ item: FocusItem?) {
+        guard requestedOutputs.contains(.focus),
+              let attribute = self[FocusViewGraph.self]?.pointee.$focusedItem else {
+            return
+        }
+        if attribute.setValue(item) {
+            delegate?.graphDidChange()
+        }
+    }
+
+    func setFocusedValues(_ values: FocusedValues) {
+        guard requestedOutputs.contains(.focus),
+              let attribute = self[FocusViewGraph.self]?.pointee.$focusedValues else {
+            return
+        }
+        if attribute.setValue(values) {
+            delegate?.graphDidChange()
+        }
+    }
+
+    func setFocusStore(_ store: FocusStore) {
+        guard requestedOutputs.contains(.focus),
+              let attribute = self[FocusViewGraph.self]?.pointee.$focusStore else {
+            return
+        }
+        if attribute.setValue(store) {
+            delegate?.graphDidChange()
+        }
+    }
+}
+
 // MARK: - FocusViewGraph
 
 struct FocusViewGraph: ViewGraphFeature {
