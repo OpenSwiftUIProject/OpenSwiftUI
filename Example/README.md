@@ -115,8 +115,7 @@ The `--compute` setup uses the Compute backend, whose binary includes visionOS
 slices. Run the overlay script again after you switch Xcode. To use another
 overlay file, set `OPENSWIFTUI_XR_OVERLAY`.
 
-Only the visionOS Simulator is supported. CoreSVG, SFSymbols, and Gestures are
-not linked on visionOS.
+Only the visionOS Simulator is supported. Gestures is not linked on visionOS.
 
 #### Simulator Runtime
 

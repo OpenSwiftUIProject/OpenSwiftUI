@@ -257,22 +257,21 @@ if linkCoreUI {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
 }
 
-// CoreSVG, SFSymbols, and Gestures artifacts have no visionOS slices.
 if linkCoreSVG {
     sharedSwiftSettings.append(
-        .define("OPENSWIFTUI_LINK_CORESVG", .when(platforms: [.iOS, .macOS]))
+        .define("OPENSWIFTUI_LINK_CORESVG", .when(platforms: [.iOS, .macOS, .visionOS]))
     )
 }
 
 if linkSFSymbols {
     sharedSwiftSettings.append(
-        .define("OPENSWIFTUI_LINK_SFSYMBOLS", .when(platforms: [.iOS, .macOS]))
+        .define("OPENSWIFTUI_LINK_SFSYMBOLS", .when(platforms: [.iOS, .macOS, .visionOS]))
     )
 }
 
 if linkFeatureFlags {
     sharedSwiftSettings.append(
-        .define("OPENSWIFTUI_LINK_FEATUREFLAGS", .when(platforms: [.iOS, .macOS]))
+        .define("OPENSWIFTUI_LINK_FEATUREFLAGS", .when(platforms: [.iOS, .macOS, .visionOS]))
     )
 }
 
@@ -299,6 +298,7 @@ if linkBacklightServices {
     )
 }
 if linkGestures {
+    // TODO: Add visionOS support
     sharedSwiftSettings.append(
         .define("OPENSWIFTUI_LINK_GESTURES", .when(platforms: [.iOS, .macOS]))
     )
@@ -418,7 +418,7 @@ extension Target {
             .product(
                 name: "CoreSVG",
                 package: "DarwinPrivateFrameworks",
-                condition: .when(platforms: [.iOS, .macOS])
+                condition: .when(platforms: [.iOS, .macOS, .visionOS])
             )
         )
     }
@@ -428,7 +428,7 @@ extension Target {
             .product(
                 name: "SFSymbols",
                 package: "DarwinPrivateFrameworks",
-                condition: .when(platforms: [.iOS, .macOS])
+                condition: .when(platforms: [.iOS, .macOS, .visionOS])
             )
         )
     }
@@ -438,7 +438,7 @@ extension Target {
             .product(
                 name: "FeatureFlags",
                 package: "DarwinPrivateFrameworks",
-                condition: .when(platforms: [.iOS, .macOS])
+                condition: .when(platforms: [.iOS, .macOS, .visionOS])
             )
         )
     }
