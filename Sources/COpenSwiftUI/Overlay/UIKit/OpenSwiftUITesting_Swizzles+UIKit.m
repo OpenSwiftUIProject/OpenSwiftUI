@@ -10,7 +10,6 @@
 
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 
-#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @implementation UIScreen (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides {
     _SwizzleMethods(UIScreen.class, @selector(scale), @selector(_OpenSwiftUITesting_currentScreenScale));
@@ -25,7 +24,6 @@
     return NO;
 }
 @end
-#endif
 
 @implementation UICollectionView (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides {

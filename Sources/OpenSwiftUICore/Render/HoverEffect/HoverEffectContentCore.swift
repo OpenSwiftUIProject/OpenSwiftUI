@@ -153,6 +153,7 @@ extension ModifiedContent: HoverEffectContent where Content: HoverEffectContent,
 
 // MARK: - RendererHoverEffectContent
 
+@available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
@@ -167,6 +168,7 @@ private struct RendererHoverEffectContent<Effect>: HoverContentListValueEffect w
 
 // MARK: - GeometryHoverEffectContent
 
+@available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
@@ -234,6 +236,7 @@ extension DisplayList.Effect {
 
 // MARK: - HoverContentListValueEffect
 
+@available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
@@ -242,6 +245,7 @@ protocol HoverContentListValueEffect: HoverEffectContent {
     func effectValue(proxy: GeometryProxy) -> HoverEffectContentList.Effect
 }
 
+@available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
@@ -272,6 +276,7 @@ extension HoverContentListValueEffect {
 
 // MARK: - MakeValueContentList
 
+@available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)

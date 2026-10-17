@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: C9541C03AF81FECFD19A57A1BB81CE81 (SwiftUI)
 
-#if os(iOS) || os(visionOS)
+#if os(iOS)
 
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)

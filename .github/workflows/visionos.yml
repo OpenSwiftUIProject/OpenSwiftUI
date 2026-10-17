@@ -1,0 +1,150 @@
+name: visionOS
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    outputs:
+      verified-sha:
+        value: ${{ jobs.visionos_build.outputs.sha }}
+  push:
+    branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/visionos.yml'
+  pull_request:
+    paths:
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/visionos.yml'
+
+jobs:
+  visionos_build:
+    name: Build for visionOS Simulator
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ["26.6"]
+        release: [2024]
+    # The runner needs the visionOS platform in Xcode and a simulator runtime that
+    # Xcode accepts for the XRSimulator SDK. Build-only jobs do not boot a device.
+    # The visionos-simulator-2.5 label means: visionOS 2.5 runtime installed and, when
+    # the Xcode SDK defaults to another runtime build, a user-level
+    # `xcrun simctl runtime match set xros<sdk-version> <runtime-build>` applied once
+    # during runner provisioning. The job verifies this and does not change it.
+    runs-on:
+      - xcode-26.6
+      - visionos-simulator-2.5
+    env:
+      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS: 0
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Setup Xcode
+        uses: OpenSwiftUIProject/setup-xcode@v2
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Set up mise
+        uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: false
+      - name: Set up Tuist
+        run: |
+          source Scripts/Tuist/common.sh
+          tuist_ci_setup
+        shell: bash
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
+      - name: Install UIKit header overlay
+        shell: bash
+        run: |
+          generator="../DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh"
+          if [[ ! -x "$generator" ]]; then
+            echo "::error::$generator not found. The DarwinPrivateFrameworks revision pinned in Package.resolved must contain Scripts/XR/install_xr_uikit_overlay.sh."
+            exit 1
+          fi
+          overlay_dir="${RUNNER_TEMP:-/tmp}/xr-uikit-overlay-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}"
+          "$generator" --output "$overlay_dir"
+          echo "OPENSWIFTUI_XR_OVERLAY=$overlay_dir/overlay.yaml" >> "$GITHUB_ENV"
+      - name: Verify visionOS Simulator destination
+        shell: bash
+        run: |
+          xcrun simctl runtime match list
+          destinations="$(xcodebuild -showdestinations -scheme OpenSwiftUI 2>&1)" || true
+          if ! grep -q "platform:visionOS Simulator" <<< "$destinations"; then
+            echo "$destinations"
+            echo "::error::No visionOS Simulator destination. Install a visionOS runtime that matches the SDK, or run: xcrun simctl runtime match set xros<sdk-version> <runtime-build>"
+            exit 1
+          fi
+      - name: Install xcbeautify
+        run: brew install xcbeautify
+      - name: Prepare isolated DerivedData
+        shell: bash
+        run: |
+          derived_data_path="${RUNNER_TEMP:-/tmp}/visionos-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.release }}"
+          build_result_bundle_path="${RUNNER_TEMP:-/tmp}/visionos-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.release }}.xcresult"
+          rm -rf "$derived_data_path"
+          mkdir -p "$derived_data_path"
+          {
+            echo "DERIVED_DATA_PATH=$derived_data_path"
+            echo "BUILD_RESULT_BUNDLE_PATH=$build_result_bundle_path"
+          } >> "$GITHUB_ENV"
+      - name: Build in debug mode
+        run: |
+          set -o pipefail
+          source Scripts/Tuist/common.sh
+          # A generic destination builds every SDK architecture (arm64 and x86_64) and
+          # ignores ONLY_ACTIVE_ARCH. Keep the single-architecture shape of ios.yml.
+          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build -IDEPackageEnablePrebuilts=NO \
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -destination "generic/platform=visionOS Simulator" \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            ARCHS=arm64 \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
+      - name: Clean up isolated DerivedData
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${DERIVED_DATA_PATH:-}" ]]; then
+            rm -rf "$DERIVED_DATA_PATH"
+          fi
+          if [[ -n "${BUILD_RESULT_BUNDLE_PATH:-}" ]]; then
+            rm -rf "$BUILD_RESULT_BUNDLE_PATH"
+          fi
+      - name: Clean up UIKit header overlay
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${OPENSWIFTUI_XR_OVERLAY:-}" ]]; then
+            rm -rf "$(dirname "$OPENSWIFTUI_XR_OVERLAY")"
+          fi

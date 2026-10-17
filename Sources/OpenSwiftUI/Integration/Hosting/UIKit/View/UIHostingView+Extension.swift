@@ -146,7 +146,6 @@ extension _UIHostingView: TestHost {
 
 extension UIDevice {
     package var screenSize: CGSize {
-        #if !os(visionOS) || OPENSWIFTUI_INTERNAL_XR_SDK
         let screenBounds = UIScreen.main.bounds
         let screenWidth = screenBounds.width
         let screenHeight = screenBounds.height
@@ -168,9 +167,6 @@ extension UIDevice {
             finalHeight = screenHeight
         }
         return CGSize(width: finalWidth, height: finalHeight)
-        #else
-        return .zero
-        #endif
     }
 }
 
@@ -283,7 +279,9 @@ extension _UIHostingView: ViewRendererHost {
         if let displayGamut = DisplayGamut(rawValue: traitCollection.displayGamut.rawValue) {
             environment.displayGamut = displayGamut
         }
+        #if os(iOS)
         environment.feedbackCache = feedbackCache
+        #endif
         viewGraph.setEnvironment(environment)
     }
 

@@ -44,7 +44,13 @@ final class EntryViewController: UIViewController {
     @objc
     private func pushHostingVC() {
         guard let navigationController else { return }
-        let hostingVC = UIHostingController(rootView: ContentView())
+        #if OPENSWIFTUI && os(visionOS)
+        // Foreground material rendering is not implemented yet.
+        let rootView = ContentView().environment(\.backgroundMaterial, nil)
+        #else
+        let rootView = ContentView()
+        #endif
+        let hostingVC = UIHostingController(rootView: rootView)
         navigationController.pushViewController(hostingVC, animated: true)
     }
 }
