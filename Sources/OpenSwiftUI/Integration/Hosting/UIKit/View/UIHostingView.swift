@@ -123,7 +123,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
 
     // TODO
 
+    #if os(iOS)
     let feedbackCache: UIKitSensoryFeedbackCache<Content> = .init()
+    #endif
 
     // TODO
 
@@ -198,7 +200,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             }
             initialInheritedEnvironment = current.environment
         }
+        #if os(iOS)
         feedbackCache.host = self
+        #endif
         // TODO
         eventBindingManager.host = self
         eventBindingManager.delegate = eventBridge

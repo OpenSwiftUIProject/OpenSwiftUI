@@ -149,6 +149,7 @@ protocol SensoryFeedbackGeneratorModifier: ViewModifier {
 
 // MARK: - CustomFeedbackGenerator
 
+@available(visionOS, unavailable)
 private struct CustomFeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: Equatable {
     var feedbackRequestContext: FeedbackRequestContext
     var trigger: T
@@ -167,6 +168,9 @@ private struct CustomFeedbackGenerator<T>: SensoryFeedbackGeneratorModifier wher
     }
 
     func body(content: Content) -> some View {
+        #if os(visionOS)
+        content
+        #else
         content
             .onChange(of: trigger) { oldValue, newValue in
                 let newFeedback = feedback(oldValue, newValue)
@@ -186,11 +190,13 @@ private struct CustomFeedbackGenerator<T>: SensoryFeedbackGeneratorModifier wher
                 }
                 state?.implementation?.generate()
             }
+        #endif
     }
 }
 
 // MARK: - FeedbackGenerator
 
+@available(visionOS, unavailable)
 private struct FeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: Equatable {
     var feedbackRequestContext: FeedbackRequestContext
     var feedback: SensoryFeedback
@@ -213,6 +219,9 @@ private struct FeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: E
     }
 
     func body(content: Content) -> some View {
+        #if os(visionOS)
+        content
+        #else
         content
             .task(id: feedback) {
                 implementation?.tearDown()
@@ -224,10 +233,11 @@ private struct FeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: E
                     implementation?.generate()
                 }
             }
+        #endif
     }
 }
 
-#if !canImport(Darwin)
+#if !canImport(Darwin) || os(visionOS)
 // MARK: - View + platformSensoryFeedback
 
 extension View {
@@ -241,8 +251,10 @@ extension View {
 // MARK: - FeedbackRequestContext
 
 struct FeedbackRequestContext {
+    #if !os(visionOS)
     func implementation(_ feedback: SensoryFeedback) -> (any PlatformSensoryFeedback)? {
         nil
     }
+    #endif
 }
 #endif

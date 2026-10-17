@@ -283,7 +283,9 @@ extension _UIHostingView: ViewRendererHost {
         if let displayGamut = DisplayGamut(rawValue: traitCollection.displayGamut.rawValue) {
             environment.displayGamut = displayGamut
         }
+        #if os(iOS)
         environment.feedbackCache = feedbackCache
+        #endif
         viewGraph.setEnvironment(environment)
     }
 

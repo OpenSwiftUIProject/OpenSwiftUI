@@ -39,7 +39,11 @@ extension AccessibilityTechnologies {
             case .switchControl: UIAccessibility.isSwitchControlRunning
             case .fullKeyboardAccess: _AXSFullKeyboardAccessEnabled()
             case .voiceControl: _AXSCommandAndControlEnabled()
+            #if os(visionOS)
+            case .hoverText: false
+            #else
             case .hoverText: _AXSHoverTextEnabled()
+            #endif
             case .assistiveAccess: AXAssistiveAccessEnabled()
             }
         }
@@ -61,8 +65,11 @@ private func _AXSFullKeyboardAccessEnabled() -> Bool
 @_silgen_name("_AXSCommandAndControlEnabled")
 private func _AXSCommandAndControlEnabled() -> Bool
 
+// libAccessibility does not export _AXSHoverTextEnabled on visionOS.
+#if !os(visionOS)
 @_silgen_name("_AXSHoverTextEnabled")
 private func _AXSHoverTextEnabled() -> Bool
+#endif
 
 @_silgen_name("AXAssistiveAccessEnabled")
 private func AXAssistiveAccessEnabled() -> Bool

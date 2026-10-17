@@ -224,7 +224,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
     // Swift 6.3.3 can crash while indexing UIKit or AppKit with the private framework shims.
     // Keep source indexing enabled while skipping imported system modules.
-    .unsafeFlags(["-index-ignore-system-modules"], .when(platforms: [.macOS, .iOS])),
+    .unsafeFlags(["-index-ignore-system-modules"], .when(platforms: [.macOS, .iOS, .visionOS])),
 ]
 
 if releaseVersion >= 2021 {
@@ -673,10 +673,10 @@ let openSwiftUITarget = Target.target(
         .unsafeFlags(["-Xlinker", "-ObjC"], .when(platforms: .darwinPlatforms)),
         // -framework CoreServices
         // For CS private API link support
-        .linkedFramework("CoreServices", .when(platforms: [.iOS])),
+        .linkedFramework("CoreServices", .when(platforms: [.iOS, .visionOS])),
         // -lAccessibility
         // For Accessibility private API link support
-        .linkedLibrary("Accessibility", .when(platforms: [.iOS])),
+        .linkedLibrary("Accessibility", .when(platforms: [.iOS, .visionOS])),
     ]
 )
 
