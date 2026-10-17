@@ -49,9 +49,6 @@ struct DragGestureInteractionTests {
         }
     }
 
-    // With Hammer's synthetic AppKit drag events, SwiftUI also starts the drag at the
-    // first event, so only touches can show the minimum distance.
-    #if os(iOS)
     @Test
     func dragStartsAfterMinimumDistance() async throws {
         var changedValues: [DragGesture.Value] = []
@@ -71,5 +68,4 @@ struct DragGestureInteractionTests {
             #expect(firstChange.translation.width >= 10)
         }
     }
-    #endif
 }
