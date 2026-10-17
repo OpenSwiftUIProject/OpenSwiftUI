@@ -2,7 +2,7 @@
 //  SliderTests.swift
 //  OpenSwiftUITests
 
-@testable import OpenSwiftUI
+@_spi(Private) @testable import OpenSwiftUI
 import Testing
 
 struct SliderTests {
