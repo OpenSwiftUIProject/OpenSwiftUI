@@ -13,12 +13,19 @@ const void *$s11OpenSwiftUI5SceneMp;
 OPENSWIFTUI_EXPORT
 const void *$s11OpenSwiftUI8CommandsMp;
 
+OPENSWIFTUI_EXPORT
+const void *$s11OpenSwiftUI15PreviewProviderMp;
+
 const void *_sceneProtocolDescriptor(void) {
     return &$s11OpenSwiftUI5SceneMp;
 }
 
 const void *_commandsProtocolDescriptor(void) {
     return &$s11OpenSwiftUI8CommandsMp;
+}
+
+const void *_previewProviderProtocolDescriptor(void) {
+    return &$s11OpenSwiftUI15PreviewProviderMp;
 }
 
 #if OPENSWIFTUI_OPENCOMBINE
