@@ -253,14 +253,17 @@ if linkCoreUI {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
 }
 
-sharedCSettings.append(.define("OPENSWIFTUI_LINK_CORESVG", to: linkCoreSVG ? "1" : "0"))
-sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_CORESVG", to: linkCoreSVG ? "1" : "0"))
+// CoreSVG, SFSymbols, and Gestures artifacts have no visionOS slices.
 if linkCoreSVG {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_CORESVG"))
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_CORESVG", .when(platforms: [.iOS, .macOS]))
+    )
 }
 
 if linkSFSymbols {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_SFSYMBOLS"))
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_SFSYMBOLS", .when(platforms: [.iOS, .macOS]))
+    )
 }
 
 if linkFeatureFlags {
@@ -292,7 +295,9 @@ if linkBacklightServices {
     )
 }
 if linkGestures {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_GESTURES"))
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_GESTURES", .when(platforms: [.iOS, .macOS]))
+    )
 }
 
 if swiftUIRenderCondition {
@@ -405,11 +410,23 @@ extension Target {
     func addCoreSVGSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'CoreSVG.framework'"
-        dependencies.append(.product(name: "CoreSVG", package: "DarwinPrivateFrameworks"))
+        dependencies.append(
+            .product(
+                name: "CoreSVG",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .macOS])
+            )
+        )
     }
 
     func addSFSymbolsSettings() {
-        dependencies.append(.product(name: "SFSymbols", package: "DarwinPrivateFrameworks"))
+        dependencies.append(
+            .product(
+                name: "SFSymbols",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .macOS])
+            )
+        )
     }
 
     func addFeatureFlagsSettings() {
@@ -435,7 +452,13 @@ extension Target {
     }
 
     func addGesturesSettings() {
-        dependencies.append(.product(name: "Gestures", package: "DarwinPrivateFrameworks"))
+        dependencies.append(
+            .product(
+                name: "Gestures",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .macOS])
+            )
+        )
     }
 
     func addOpenCombineSettings() {
