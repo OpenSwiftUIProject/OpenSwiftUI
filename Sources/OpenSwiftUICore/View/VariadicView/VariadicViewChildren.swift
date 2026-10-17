@@ -41,17 +41,17 @@ extension _VariadicView.Children: View, MultiView, PrimitiveView {
 
 @available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Children: RandomAccessCollection {
+    public struct Element: View, UnaryView, PrimitiveView, Identifiable {
+        package var view: ViewList.View
 
-    public struct Element: PrimitiveView, UnaryView, Identifiable {
-        var view: ViewList.View
-        var traits: ViewTraitCollection
-        
+        package var traits: ViewTraitCollection
+
         public var id: AnyHashable {
             view.viewID
         }
 
         public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID: Hashable {
-            view.id.primaryExplicitID.flatMap{ $0.as(type: ID.self) }
+            view.id.primaryExplicitID.flatMap { $0.as(type: ID.self) }
         }
 
         /// The value of each trait associated with the view. Changing
@@ -61,14 +61,17 @@ extension _VariadicView.Children: RandomAccessCollection {
             set { traits[key] = newValue }
         }
 
-        public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        nonisolated public static func _makeView(
+            view: _GraphValue<Self>,
+            inputs: _ViewInputs
+        ) -> _ViewOutputs {
             ViewList.View._makeView(
                 view: view[\.view],
                 inputs: inputs
             )
         }
     }
-    
+
     public var startIndex: Int { .zero }
 
     public var endIndex: Int { Update.ensure { list.count } }
@@ -110,3 +113,6 @@ extension _VariadicView.Children: RandomAccessCollection {
         return element
     }
 }
+
+@available(*, unavailable)
+extension _VariadicView.Children.Element: Sendable {}

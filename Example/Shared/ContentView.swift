@@ -20,6 +20,13 @@ struct ContentView: View {
     }
 }
 
-#Preview {
+#Preview("Macro Preview") {
     ContentView()
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .previewDisplayName("Legacy Preview")
+    }
 }
