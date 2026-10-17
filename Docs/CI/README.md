@@ -67,9 +67,10 @@ Manual dispatch runs the selected branch or tag. UI and interaction tests use th
 ## interaction tests
 
 Each selected platform runs `OSUI_InteractionTests` against persistent SnapshotTesting
-reference images. Only `update` or `update_reference=true` runs `SUI_InteractionTests`
-first to record references. Use update for the first run and when expected
-images change. Missing references fail verification without starting SwiftUI.
+reference images. Only `update` or `update_reference=true` records references, in
+one `SUI_InteractionTests` job per platform that runs before the configuration
+matrix. Use update for the first run and when expected images change. Missing
+references fail verification without starting SwiftUI.
 
 interaction tests share UI test command parsing, configuration matrices, reference
 storage, recording locks, and failure collection. The default configurations

@@ -78,7 +78,8 @@ On macOS, tests use an offscreen window to preserve application focus. Set
 ## CI
 
 Interaction CI runs `OSUI_InteractionTests` with persistent references. Request
-`update` or set `update_reference=true` to run `SUI_InteractionTests` first,
+`update` or set `update_reference=true` to record references with
+`SUI_InteractionTests` once per platform before the configuration matrix runs,
 including for the initial baseline. UI CI also records when references are
 missing. Both workflows share platform and configuration choices, test filters,
 reference storage, and recording locks.

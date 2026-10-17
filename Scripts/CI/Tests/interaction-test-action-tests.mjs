@@ -280,6 +280,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
     'only-testing': options.onlyTesting ?? '',
     compute: String(options.compute ?? true),
     'update-reference': String(options.update ?? false),
+    mode: options.mode ?? 'test',
   };
   if (suite === 'InteractionTests') {
     const caller = interactionAction.runs.steps.find(step => step.uses === './.github/actions/uitests');
@@ -293,7 +294,9 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   for (const step of action.runs.steps) {
     if (!selectedSteps.has(step.id) && !['Clean up snapshot reference lock', 'Fail if baseline recording failed'].includes(step.name) && !(options.collectArtifacts && step.name === 'Collect failure artifacts')) continue;
     const bindings = { inputs, steps };
-    if (step.if ? !evaluate(step.if, bindings) : failed) continue;
+    // Steps without always() only run while no earlier step has failed.
+    if (failed && !/always\(\)/.test(step.if ?? '')) continue;
+    if (step.if && !evaluate(step.if, bindings)) continue;
     const output = path.join(directory, 'output');
     await fs.writeFile(output, '');
     const result = spawnSync('bash', ['--noprofile', '--norc', '-e', '-o', 'pipefail', '-c', expand(step.run, bindings)], {
@@ -329,8 +332,9 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
     if (result.status !== 0 && !step['continue-on-error']) failed = true;
   }
   const commands = (await fs.readFile(commandLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+  const verified = inputs.mode === 'record' ? steps['record-baseline'].outcome === 'success' : steps.uitest.outcome === 'success';
   return {
-    status: failed || steps.uitest.outcome !== 'success' ? 1 : 0,
+    status: failed || !verified ? 1 : 0,
     stdout, stderr, commands, steps, directory, referenceRoot, referenceDirectory,
     artifacts: steps.paths.outputs.artifacts,
     derivedData: steps.paths.outputs['derived-data-path'],
@@ -377,9 +381,51 @@ for (const scheme of schemes) {
   }
 }
 
+test('SwiftUI recording keeps references after an abnormal xcodebuild exit', async t => {
+  for (const fixture of [{ status: 70 }, { status: 70, missingResult: true }]) {
+    const result = await runTests(t, { SUI_InteractionTests: fixture }, { update: true });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, /::warning::xcodebuild exited with status 70/);
+    assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), schemes);
+  }
+});
+
+test('record mode records SwiftUI references without OpenSwiftUI verification', async t => {
+  const result = await runTests(t, {}, { update: true, mode: 'record' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['SUI_InteractionTests']);
+  assert.equal(result.steps['record-baseline'].outcome, 'success');
+  assert.equal(result.steps.uitest.outcome, 'skipped');
+  assert.equal(expand(action.outputs['record-result'].value, { steps: result.steps }), 'success');
+  assert.equal(expand(action.outputs['test-result'].value, { steps: result.steps }), 'skipped');
+  await assert.rejects(fs.access(result.steps.reference.outputs.lockfile), { code: 'ENOENT' });
+});
+
+test('record mode fails on a recording failure without starting verification', async t => {
+  const result = await runTests(t, {
+    SUI_InteractionTests: {
+      status: 1,
+      summary: { ...recordingSummary, testFailures: [recordingFailure, { failureText: 'Expectation failed: count == 1' }] },
+    },
+  }, { update: true, mode: 'record' });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.equal(result.steps['record-baseline'].outcome, 'failure');
+  assert.equal(result.steps.uitest.outcome, 'skipped');
+});
+
+test('record mode applies to UI tests and rejects unknown modes', async t => {
+  const recorded = await runTests(t, {}, { suite: 'UITests', update: true, mode: 'record', compute: false });
+  assert.equal(recorded.status, 0, recorded.stdout + recorded.stderr);
+  assert.deepEqual(recorded.commands.map(args => args[args.indexOf('-scheme') + 1]), ['SUI_UITests']);
+  const rejected = await runTests(t, {}, { update: true, mode: 'verify' });
+  assert.equal(rejected.status, 1);
+  assert.match(rejected.stdout + rejected.stderr, /Unsupported test mode: verify/);
+  assert.deepEqual(rejected.commands, []);
+});
+
 for (const [name, fixture] of Object.entries({
   'missing reference images': { missingReferences: true },
-  'unexpected runner failure': { status: 70 },
+  'abnormal xcodebuild exit without reference images': { status: 70, missingReferences: true },
   'mixed recording and test failures': {
     summary: { ...recordingSummary, testFailures: [recordingFailure, { failureText: 'Caught error: timeout' }] },
   },
