@@ -112,7 +112,7 @@ for various platforms:
 
 [^3]: Build, test, and deployment with the [stdout renderer](Renderer/Stdout/README.md) are supported. Linux UI framework integration is not available yet.
 
-[^4]: visionOS Simulator support is experimental. CI builds for the visionOS Simulator but does not run tests. A visionOS Simulator build needs a UIKit header overlay. See [visionOS Simulator Build](Example/README.md#visionos-simulator-build). visionOS device builds are not supported.
+[^4]: visionOS support is experimental. Builds for visionOS devices and the visionOS Simulator need a UIKit header overlay. See [visionOS Build](Example/README.md#visionos-build). CI builds for the visionOS Simulator but does not run tests.
 
 [^5]: iOS Simulator is supported. iOS device builds require the Compute backend. Apple's AttributeGraph backend is limited to the simulator because required device symbols are missing.
 
