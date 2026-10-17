@@ -149,13 +149,92 @@ struct AccessibilityLabelModifier<Content: View>: AccessibilityConfigurationModi
 }
 
 // TODO: AccessibilityStepperModifier
-// TODO: AccessibilityAdjustableModifier
-// TODO: AccessibilityAdjustableModifier.Configuration
+
+// MARK: - AccessibilityAdjustableModifier
+
+struct AccessibilityAdjustableModifier<Content, Value>: AccessibilityConfigurationModifier where Content: View, Value: AccessibilityValue, Value: Codable {
+    struct Configuration {
+        var value: Value?
+
+        var continuous: Bool
+
+        var onIncrement: (() -> Void)?
+
+        var onDecrement: (() -> Void)?
+
+        var onSet: (AccessibilityNumber) -> Void
+
+        var onEditingChanged: (Bool) -> Void
+    }
+
+    var configuration: Configuration
+
+    func body(content: Content) -> some View {
+        var view = content.accessibilityAction(
+            AccessibilityAdjustableAction(continuous: configuration.continuous)
+        ) { direction -> AccessibilityActionResult in
+            configuration.onEditingChanged(true)
+            switch direction {
+            case .increment: configuration.onIncrement?()
+            case .decrement: configuration.onDecrement?()
+            }
+            configuration.onEditingChanged(false)
+            return .success
+        }
+        if let value = configuration.value {
+            view = view
+                .accessibilityValue(AccessibilityValueStorage(value))
+                .accessibilitySetValueAction { number in
+                    configuration.onEditingChanged(true)
+                    configuration.onSet(number)
+                    configuration.onEditingChanged(false)
+                }
+        }
+        return view
+    }
+}
+
 // TODO: AccessibilityNavigationLinkButtonModifier
 // TODO: AccessibilityNavigationLinkButtonModifier.Representable
 // TODO: AccessibilityLinkModifier
 // TODO: AccessibilityLinkModifier.Configuration
-// TODO: AccessibilitySliderModifier
+
+// MARK: - AccessibilitySliderModifier
+
+struct AccessibilitySliderModifier<Content>: AccessibilityConfigurationModifier where Content: View {
+    var base: AccessibilityAdjustableModifier<Content, AccessibilitySliderValue>
+
+    init(_ configuration: SliderStyleConfiguration, value: AccessibilityBoundedNumber?) {
+        base = AccessibilityAdjustableModifier(configuration: .init(
+            value: value.map { AccessibilitySliderValue($0) },
+            continuous: true,
+            onIncrement: {
+                configuration.value = (configuration.value + configuration.skipDistance).clamped(to: 0 ... 1)
+            },
+            onDecrement: {
+                configuration.value = (configuration.value - configuration.skipDistance).clamped(to: 0 ... 1)
+            },
+            onSet: { number in
+                guard let value,
+                      let minValue = value.minValue?.doubleValue,
+                      let maxValue = value.maxValue?.doubleValue else {
+                    return
+                }
+                var newValue = number.value.doubleValue
+                if let step = value.step {
+                    newValue.round(.toNearestOrAwayFromZero, toMultipleOf: step.doubleValue)
+                }
+                configuration.value = (newValue - minValue) / (maxValue - minValue)
+            },
+            onEditingChanged: configuration.onEditingChanged
+        ))
+    }
+
+    func body(content: Content) -> some View {
+        base.body(content: content)
+    }
+}
+
 // TODO: AccessibilityGroupBoxLabelModifier
 // TODO: AccessibilityGroupBoxContentModifier
 // TODO: AccessibilityDisclosureModifier
@@ -328,28 +407,6 @@ struct AccessibilitySelectableTextModifier<Content: View>: AccessibilityConfigur
 // TODO: AccessibilityBadgedViewModifier.Badge
 // TODO: AccessibilityBadgedViewModifier
 // TODO: AccessibilityBadgedViewModifier.Configuration
-
-// MARK: - AccessibilityButtonShapeModifier [WIP]
-
-struct AccessibilityButtonShapeModifier<Content: View>: AccessibilityConfigurationModifier {
-    func body(content: Content) -> some View {
-        content.modifier(Child())
-    }
-
-    private struct Child: ViewModifier {
-//        @Environment(\.accessibilityShowButtonShapes)
-//        private var accessibilityShowButtonShapes: Bool
-
-        func body(content: Child.Content) -> some View {
-//            if accessibilityShowButtonShapes {
-                content
-                // .buttonStyle(BorderedButtonStyle())
-//            } else {
-//                content
-//            }
-        }
-    }
-}
 
 // MARK: - View + AccessibilityConfiguration
 

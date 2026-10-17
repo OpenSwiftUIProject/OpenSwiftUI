@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Accessibility
+//  Status: Complete
 //  ID: F045F16106E380A820CC0B639278A953 (SwiftUI)
 
 @_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
@@ -137,8 +137,8 @@ public struct Slider<Label, ValueLabel>: View where Label: View, ValueLabel: Vie
             hasCustomMinMaxValueLabels: hasCustomMinMaxValueLabels,
             accessibilityValue: accessibilityValue
         )
-        // TODO: AccessibilitySliderModifier(configuration, value: accessibilityValue)
-        ResolvedSliderStyle(configuration: configuration)
+        AccessibilitySliderModifier(configuration, value: accessibilityValue)
+            .body(content: ResolvedSliderStyle(configuration: configuration))
             .viewAlias(SliderStyleConfiguration.Label.self) {
                 AccessibilityLabelModifier().body(content: label)
             }

@@ -33,3 +33,21 @@ extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
         accessibilityValue(AccessibilityValueStorage(value, description: description))
     }
 }
+
+// MARK: - AccessibilitySetValueAction
+
+struct AccessibilitySetValueAction: AccessibilityAction {
+    typealias Value = AccessibilityNumber
+
+    func impliedRole(for traits: AccessibilityTraitStorage) -> AccessibilityRole? {
+        nil
+    }
+}
+
+extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
+    func accessibilitySetValueAction(
+        _ handler: @escaping (AccessibilityNumber) -> Void
+    ) -> ModifiedContent<Content, Modifier> {
+        accessibilityAction(AccessibilitySetValueAction(), handler)
+    }
+}
