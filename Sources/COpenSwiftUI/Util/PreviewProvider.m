@@ -21,11 +21,17 @@
 #if defined(__arm64__) || defined(__x86_64__)
 #include <os/lock.h>
 
-// Supply native provider conformances without changing type lookup results.
-// Runtime compatibility hooks also cover providers loaded after this library.
+// Xcode asks the Swift runtime whether the original provider type conforms to
+// SwiftUI's protocols. For an OSUI provider, supply those conformances on demand:
+//   1. Let the runtime (and any earlier hook) find an existing conformance.
+//   2. If none exists, copy the Swift bridge's witnesses for this concrete type.
+//   3. Register the copies and repeat the lookup through the runtime.
+// This preserves type identity and also covers providers loaded later by JIT.
+// Import rebinding cannot cover direct calls inside the device shared cache.
 extern const char $s7SwiftUI16_PreviewProviderMp;
 extern const char $s7SwiftUI15PreviewProviderMp;
 extern const char $s11OpenSwiftUI16_PreviewProviderMp;
+extern const void *swift_conformsToProtocol(const void *type, const void *protocol);
 extern const void *swift_getTypeContextDescriptor(const void *type);
 extern void swift_registerProtocolConformances(const int32_t *begin, const int32_t *end);
 extern __attribute__((swiftcall))
@@ -34,7 +40,29 @@ const void *_OpenSwiftUI_LegacyPreviewProviderWitnessType(void);
 typedef const void *(*preview_lookup_fn)(const void *, const void *);
 typedef const void *(*preview_override_fn)(const void *, const void *, preview_lookup_fn);
 
-// Swift ABI: protocol and conformance descriptors use relative references.
+typedef struct {
+    const char *symbol;
+    bool signed_protocol;
+    preview_override_fn previous;
+} preview_runtime_hook;
+
+// These are two runtime entry points, independent of the two provider protocols.
+static preview_runtime_hook preview_legacy_hook = {
+    .symbol = "swift_conformsToProtocol",
+};
+static preview_runtime_hook preview_authenticated_hook = {
+    .symbol = "swift_conformsToProtocol2",
+    .signed_protocol = true,
+};
+
+enum {
+    preview_base_protocol, // _PreviewProvider: enumeration and preview traits.
+    preview_full_protocol, // PreviewProvider: native preview host creation.
+    preview_protocol_count,
+};
+
+// Swift ABI layouts: ProtocolDescriptor and ProtocolConformanceDescriptor.
+// Each int32_t reference is relative to its own field, not to the struct base.
 typedef struct {
     uint32_t flags;
     int32_t parent, name;
@@ -50,23 +78,24 @@ typedef struct {
 
 typedef struct preview_registration {
     struct preview_registration *next;
-    const void *type;
-    int32_t records[2];
-    preview_conformance conformances[2];
+    const void *type_descriptor;
+    int32_t records[preview_protocol_count];
+    preview_conformance conformances[preview_protocol_count];
     const void *witnesses[];
 } preview_registration;
 
-static const preview_protocol *const preview_protocols[] = {
-    (const void *)&$s7SwiftUI16_PreviewProviderMp,
-    (const void *)&$s7SwiftUI15PreviewProviderMp,
+static const preview_protocol *const preview_protocols[preview_protocol_count] = {
+    [preview_base_protocol] = (const void *)&$s7SwiftUI16_PreviewProviderMp,
+    [preview_full_protocol] = (const void *)&$s7SwiftUI15PreviewProviderMp,
 };
-static preview_lookup_fn preview_lookups[2];
-static preview_override_fn preview_previous_overrides[2];
-static const void *const *preview_witnesses[2];
+static const void *const *preview_witnesses[preview_protocol_count];
 static preview_registration *preview_registrations;
 static os_unfair_lock preview_registration_lock = OS_UNFAIR_LOCK_INIT;
 static bool preview_authenticated_runtime;
 
+// An arm64 app can call an arm64e system runtime. Compiler ptrauth helpers alone
+// are no-ops in that app, so use explicit PAC instructions when the runtime is
+// arm64e. Keep these conversions at the runtime boundary.
 #if defined(__arm64__)
 #define PREVIEW_PTRAUTH __attribute__((target("pauth")))
 #else
@@ -98,8 +127,10 @@ static void *preview_callable(void *pointer) {
 }
 
 PREVIEW_PTRAUTH
-static const void *preview_protocol_argument(unsigned index, const void *protocol) {
-    if (index == 1 && preview_authenticated_runtime) {
+static const void *preview_protocol_argument(const preview_runtime_hook *hook, const void *protocol) {
+    // The legacy entry takes an unsigned descriptor; the newer entry takes a
+    // Swift protocol descriptor signed with the data key and discriminator.
+    if (hook->signed_protocol && preview_authenticated_runtime) {
 #if defined(__arm64__)
         uintptr_t discriminator = 0xe909; // Swift protocol descriptor.
         __asm__("pacda %0, %1" : "+r"(protocol) : "r"(discriminator));
@@ -108,17 +139,18 @@ static const void *preview_protocol_argument(unsigned index, const void *protoco
     return protocol;
 }
 
-static const void *preview_original_lookup(unsigned index, const void *type,
+static const void *preview_original_lookup(const preview_runtime_hook *hook, const void *type,
                                           const void *protocol, preview_lookup_fn original) {
     // Preserve the original function pointer's signature when chaining hooks.
-    if (preview_previous_overrides[index]) {
-        return preview_previous_overrides[index](type, protocol, original);
+    if (hook->previous) {
+        return hook->previous(type, protocol, original);
     }
     return ((preview_lookup_fn)preview_callable((void *)original))(type, protocol);
 }
 
-static void register_preview_provider(const void *type, unsigned index, preview_lookup_fn original) {
-    if (!preview_lookups[0](type, &$s11OpenSwiftUI16_PreviewProviderMp)) {
+static void register_preview_provider(const void *type, const preview_runtime_hook *hook,
+                                      preview_lookup_fn original) {
+    if (!swift_conformsToProtocol(type, &$s11OpenSwiftUI16_PreviewProviderMp)) {
         return;
     }
     const uint32_t *descriptor = preview_strip_data(swift_getTypeContextDescriptor(type));
@@ -129,28 +161,37 @@ static void register_preview_provider(const void *type, unsigned index, preview_
     }
     os_unfair_lock_lock(&preview_registration_lock);
     for (preview_registration *entry = preview_registrations; entry; entry = entry->next) {
-        if (entry->type == descriptor) {
+        if (entry->type_descriptor == descriptor) {
             os_unfair_lock_unlock(&preview_registration_lock);
             return;
         }
     }
-    for (unsigned i = 0; i < 2; ++i) {
-        if (preview_original_lookup(index, type, preview_protocol_argument(index, preview_protocols[i]), original)) {
+    for (unsigned i = 0; i < preview_protocol_count; ++i) {
+        // Use the original path here: another native lookup through our hook
+        // would recursively try to register this same provider under the lock.
+        if (preview_original_lookup(hook, type, preview_protocol_argument(hook, preview_protocols[i]), original)) {
             os_unfair_lock_unlock(&preview_registration_lock);
             return;
         }
     }
-    size_t words = 2 + preview_protocols[0]->requirement_count + preview_protocols[1]->requirement_count;
+    size_t words = preview_protocol_count;
+    for (unsigned i = 0; i < preview_protocol_count; ++i) {
+        words += preview_protocols[i]->requirement_count;
+    }
+    // Keep records, descriptors, pointer slots and tables in one allocation so
+    // all relative offsets fit in 32 bits, even when the target image is far away.
     preview_registration *entry = calloc(1, sizeof(*entry) + words * sizeof(void *));
     if (!entry) {
         os_unfair_lock_unlock(&preview_registration_lock);
         return;
     }
-    entry->type = descriptor;
+    entry->type_descriptor = descriptor;
     const void **table = entry->witnesses;
-    for (unsigned i = 0; i < 2; ++i) {
+    for (unsigned i = 0; i < preview_protocol_count; ++i) {
         preview_conformance *conformance = &entry->conformances[i];
         entry->records[i] = (int32_t)((char *)conformance - (char *)&entry->records[i]);
+        // The protocol's low bit means indirect. The type reference uses the
+        // IndirectTypeDescriptor flag instead; both point to local pointer slots.
         conformance->protocol = (int32_t)((char *)&conformance->protocol_pointer - (char *)&conformance->protocol) | 1;
         conformance->type = (int32_t)((char *)&conformance->type_pointer - (char *)&conformance->type);
         conformance->witnesses = (int32_t)((char *)table - (char *)&conformance->witnesses);
@@ -159,10 +200,12 @@ static void register_preview_provider(const void *type, unsigned index, preview_
         conformance->type_pointer = descriptor;
         size_t count = 1 + preview_protocols[i]->requirement_count;
         memcpy(table, preview_witnesses[i], count * sizeof(void *));
-        table[0] = conformance;
-        if (i == 1) {
+        table[0] = conformance; // The table must describe this type, not the template.
+        if (i == preview_full_protocol) {
+            // Redirect the inherited _PreviewProvider witness to this type's
+            // copied table. The remaining entries are shared Swift implementations.
             for (size_t j = 1; j < count; ++j) {
-                if (table[j] == preview_witnesses[0]) {
+                if (table[j] == preview_witnesses[preview_base_protocol]) {
                     table[j] = entry->witnesses;
                 }
             }
@@ -170,38 +213,45 @@ static void register_preview_provider(const void *type, unsigned index, preview_
         table += count;
     }
     // The runtime retains these records and tables for the process lifetime.
-    swift_registerProtocolConformances(entry->records, entry->records + 2);
+    // Registration also invalidates previously cached conformance misses.
+    swift_registerProtocolConformances(entry->records, entry->records + preview_protocol_count);
     entry->next = preview_registrations;
     preview_registrations = entry;
     os_unfair_lock_unlock(&preview_registration_lock);
 }
 
-static const void *preview_runtime_lookup(unsigned index, const void *type,
+static const void *preview_runtime_lookup(const preview_runtime_hook *hook, const void *type,
                                          const void *protocol, preview_lookup_fn original) {
-    const void *result = preview_original_lookup(index, type, protocol, original);
+    const void *result = preview_original_lookup(hook, type, protocol, original);
     if (result) {
         return result;
     }
     const void *raw_protocol = preview_strip_data(protocol);
-    if (raw_protocol != preview_protocols[0] && raw_protocol != preview_protocols[1]) {
+    if (raw_protocol != preview_protocols[preview_base_protocol] &&
+        raw_protocol != preview_protocols[preview_full_protocol]) {
         return result;
     }
     const char *enabled = getenv("XCODE_RUNNING_FOR_PREVIEWS");
     if (!enabled || strcmp(enabled, "1") != 0) {
         return result;
     }
-    register_preview_provider(type, index, original);
-    return preview_original_lookup(index, type, protocol, original);
+    register_preview_provider(type, hook, original);
+    return preview_original_lookup(hook, type, protocol, original);
 }
 
 static const void *preview_runtime_lookup_legacy(const void *type, const void *protocol, preview_lookup_fn original) {
-    return preview_runtime_lookup(0, type, protocol, original);
+    return preview_runtime_lookup(&preview_legacy_hook, type, protocol, original);
 }
 
 static const void *preview_runtime_lookup_authenticated(const void *type, const void *protocol, preview_lookup_fn original) {
-    return preview_runtime_lookup(1, type, protocol, original);
+    return preview_runtime_lookup(&preview_authenticated_hook, type, protocol, original);
 }
 
+// Swift's compatibility thunks cache an override callback in writable memory.
+// There is no exported setter. Locate that cache from the thunk's instructions;
+// do not patch executable pages. These patterns are runtime implementation
+// details, not Swift ABI. If the cache-load pattern is not recognized, do not
+// install this hook.
 static uintptr_t *preview_override_reference(const uint8_t *instruction) {
 #if defined(__arm64__)
     const uint32_t *code = (const uint32_t *)instruction;
@@ -266,6 +316,8 @@ static uintptr_t *preview_override_slot(preview_lookup_fn function) {
 static bool preview_witness_layout_supported(const void *const *table) {
     const uint32_t *descriptor = preview_strip_data(table[0]);
     uint32_t flags = descriptor[3];
+    // Only resilient witnesses and a generic witness-table header may follow.
+    // Other flags can introduce trailing data that this fixed template cannot use.
     if (flags & ~0x30000u) return false;
     const uint32_t *trailing = descriptor + 4;
     if (flags & 0x10000) trailing += 1 + trailing[0] * 2;
@@ -274,45 +326,49 @@ static bool preview_witness_layout_supported(const void *const *table) {
 }
 
 PREVIEW_PTRAUTH
+static void install_preview_hook(preview_runtime_hook *hook, preview_override_fn callback, const void *type) {
+    void *symbol = dlsym(RTLD_DEFAULT, hook->symbol);
+    if (!symbol) return;
+    preview_lookup_fn lookup = (preview_lookup_fn)preview_callable(symbol);
+    uintptr_t *slot = preview_override_slot(lookup);
+    if (!slot || !lookup(type, preview_protocol_argument(hook, preview_protocols[preview_base_protocol]))) {
+        os_log_error(OS_LOG_DEFAULT, "OpenSwiftUI could not find the %{public}s compatibility hook.", hook->symbol);
+        return;
+    }
+    // The cache is 0 before initialization, 1 for no override, or a callback.
+    // The lookup above initializes it before we replace it; otherwise the
+    // runtime's first lookup could overwrite our callback. Chain an earlier hook.
+    uintptr_t previous = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
+    if (!previous) return;
+    hook->previous = previous == 1 ? NULL : (preview_override_fn)preview_callable((void *)previous);
+    void *replacement = preview_strip_code((void *)callback);
+    if (preview_authenticated_runtime) {
+#if defined(__arm64__)
+        // The validated arm64e thunks use an IA-key signature with discriminator
+        // zero. Recheck this together with the instruction patterns for new runtimes.
+        __asm__("paciza %0" : "+r"(replacement));
+#endif
+    }
+    __atomic_store_n(slot, (uintptr_t)replacement, __ATOMIC_RELEASE);
+}
+
 static void install_preview_support(void) {
-    const char *names[] = {"swift_conformsToProtocol", "swift_conformsToProtocol2"};
-    preview_override_fn callbacks[] = {preview_runtime_lookup_legacy, preview_runtime_lookup_authenticated};
     Dl_info image;
-    void *lookup = dlsym(RTLD_DEFAULT, names[0]);
+    void *lookup = dlsym(RTLD_DEFAULT, preview_legacy_hook.symbol);
     if (!lookup || !dladdr(lookup, &image)) return;
     const struct mach_header *header = image.dli_fbase;
     preview_authenticated_runtime = header->cputype == CPU_TYPE_ARM64 &&
         (header->cpusubtype & ~CPU_SUBTYPE_MASK) == CPU_SUBTYPE_ARM64E;
-    preview_lookups[0] = (preview_lookup_fn)preview_callable(lookup);
     const void *type = _OpenSwiftUI_LegacyPreviewProviderWitnessType();
-    for (unsigned i = 0; i < 2; ++i) {
-        preview_witnesses[i] = preview_lookups[0](type, preview_protocols[i]);
+    for (unsigned i = 0; i < preview_protocol_count; ++i) {
+        preview_witnesses[i] = swift_conformsToProtocol(type, preview_protocols[i]);
         if (!preview_witnesses[i] || !preview_witness_layout_supported(preview_witnesses[i])) {
             os_log_error(OS_LOG_DEFAULT, "OpenSwiftUI could not prepare legacy preview witnesses.");
             return;
         }
     }
-    for (unsigned i = 0; i < 2; ++i) {
-        lookup = dlsym(RTLD_DEFAULT, names[i]);
-        if (!lookup) continue;
-        preview_lookups[i] = (preview_lookup_fn)preview_callable(lookup);
-        uintptr_t *slot = preview_override_slot(preview_lookups[i]);
-        if (!slot || !preview_lookups[i](type, preview_protocol_argument(i, preview_protocols[0]))) {
-            os_log_error(OS_LOG_DEFAULT, "OpenSwiftUI could not find the %{public}s compatibility hook.", names[i]);
-            continue;
-        }
-        // Initialize the runtime's cache first and retain an existing override.
-        uintptr_t previous = __atomic_load_n(slot, __ATOMIC_ACQUIRE);
-        if (!previous) continue;
-        preview_previous_overrides[i] = previous == 1 ? NULL : (preview_override_fn)preview_callable((void *)previous);
-        void *replacement = preview_strip_code((void *)callbacks[i]);
-        if (preview_authenticated_runtime) {
-#if defined(__arm64__)
-            __asm__("paciza %0" : "+r"(replacement));
-#endif
-        }
-        __atomic_store_n(slot, (uintptr_t)replacement, __ATOMIC_RELEASE);
-    }
+    install_preview_hook(&preview_legacy_hook, preview_runtime_lookup_legacy, type);
+    install_preview_hook(&preview_authenticated_hook, preview_runtime_lookup_authenticated, type);
 }
 
 // -ObjC retains this class when COpenSwiftUI is linked as a static library.

@@ -6,55 +6,32 @@
 import OpenSwiftUICore
 import SwiftUI
 
-private func nativePreviewProvider(
-    _ provider: any OpenSwiftUI._PreviewProvider.Type
-) -> any SwiftUI.PreviewProvider.Type {
-    func adapt<Provider: OpenSwiftUI._PreviewProvider>(
-        _ provider: Provider.Type
-    ) -> any SwiftUI.PreviewProvider.Type {
-        LegacyPreviewProvider<Provider>.self
-    }
-    return adapt(provider)
-}
-
 @_silgen_name("_OpenSwiftUI_LegacyPreviewProviderWitnessType")
 func legacyPreviewProviderWitnessType() -> Any.Type {
     LegacyPreviewProviderWitness.self
 }
 
-// Class witnesses preserve the caller's metatype in static getters. The
-// runtime bridge uses these witnesses with the original OSUI provider type.
+// PreviewProvider.m copies this class's native witness tables for each OSUI
+// provider. Keep the class non-final: its static getters must use the caller's
+// metatype, not the template type. The associated view type is always AnyView.
 private class LegacyPreviewProviderWitness: SwiftUI.PreviewProvider {
-    private static var provider: any SwiftUI.PreviewProvider.Type {
+    private static var provider: any OpenSwiftUI._PreviewProvider.Type {
         guard let provider = (self as Any.Type) as? any OpenSwiftUI._PreviewProvider.Type else {
             Swift.preconditionFailure("Expected an OpenSwiftUI preview provider")
         }
-        return nativePreviewProvider(provider)
+        return provider
     }
 
     static var previews: SwiftUI.AnyView {
-        func content<Provider: SwiftUI.PreviewProvider>(_ type: Provider.Type) -> SwiftUI.AnyView {
-            SwiftUI.AnyView(Provider.previews)
-        }
-        return content(provider)
-    }
-
-    static var platform: SwiftUI.PreviewPlatform? { provider.platform }
-
-    static var _previews: Any { previews }
-
-    static var _platform: SwiftUI.PreviewPlatform? { platform }
-}
-
-private struct LegacyPreviewProvider<Provider: OpenSwiftUI._PreviewProvider>: SwiftUI.PreviewProvider {
-    static var previews: some SwiftUI.View {
-        SwiftUI.ForEach(Provider._allPreviews, id: \.id) { preview in
-            nativePreview(preview)
-        }
+        SwiftUI.AnyView(
+            SwiftUI.ForEach(provider._allPreviews, id: \.id) { preview in
+                nativePreview(preview)
+            }
+        )
     }
 
     static var platform: SwiftUI.PreviewPlatform? {
-        switch Provider._platform {
+        switch provider._platform {
         case .iOS: .iOS
         case .macOS: .macOS
         case .tvOS: .tvOS
@@ -62,6 +39,10 @@ private struct LegacyPreviewProvider<Provider: OpenSwiftUI._PreviewProvider>: Sw
         case nil: nil
         }
     }
+
+    static var _previews: Any { previews }
+
+    static var _platform: SwiftUI.PreviewPlatform? { platform }
 
     private static func nativePreview(_ preview: OpenSwiftUI._Preview) -> SwiftUI.AnyView {
         var view = SwiftUI.AnyView(
