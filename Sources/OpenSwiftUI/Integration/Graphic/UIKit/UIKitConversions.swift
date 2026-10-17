@@ -12,6 +12,33 @@ public import OpenSwiftUICore
 public import UIKit
 import COpenSwiftUI
 
+// MARK: - UIRectEdge Conversions
+
+extension UIRectEdge {
+    init(_ edges: Edge.Set, layoutDirection: LayoutDirection) {
+        let isRightToLeft = layoutDirection == .rightToLeft
+        switch edges {
+        case .trailing: self = isRightToLeft ? .left : .right
+        case .leading: self = isRightToLeft ? .right : .left
+        case .top: self = .top
+        case .bottom: self = .bottom
+        case .vertical: self = [.top, .bottom]
+        case .horizontal: self = [.left, .right]
+        case .all: self = .all
+        default:
+            self = []
+            for edge in Edge.allCases where edges.contains(edge) {
+                switch edge {
+                case .top: insert(.top)
+                case .leading: insert(isRightToLeft ? .right : .left)
+                case .bottom: insert(.bottom)
+                case .trailing: insert(isRightToLeft ? .left : .right)
+                }
+            }
+        }
+    }
+}
+
 // MARK: - UIColor Conversions
 
 @available(OpenSwiftUI_v1_0, *)
