@@ -758,12 +758,7 @@ extension UIHostingViewBase: ViewGraphRenderDelegate {
         guard let uiView else {
             return
         }
-        #if os(visionOS)
-        // FIXME
-        context.contentsScale = 3.0
-        #else
         context.contentsScale = uiView.window?.screen.scale ?? 1.0
-        #endif
     }
 
     package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
@@ -865,12 +860,10 @@ final package class DisplayLink: NSObject {
     package init(host: UIHostingViewBase, window: UIWindow) {
         super.init()
         self.host = host
-        #if !os(visionOS) || OPENSWIFTUI_INTERNAL_XR_SDK
         link = window.screen.displayLink(
             withTarget: self,
             selector: #selector(displayLinkTimer(_:))
         )
-        #endif
         link?.add(to: .main, forMode: .common)
     }
 

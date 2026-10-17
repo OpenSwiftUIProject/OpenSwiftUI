@@ -24,7 +24,6 @@ CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
 }
 
 CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
-    #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
     switch (idiom) {
         case UIUserInterfaceIdiomPhone: {
             CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
@@ -53,9 +52,6 @@ CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
         default: return CUISubtypeNormal;
     }
     return CUISubtypeAppleVision;
-    #else
-    return CUISubtypeAppleVision;
-    #endif
 }
 
 #endif /* (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI */

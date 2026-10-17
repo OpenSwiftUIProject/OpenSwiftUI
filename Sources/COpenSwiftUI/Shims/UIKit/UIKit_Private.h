@@ -95,12 +95,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 #endif
 @end
 
-#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @interface UIScreen (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) CGRect _referenceBounds_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_referenceBounds);
 @property (nonatomic, readonly) CGFloat _pointsPerInch_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_pointsPerInch);
 @end
-#endif
 
 @interface UIWindow (OpenSwiftUI_SPI)
 @property (nonatomic, readonly, nullable) UIWindowScene *_windowHostingScene_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_windowHostingScene);

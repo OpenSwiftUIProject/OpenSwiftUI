@@ -93,6 +93,70 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 - Choose `SwiftUIDebug` configuration to run with SwiftUI
 - Choose `OpenSwiftUIDebug` configuration to run with OpenSwiftUI
 
+### visionOS Simulator Build
+
+The public visionOS SDK marks `UIScreen` unavailable. OpenSwiftUI builds for the
+visionOS Simulator with a UIKit header overlay from `DarwinPrivateFrameworks`.
+Run from `OpenSwiftUI/Example`, with the same Xcode for all steps:
+
+```shell
+../../DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh
+./setup.sh
+
+xcodebuild build \
+    -workspace Example.xcworkspace \
+    -scheme OSUI_HostingExample \
+    -configuration OpenSwiftUIDebug \
+    -destination 'generic/platform=visionOS Simulator' \
+    CODE_SIGNING_ALLOWED=NO
+```
+
+Run the overlay script again after you switch Xcode. To use another overlay
+file, set `OPENSWIFTUI_XR_OVERLAY`.
+
+Only the visionOS Simulator is supported. CoreSVG, SFSymbols, and Gestures are
+not linked on visionOS. HostingExample disables foreground vibrancy on visionOS
+until foreground material rendering is implemented.
+
+#### Simulator Runtime
+
+Xcode shows visionOS Simulator destinations only when an installed simulator
+runtime matches the visionOS SDK. Each SDK has a default runtime build. For
+example, Xcode 26.6 contains the `xros26.5` SDK, and its default runtime is
+visionOS 26.5 (`23O469`).
+
+OpenSwiftUI prefer to use the visionOS 2.5 runtime (`22O473`). With only that
+runtime installed, Xcode reports that visionOS 26.5 is not installed. Then it
+hides all visionOS Simulator destinations, including `generic/platform=visionOS Simulator`.
+Storyboard and asset catalog compilation also fails.
+
+To use the installed runtime, map the SDK to it:
+
+```shell
+xcrun simctl runtime match set xros26.5 22O473
+```
+
+This setting applies to the current user and stays until you change it. Run it
+one time on each machine. If you install a different Xcode, run it again with
+the SDK version of that Xcode.
+
+To see the current mapping, find the `xros` entries in this output. The
+`Chosen Runtime` line shows the runtime that Xcode uses:
+
+```shell
+xcrun simctl runtime match list
+```
+
+To restore the default runtime of the SDK:
+
+```shell
+xcrun simctl runtime match set xros26.5 --default
+```
+
+If you install the default runtime of the SDK (for example, with
+`xcodebuild -downloadPlatform visionOS`), the mapping is not necessary. The
+simulator then runs that visionOS version instead of visionOS 2.5.
+
 ## Tests
 
 See [Tests](Tests/README.md) for UI and interaction test targets, shared tags,

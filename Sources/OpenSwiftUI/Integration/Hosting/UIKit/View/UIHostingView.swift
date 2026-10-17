@@ -667,13 +667,8 @@ extension _UIHostingView {
            let keyboardFrame,
            let window,
            keyboardFrame.size.isNonEmpty {
-            #if !os(visionOS)
             let convertedKeyboardFrame = convert(keyboardFrame, from: window.screen.coordinateSpace)
             bottomInset = convertedKeyboardFrame.minY - bounds.maxY
-            #else
-            // FIXME
-            bottomInset = .zero
-            #endif
         } else {
             bottomInset = 0.0
         }

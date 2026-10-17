@@ -99,7 +99,6 @@
 }
 @end
 
-#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @implementation UIScreen (OpenSwiftUI_SPI)
 - (CGRect)_referenceBounds_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(CGRect, @"_referenceBounds", CGRectZero);
@@ -110,7 +109,6 @@
     return func(self, selector);
 }
 @end
-#endif
 
 @implementation UIWindow (OpenSwiftUI_SPI)
 - (UIWindowScene *) _windowHostingScene_openswiftui_safe_wrapper {
