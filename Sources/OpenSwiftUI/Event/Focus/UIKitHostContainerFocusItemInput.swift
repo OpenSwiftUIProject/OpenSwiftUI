@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: WIP
 //  ID: 10718FCC504A33B6994038B6E6E29C50 (SwiftUI?)
 
 #if os(iOS) || os(visionOS)
@@ -143,6 +143,16 @@ extension _UIHostingView: UIKitContainerFocusItem {
 protocol UIKitHostContainer {
     var visibleHostCells: [any PlatformListCell & UIFocusItem] { get }
     var hasSelection: Bool { get }
+}
+
+extension UIKitHostContainer {
+    fileprivate func focusItems(
+        in namespace: Namespace.ID?
+    ) -> (preferred: [any UIFocusItem], regular: [any UIFocusItem]) {
+        guard !hasSelection, !visibleHostCells.isEmpty else { return ([], []) }
+        // TODO: Project each cell through PlatformListViewBase.host and its root responder.
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 // MARK: - UIKitContainerFocusResponderItem
@@ -397,6 +407,148 @@ struct UIKitHostedFocusItemLifecycle: StatefulRule, ObservedAttribute, Removable
 // MARK: - FocusBridge + UIKit containers
 
 extension FocusBridge {
+    var requestedFocusEnvironments: [any UIFocusEnvironment] {
+        guard let item = requestedFocusItem else { return [] }
+        requestedFocusItem = nil
+        let environment: any UIFocusEnvironment
+        if let view = item as? UIView,
+           let controller = UIViewController.viewController(for: view) {
+            environment = controller
+        } else {
+            environment = item
+        }
+        (environment as? any AnyUIKitHostedFocusItem)?.ensureHost()
+        return [environment]
+    }
+
+    var preferredFocusEnvironments: [any UIFocusEnvironment] {
+        guard let host, let responder = host.responderNode as? ViewResponder else { return [] }
+        if let namespace = (responder as? FocusNamespaceViewResponder)?.namespace {
+            defaultFocusNamespace = namespace
+        }
+        let items = preferredFocusItems(for: responder, in: defaultFocusNamespace)
+        let environments: [any UIFocusEnvironment]
+        if !_SemanticFeature_v6.isEnabled {
+            environments = items.preferred + items.regular
+        } else if !items.preferred.isEmpty {
+            environments = items.preferred
+        } else if items.regular.count == 1,
+                  !items.regular[0].preferredFocusEnvironments.isEmpty {
+            environments = items.regular
+        } else {
+            environments = []
+        }
+        Log.focus?.log("preferred focus environments: \(environments.count) for: \(UIKitFocusItemDescription(host as UIView))")
+        return environments
+    }
+
+    var isHostContainedInFocusedItem: Bool {
+        guard let host,
+              let item = UIFocusSystem.focusSystem(for: host)?.focusedItem else { return false }
+        return item.contains(host)
+    }
+
+    func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        guard let host else { return }
+        let nextItem = Self.focusItem(context.nextFocusedItem, in: host)
+        if let oldItem = focusedItem,
+           !oldItem.prefersFocusSystem,
+           nextItem == nil,
+           oldItem.platformResponder?.isFirstResponder == true {
+            return
+        }
+        if FocusItem.isFocusChange(from: focusedItem, to: nextItem) {
+            if case let .view(item) = focusedItem?.base {
+                item.onFocusChange(false)
+            }
+            if case let .view(item) = nextItem?.base {
+                item.onFocusChange(true)
+            }
+            host.invalidateProperties(.focusedItem)
+        }
+        // Callbacks can change focus before the setter checks the current item again.
+        focusedItem = nextItem
+    }
+
+    static func focusItem(_ item: (any UIFocusItem)?, in host: UIView & ViewRendererHost) -> FocusItem? {
+        guard let item, let renderer = item.nearestRenderer() as? UIView else { return nil }
+        if renderer === host || renderer.isDescendant(of: host) {
+            return FocusItem(
+                base: .platformItem(WeakBox(item)),
+                prefersFocusSystem: false,
+                responder: item.nearestResponder(in: host) as? any FocusResponder
+            )
+        }
+        // TODO: Return the stored focus item when a ListTableViewCell contains its host.
+        return nil
+    }
+
+    static func representedFocusItem(_ item: FocusItem, in host: UIView) -> (any UIFocusItem)? {
+        switch item.base {
+        case let .platformItem(item):
+            return item.base
+        case .view:
+            // TODO: Find the ListTableViewCell or ListCollectionViewCell that owns this host.
+            return nil
+        case .platformResponder:
+            return nil
+        }
+    }
+
+    fileprivate func preferredFocusItems(
+        for responder: ViewResponder,
+        in namespace: Namespace.ID?
+    ) -> (preferred: [any UIFocusEnvironment], regular: [any UIFocusEnvironment]) {
+        if _SemanticFeature_v6.isEnabled,
+           let responder = responder as? any BaseFocusResponder,
+           !responder.isEnabled {
+            return ([], [])
+        }
+        if let responder = responder as? any FocusResponder,
+           let host,
+           let focusItem = responder.focusItem,
+           case let .platformItem(item) = focusItem.base,
+           let item = item.base,
+           item is UIView || item.canBecomeFocused {
+            if let container = item as? any UIKitHostContainer {
+                let items = container.focusItems(in: namespace)
+                return (items.preferred.map { $0 }, items.regular.map { $0 })
+            }
+            if let hostedItem = item as? any AnyUIKitHostedFocusItem {
+                hostedItem.addToHostIfNeeded(host)
+            } else if let view = item as? UIView,
+                      let controller = UIViewController.viewController(for: view) {
+                return ([], [controller])
+            }
+            return ([], [item])
+        }
+        var preferred: [any UIFocusEnvironment] = []
+        var regular: [any UIFocusEnvironment] = []
+        for child in responder.children {
+            if let base = child as? any BaseFocusResponder,
+               base.prefersDefaultFocus,
+               base.defaultFocusNamespace == namespace {
+                let items = preferredFocusItems(for: child, in: namespace)
+                preferred.append(contentsOf: items.preferred)
+                preferred.append(contentsOf: items.regular)
+            } else if let childNamespace = (child as? FocusNamespaceViewResponder)?.namespace,
+                      childNamespace != namespace {
+                if namespace != nil {
+                    let items = preferredFocusItems(for: child, in: namespace)
+                    preferred.append(contentsOf: items.preferred)
+                }
+                let items = preferredFocusItems(for: child, in: childNamespace)
+                regular.append(contentsOf: items.preferred)
+                regular.append(contentsOf: items.regular)
+            } else {
+                let items = preferredFocusItems(for: child, in: namespace)
+                preferred.append(contentsOf: items.preferred)
+                regular.append(contentsOf: items.regular)
+            }
+        }
+        return (preferred, regular)
+    }
+
     fileprivate static func focusItems(
         responderNode: ResponderNode,
         rect: CGRect,
