@@ -47,57 +47,16 @@ android {
 }
 
 tasks.register('buildSwiftArm64', Exec) {
-    commandLine 'sh', '-c', getSwiftBuildCommand('arm64-v8a')
+    commandLine 'bash', new File(rootProject.projectDir, '../../Scripts/Android/build-native.sh').absolutePath
 }
 
-tasks.register('cleanSwift', Exec) {
-    commandLine 'sh', '-c', "rm -rf '${new File(rootProject.projectDir, '../../.build/android-gui-app').absolutePath}' '${new File(rootProject.projectDir, '../../.build/android-gui-cache').absolutePath}' '${projectDir}/build/generated/swift-jniLibs'"
+tasks.register('cleanSwift', Delete) {
+    delete new File(rootProject.projectDir, '../../.build/android-demo/swift/aarch64-unknown-linux-android28')
+    delete new File(projectDir, 'build/generated/swift-jniLibs')
 }
 
 preBuild.dependsOn buildSwiftArm64
 clean.dependsOn cleanSwift
-
-def getSwiftBuildCommand(abi) {
-    def sdk = System.getenv('SWIFT_ANDROID_SDK_PATH') ?: "${System.properties['user.home']}/Library/org.swift.swiftpm/swift-sdks/swift-6.3.2-RELEASE_android.artifactbundle/swift-android"
-    def ndk = System.getenv('ANDROID_NDK_HOME') ?: "${System.properties['user.home']}/android-ndk/android-ndk-r27d"
-    def repoRoot = new File(rootProject.projectDir, '../..').absolutePath
-    def scratch = "${repoRoot}/.build/android-gui-app"
-    def cache = "${repoRoot}/.build/android-gui-cache"
-    def outDir = "${projectDir}/build/generated/swift-jniLibs/${abi}"
-    def product = "${scratch}/aarch64-unknown-linux-android28/debug/libOpenSwiftUIAndroidDemo.so"
-    def swiftLibDir = "${sdk}/swift-resources/usr/lib/swift-aarch64/android"
-    def swiftStaticLibDir = "${sdk}/swift-resources/usr/lib/swift_static-aarch64/android"
-    def ndkPrebuilt = new File("${ndk}/toolchains/llvm/prebuilt/darwin-x86_64").exists() ? 'darwin-x86_64' : 'darwin-aarch64'
-    def libcxx = "${ndk}/toolchains/llvm/prebuilt/${ndkPrebuilt}/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
-
-    return """
-        set -e
-        cd '${repoRoot}'
-        export ANDROID_NDK_HOME='${ndk}'
-        export OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM=0
-        export OPENSWIFTUI_USE_LOCAL_DEPS=1
-        export OPENATTRIBUTEGRAPH_USE_LOCAL_DEPS=1
-        export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
-        export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE=1
-        export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
-        export OPENSWIFTUI_ANDROID_UIKIT=1
-        export OPENSWIFTUI_RENDER_GTK=0
-        export OPENRENDERBOX_LIB_SWIFT_PATH='${sdk}/swift-resources/usr/lib/swift_static-aarch64'
-        export OPENSWIFTUI_ANDROID_SWIFT_STATIC_LIB_DIR='${swiftStaticLibDir}'
-        swiftly run swift build \\
-          --scratch-path '${scratch}' \\
-          --cache-path '${cache}' \\
-          --swift-sdk aarch64-unknown-linux-android28 \\
-          --static-swift-stdlib \\
-          --product OpenSwiftUIAndroidDemo \\
-          +6.3.2
-        rm -rf '${outDir}'
-        mkdir -p '${outDir}'
-        cp '${swiftLibDir}'/*.so '${outDir}/'
-        cp '${libcxx}' '${outDir}/'
-        cp '${product}' '${outDir}/libOpenSwiftUIAndroidDemo.so'
-    """
-}
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

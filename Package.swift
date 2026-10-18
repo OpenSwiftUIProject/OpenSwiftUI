@@ -1094,7 +1094,20 @@ if swiftCryptoCondition {
 }
 
 if androidUIKitCondition {
-    package.dependencies.append(.package(path: "../UIKit-cross-platform"))
+    if let uikitPath = envStringValue("ANDROID_UIKIT_PATH") {
+        package.dependencies.append(.package(path: uikitPath))
+    } else if useLocalDeps {
+        package.dependencies.append(.package(path: "../UIKit-cross-platform"))
+    } else {
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/UIKit-cross-platform", branch: "android/dev")
+        )
+    }
+    if computeCondition && !useLocalDeps {
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/Compute", branch: "android/dev")
+        )
+    }
     package.dependencies.append(.package(url: "https://github.com/SwiftAndroid/swift-jni", from: "3.0.0"))
     openSwiftUIAndroidDemoTarget.dependencies.append("OpenSwiftUIAndroidRuntimeShims")
     openSwiftUIAndroidDemoTarget.dependencies.append(

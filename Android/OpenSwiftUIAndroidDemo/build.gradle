@@ -18,6 +18,9 @@ allprojects {
     }
 }
 
+// SwiftPM owns the source checkout. Keep Gradle outputs out of it.
+project(':uikit').buildDir = new File(rootProject.projectDir, 'build/uikit')
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

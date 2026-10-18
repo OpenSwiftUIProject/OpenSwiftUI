@@ -1,4 +1,10 @@
 rootProject.name = 'OpenSwiftUIAndroidDemo'
 include ':app'
 include ':uikit'
-project(':uikit').projectDir = new File(rootProject.projectDir, '../../../UIKit-cross-platform')
+def repoRoot = new File(rootProject.projectDir, '../..').canonicalFile
+def uikitOverride = System.getenv('OPENSWIFTUI_ANDROID_UIKIT_PATH')
+def uikit = uikitOverride ? new File(uikitOverride) : new File(repoRoot, '.build/android-demo/swift/checkouts/UIKit-cross-platform')
+if (!new File(uikit, 'build.gradle').isFile()) {
+    throw new GradleException('Run Scripts/android-demo.sh --prepare from the OpenSwiftUI checkout first.')
+}
+project(':uikit').projectDir = uikit
