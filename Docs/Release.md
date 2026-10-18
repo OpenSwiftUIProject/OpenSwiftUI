@@ -32,6 +32,7 @@ By default, the release gate requires all of these checks:
 | interaction tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
 | Compatibility tests | iOS and macOS |
 | Stdout Renderer | AttributeGraph and Compute on macOS |
+| Binary Interface | Build iOS Simulator arm64 XCFrameworks and compile the binary package Example from textual interfaces |
 
 Each workflow returns its checked-out commit SHA. In the default mode, a
 failed, cancelled, skipped, or missing check cannot pass the gate. Snapshot checks
@@ -191,6 +192,34 @@ output produce a warning. The workflow still writes the GitHub changelog and
 Binary Integration section. A manual theme still applies; otherwise the current
 title stays unchanged, which can leave a new release with only its version.
 Invalid manual themes fail validation instead of silently falling back.
+
+## Check Binary Interfaces Locally
+
+Run the same consumer check used by the release gate:
+
+```shell
+Scripts/CI/check_binary_interface.sh
+```
+
+This builds all seven release XCFrameworks for iOS Simulator arm64 with Compute,
+then builds the `OpenSwiftUI-spm/Example` app. It does not boot a simulator.
+The consumer prefers textual interfaces, even with the same compiler as the
+producer, and uses fresh DerivedData to avoid cached modules hiding errors.
+
+Before packaging and final signing, the build normalizes duplicate platform
+introductions in all public, private, and package Swift interfaces. For each
+platform, it keeps the highest version in a short-form `@available` attribute.
+Long-form attributes, including `unavailable` and `deprecated`, remain unchanged.
+This preserves source availability macros while working around
+[swiftlang/swift#93415](https://github.com/swiftlang/swift/issues/93415).
+
+The default output directory is `../build`. Set `PROJECT_BUILD_DIR` to change it.
+The script uses `../OpenSwiftUI-spm`, or clones it with `gh` when absent. Set
+`OPENSWIFTUI_BINARY_PACKAGE_PATH` to use another checkout. The script passes
+`OPENSWIFTUI_LOCAL_XCFRAMEWORKS_PATH` to the package without editing its manifest,
+and rejects missing local frameworks instead of downloading published binaries.
+Use `--skip-build` to verify existing output. Logs and the Example result bundle
+are retained in a new `interface-check.*` directory under the build directory.
 
 ## Skip Pre-release Checks
 

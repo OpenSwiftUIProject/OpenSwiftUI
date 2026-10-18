@@ -569,6 +569,7 @@ build_framework() {
     fi
 
     flatten_framework_resource_bundles "$scheme" "$framework"
+    node "$SCRIPT_DIR/normalize_swiftinterface.js" "$modules_path"
     strip_release_metadata "$modules_path"
 }
 
