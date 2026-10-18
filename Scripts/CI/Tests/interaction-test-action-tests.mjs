@@ -286,12 +286,22 @@ if (args[0] === 'simctl') {
     const udid = require('node:crypto').randomUUID();
     devices.push({ name: parameters[0], udid, state: 'Shutdown', testing: false });
     // Model a worker left by Xcode and an unrelated device that cleanup must preserve.
-    devices.push({ name: 'Clone 1 of ' + parameters[0], udid: require('node:crypto').randomUUID(), state: 'Booted', testing: true });
-    devices.push({ name: 'Unrelated iPhone', udid: require('node:crypto').randomUUID(), state: 'Booted', testing: true });
+    const hasTestingSet = process.env.SIMULATOR_LIST_FAILURE !== 'missing-testing';
+    if (hasTestingSet) devices.push({ name: 'Clone 1 of ' + parameters[0], udid: require('node:crypto').randomUUID(), state: 'Booted', testing: true });
+    devices.push({ name: 'Unrelated iPhone', udid: require('node:crypto').randomUUID(), state: 'Booted', testing: hasTestingSet });
     fs.writeFileSync(statePath, JSON.stringify(devices));
     if (process.env.SIMULATOR_CREATE_FAILURE === 'true') process.exit(1);
     console.log(udid);
   } else if (command === 'list' && parameters[0] === 'devices') {
+    const failure = process.env.SIMULATOR_LIST_FAILURE;
+    if ((testing && failure === 'missing-testing') || (!testing && failure === 'missing-default')) {
+      console.error('Provided set path does not exist: /Users/runner/Library/Developer/' + (testing ? 'XCTestDevices' : 'CoreSimulator/Devices'));
+      process.exit(1);
+    }
+    if (testing && failure === 'unavailable-testing') {
+      console.error('CoreSimulatorService connection became invalid.');
+      process.exit(1);
+    }
     console.log(JSON.stringify({ devices: { [runtime]: devices.filter(device => device.testing === testing) } }));
   } else if (command === 'delete' || command === 'shutdown') {
     const device = devices.find(device => device.udid === parameters[0] && device.testing === testing);
@@ -351,6 +361,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
         SIMULATOR_LOG: simulatorLog, SIMULATOR_STATE: simulatorState,
         SIMULATOR_CREATE_FAILURE: String(options.simulatorCreateFailure ?? false),
         SIMULATOR_DELETE_FAILURE: String(options.simulatorDeleteFailure ?? false),
+        SIMULATOR_LIST_FAILURE: options.simulatorListFailure ?? '',
         INTERACTION_TEST_FIXTURES: JSON.stringify(fixtures),
         INTERACTION_TEST_RECORDING_SUMMARY: JSON.stringify(recordingSummary),
         SNAPSHOT_PLATFORM: snapshotPlatform, SNAPSHOT_VERSION: snapshotVersion, TEST_SUITE: suite,
@@ -582,4 +593,33 @@ test('simulator selection rejects a missing runtime or device type before runnin
 test('simulator selection accepts an explicit zero patch version', async t => {
   const result = await runTests(t, {}, { destination: 'platform=iOS Simulator,OS=18.5.0,name=iPhone 16 Pro' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('serial interaction cleanup succeeds without a testing device set', async t => {
+  const result = await runTests(t, {}, { update: true, simulatorListFailure: 'missing-testing' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(result.steps['simulator-cleanup'].outcome, 'success');
+  assert.equal(result.commands.length, 2);
+  for (const args of result.commands) assert.equal(args[args.indexOf('-parallel-testing-enabled') + 1], 'NO');
+  assert.ok(result.remainingSimulators.length > 0);
+  assert.ok(result.remainingSimulators.every(device => device.name === 'Unrelated iPhone' && device.state === 'Booted'));
+  for (const phase of ['record', 'verify']) {
+    await assert.rejects(fs.access(path.join(result.steps.paths.outputs.root, `${phase}-simulator.json`)), { code: 'ENOENT' });
+  }
+});
+
+test('simulator cleanup reports other list failures and retains ownership state', async t => {
+  for (const failure of ['unavailable-testing', 'missing-default']) {
+    const result = await runTests(t, {}, { simulatorListFailure: failure });
+    assert.equal(result.steps.uitest.outcome, 'success');
+    assert.equal(result.steps['simulator-cleanup'].outcome, 'failure');
+    assert.equal(result.status, 1);
+    await fs.access(path.join(result.steps.paths.outputs.root, 'verify-simulator.json'));
+    if (failure === 'unavailable-testing') {
+      assert.match(result.stderr, /CoreSimulatorService connection became invalid/);
+      assert.ok(!result.remainingSimulators.some(device => !device.testing && device.name.startsWith('OpenSwiftUI-')));
+    } else {
+      assert.match(result.stderr, /Provided set path does not exist/);
+    }
+  }
 });

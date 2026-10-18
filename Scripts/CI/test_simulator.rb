@@ -44,7 +44,18 @@ when 'cleanup'
   failures = []
   # Xcode keeps parallel workers in a separate device set.
   [['--set', 'testing'], []].each do |device_set|
-    devices = JSON.parse(simctl(*device_set, 'list', 'devices', '--json')).fetch('devices')
+    arguments = [*device_set, 'list', 'devices', '--json']
+    output, error, status = Open3.capture3('xcrun', 'simctl', *arguments)
+    unless status.success?
+      # Serial tests on a fresh runner do not create the parallel device set.
+      if device_set == ['--set', 'testing'] && error.lines.any? { |line| line.start_with?('Provided set path does not exist: ') }
+        warn 'Skipping absent testing device set.'
+      else
+        failures << "simctl #{arguments.join(' ')} failed: #{error}"
+      end
+      next
+    end
+    devices = JSON.parse(output).fetch('devices')
     devices.fetch(state.fetch('runtime'), []).each do |device|
       next unless owned_name.match?(device.fetch('name'))
       udid = device.fetch('udid')
