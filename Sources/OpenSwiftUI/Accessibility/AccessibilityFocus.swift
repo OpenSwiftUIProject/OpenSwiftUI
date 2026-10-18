@@ -36,7 +36,7 @@ struct AccessibilityFocus {
             if let node = platformAccessibilityElement.accessibilityNodeForPlatformElement {
                 return node
             }
-            #if os(iOS) || os(visionOS) || os(macOS)
+            #if canImport(Darwin)
             var node: AccessibilityNode?
             platformAccessibilityElement.traverseAncestors { element in
                 if let ancestor = element as? AccessibilityNode {
@@ -70,7 +70,7 @@ struct AccessibilityFocus {
                ancestor == focusStoreNode {
                 return .platformChildFocused
             }
-            #if os(iOS) || os(visionOS) || os(macOS)
+            #if canImport(Darwin)
             if let ancestor = ancestorAccessibilityNode {
                 var isContainerChildFocused = false
                 ancestor.traverseAncestors { element in

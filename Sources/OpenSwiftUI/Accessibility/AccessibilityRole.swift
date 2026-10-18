@@ -13,7 +13,7 @@ import OpenSwiftUI_SPI
 struct AccessibilityRole {
     var resolved: Resolved
 
-    #if !os(macOS) && !os(iOS) && !os(visionOS)
+    #if !canImport(Darwin)
     struct Resolved {
         var traits: AXOpenSwiftUITraits
         var automationType: AXAutomationType?

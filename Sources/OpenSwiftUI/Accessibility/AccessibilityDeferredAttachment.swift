@@ -203,7 +203,7 @@ extension AccessibilityAttachment {
         var properties = properties
         let bridgedProperties = Graph.withoutUpdate {
             properties.bridgedElement.map { element -> AccessibilityProperties in
-                #if os(macOS) || os(iOS) || os(visionOS)
+                #if canImport(Darwin)
                 element.bridgedProperties
                 #else
                 _openSwiftUIPlatformUnimplementedFailure()

@@ -37,10 +37,12 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview("HostingVC") {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             ContentView()
                         }
-                        ._previewVC()
                     }
                 }
             }
@@ -73,10 +75,12 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             CounterView()
                         }
-                        ._previewVC()
                     }
                 }
             }
@@ -108,10 +112,12 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             ContentView()
                         }
-                        ._previewVC()
                     }
                 }
             }
@@ -146,13 +152,15 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             Text("Primary")
                             if showsSecondary {
                                 Text("Secondary")
                             }
                         }
-                        ._previewVC()
                     }
                 }
             }
@@ -192,10 +200,12 @@ final class PreviewMacroTests: XCTestCase {
                         traits: .sizeThatFitsLayout,
                         .fixedLayout(width: 320, height: 200)
                     ) {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             ContentView()
                         }
-                        ._previewVC()
                     }
                 }
             }
@@ -227,10 +237,12 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview("Explicit", body: {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
+                        }
+                        return __b_buildView {
                             ContentView()
                         }
-                        ._previewVC()
                     })
                 }
             }
@@ -263,10 +275,7 @@ final class PreviewMacroTests: XCTestCase {
                 }
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
-                    DeveloperToolsSupport::Preview("Expression", body: {
-                        OpenSwiftUI::AnyView((previewBody)())
-                            ._previewVC()
-                    })
+                    DeveloperToolsSupport::Preview("Expression", body: previewBody)
                 }
             }
             """,
@@ -296,9 +305,11 @@ final class PreviewMacroTests: XCTestCase {
 
                 static func makePreview() throws -> DeveloperToolsSupport::Preview {
                     DeveloperToolsSupport::Preview {
-                        OpenSwiftUI::Group {
+                        func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                            body()
                         }
-                        ._previewVC()
+                        return __b_buildView {
+                        }
                     }
                 }
             }

@@ -29,7 +29,7 @@ func runStdoutApp(
             print("OpenSwiftUI stdout renderer: no scene to render")
             return
         }
-        #if os(macOS) || os(iOS) || os(visionOS)
+        #if canImport(Darwin)
         let rootView = item.value.view
             .frame(width: options.surface.width, height: options.surface.height)
             .rootEnvironment(scenePhase: .active, sceneID: item.id)

@@ -2,7 +2,7 @@
 //  LegacyPreviewProvider.swift
 //  OpenSwiftUI
 
-#if canImport(SwiftUI) && (os(macOS) || os(iOS) || os(visionOS))
+#if canImport(Darwin)
 import OpenSwiftUICore
 import SwiftUI
 
@@ -46,7 +46,7 @@ private class LegacyPreviewProviderWitness: SwiftUI.PreviewProvider {
 
     private static func nativePreview(_ preview: OpenSwiftUI._Preview) -> SwiftUI.AnyView {
         var view = SwiftUI.AnyView(
-            LegacyPreviewView(content: preview.content)
+            NativePreviewView(content: preview.content)
                 .previewDisplayName(preview.displayName)
                 .previewDevice(preview.device.map { SwiftUI.PreviewDevice(rawValue: $0.rawValue) })
                 .previewLayout(preview.layout)
@@ -93,7 +93,7 @@ private struct LegacyPreviewContext: OpenSwiftUI.PreviewContext, SwiftUI.Preview
 }
 
 #if (os(iOS) || os(visionOS))
-private struct LegacyPreviewView: SwiftUI.UIViewControllerRepresentable {
+struct NativePreviewView: SwiftUI.UIViewControllerRepresentable {
     var content: OpenSwiftUI.AnyView
 
     func makeUIViewController(context: Context) -> OpenSwiftUI.UIHostingController<OpenSwiftUI.AnyView> {
@@ -118,7 +118,7 @@ private struct LegacyPreviewView: SwiftUI.UIViewControllerRepresentable {
     }
 }
 #elseif os(macOS)
-private struct LegacyPreviewView: SwiftUI.NSViewControllerRepresentable {
+struct NativePreviewView: SwiftUI.NSViewControllerRepresentable {
     var content: OpenSwiftUI.AnyView
 
     func makeNSViewController(context: Context) -> OpenSwiftUI.NSHostingController<OpenSwiftUI.AnyView> {
