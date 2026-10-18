@@ -186,6 +186,10 @@ extension _UIHostingView: ViewRendererHost {
 
     @_spi(ForOpenSwiftUIOnly)
     public func preferencesDidChange() {
+        let preferences = viewGraph.preferenceValues()
+        focusBridge.preferencesDidChange(preferences)
+        delegate?.hostingView(self, didChangePreferences: preferences)
+        // TODO: Notify the remaining UIKit bridges.
         _openSwiftUIUnimplementedWarning()
     }
 
@@ -215,8 +219,10 @@ extension _UIHostingView: ViewRendererHost {
 
     package func `as`<T>(_ type: T.Type) -> T? {
         guard let value = base.as(type) else {
-            // TODO: FocuHost, PlatformItemListHost
-            if UIViewControllerProvider.self == type {
+            if FocusHost.self == type {
+                return unsafeBitCast(self as any FocusHost, to: T.self)
+            // TODO: PlatformItemListHost
+            } else if UIViewControllerProvider.self == type {
                 return unsafeBitCast(self as any UIViewControllerProvider, to: T.self)
             // TODO: PointerHost, WindowLayoutHost,
             } else if UIView.self == type {
@@ -273,6 +279,7 @@ extension _UIHostingView: ViewRendererHost {
 
     package func updateEnvironment() {
         var environment = base.startUpdateEnvironment()
+        delegate?.hostingView(self, willUpdate: &environment)
         // WIP
         _openSwiftUIUnimplementedWarning()
         environment.displayScale = traitCollection.displayScale
@@ -282,7 +289,9 @@ extension _UIHostingView: ViewRendererHost {
         #if os(iOS)
         environment.feedbackCache = feedbackCache
         #endif
-        viewGraph.setEnvironment(environment)
+        focusBridge.updateEnvironment(&environment)
+        delegate?.hostingView(self, didUpdate: environment)
+        base.endUpdateEnvironment(environment)
     }
 
     package func updateTransform() {
@@ -316,15 +325,18 @@ extension _UIHostingView: ViewRendererHost {
     }
 
     package func updateFocusStore() {
-        _openSwiftUIUnimplementedWarning()
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusStore(focusBridge.focusStore)
     }
 
     package func updateFocusedItem() {
-        _openSwiftUIUnimplementedWarning()
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusedItem(focusedItem)
     }
 
     package func updateFocusedValues() {
-        _openSwiftUIUnimplementedWarning()
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusedValues(focusedValues)
     }
 
     package func updateAccessibilityEnvironment() {
@@ -340,7 +352,29 @@ extension _UIHostingView: EventGraphHost {
     }
 
     package var focusedResponder: ResponderNode? {
-        responderNode
+        focusBridge.focusedItem?.responder
+    }
+}
+
+// MARK: - _UIHostingView + FocusHost
+
+extension _UIHostingView: FocusHost, FocusBridgeProvider {
+    var focusedItem: FocusItem? {
+        focusBridge.focusedItem
+    }
+
+    func focus(item: FocusItem) {
+        focusBridge.moveFocus(to: item, designatedPlatformResponder: nil)
+    }
+
+    var _preferredFocusEnvironments: [any UIFocusEnvironment] {
+        var environments = focusBridge.requestedFocusEnvironments
+        if let container = defaultFocusItemsContainer() {
+            environments.append(container)
+        } else {
+            environments.append(contentsOf: focusBridge.preferredFocusEnvironments)
+        }
+        return environments
     }
 }
 
