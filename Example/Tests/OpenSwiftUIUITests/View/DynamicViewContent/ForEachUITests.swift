@@ -143,8 +143,6 @@ struct ForEachUITests {
                 }
             }
         }
-        withKnownIssue(isIntermittent: true) {
-            openSwiftUIAssertAnimationSnapshot(of: ContentView())
-        }
+        openSwiftUIAssertAnimationSnapshot(of: ContentView())
     }
 }

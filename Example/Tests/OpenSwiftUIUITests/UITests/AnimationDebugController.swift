@@ -72,44 +72,13 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
     override func viewDidLoad() {
         super.viewDidLoad()
         #if os(iOS) || os(visionOS)
-        Self.hookLayoutSubviews(type(of: host))
-        Self.hookDisplayLinkTimer()
+        AnimationDebugHooks.hookLayoutSubviews(type(of: host))
+        AnimationDebugHooks.hookDisplayLinkTimer()
         #endif
     }
 
     #if os(iOS) || os(visionOS)
     var disableLayoutSubview = false
-
-    // Fix swift-snapshot framework snapshot will trigger uncessary _UIHostingView.layoutSubview issue
-    static func hookLayoutSubviews(_ cls: AnyClass?) {
-        let originalSelector = #selector(PlatformView.layoutSubviews)
-        let swizzledSelector = #selector(PlatformView.swizzled_layoutSubviews)
-
-        guard let targetClass = cls,
-              let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
-              let swizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector)
-        else { return }
-        method_exchangeImplementations(originalMethod, swizzledMethod)
-    }
-
-    static func hookDisplayLinkTimer() {
-        #if OPENSWIFTUI
-        let cls: AnyClass? = NSClassFromString("OpenSwiftUI.DisplayLink")
-        #else
-        let cls: AnyClass? = NSClassFromString("SwiftUI.DisplayLink")
-        #endif
-        let sel = NSSelectorFromString("displayLinkTimer:")
-        guard let targetClass = cls,
-              let originalMethod = class_getInstanceMethod(targetClass, sel),
-                let swizzledMethod = class_getInstanceMethod(self, #selector(swizzled_displayLinkTimerWithLink(_:)))
-        else { return }
-        method_exchangeImplementations(originalMethod, swizzledMethod)
-    }
-
-    @objc
-    func swizzled_displayLinkTimerWithLink(_ sender: CADisplayLink) {
-        sender.isPaused = true
-    }
     #endif
 }
 
@@ -123,21 +92,58 @@ private protocol AnimationDebuggableController: PlatformViewController {
 
 extension AnimationDebugController: AnimationDebuggableController {}
 
-extension PlatformView {
+// Generic hosting view classes share one Method, so each Method is hooked once.
+// Exchanging implementations again would remove the hook.
+@MainActor
+private enum AnimationDebugHooks {
+    private static var hookedMethods: Set<OpaquePointer> = []
+
     // Fix swift-snapshot-testing trigger extra layoutSubviews and advance time issue
-    @objc func swizzled_layoutSubviews() {
-        guard let vc = _viewControllerForAncestor as? AnimationDebuggableController else {
-            swizzled_layoutSubviews()
-            return
+    static func hookLayoutSubviews(_ cls: AnyClass) {
+        let selector = #selector(PlatformView.layoutSubviews)
+        typealias LayoutSubviews = @convention(c) (PlatformView, Selector) -> Void
+        hook(cls, selector) { (original: LayoutSubviews) in
+            { (view: PlatformView) in
+                guard let vc = view._viewControllerForAncestor as? AnimationDebuggableController else {
+                    original(view, selector)
+                    return
+                }
+                guard !vc.disableLayoutSubview else {
+                    // Fix swift-snapshot-testing set initialFrame as .zero and then trigger setProposedSize(.zero) causing DisplayList layout issue (View is placed at topLeft instead of center)
+                    vc.advance(interval: .zero)
+                    return
+                }
+                original(view, selector)
+                vc.disableLayoutSubview = true
+            } as @convention(block) (PlatformView) -> Void
         }
-        guard !vc.disableLayoutSubview else {
-            // superLayoutSubviews(type(of: self))
-            // Fix swift-snapshot-testing set initialFrame as .zero and then trigger setProposedSize(.zero) causing DisplayList layout issue (View is placed at topLeft instead of center)
-            vc.advance(interval: .zero)
-            return
+    }
+
+    static func hookDisplayLinkTimer() {
+        #if OPENSWIFTUI
+        let cls: AnyClass? = NSClassFromString("OpenSwiftUI.DisplayLink")
+        #else
+        let cls: AnyClass? = NSClassFromString("SwiftUI.DisplayLink")
+        #endif
+        guard let cls else { return }
+        typealias DisplayLinkTimer = @convention(c) (AnyObject, Selector, CADisplayLink) -> Void
+        hook(cls, NSSelectorFromString("displayLinkTimer:")) { (_: DisplayLinkTimer) in
+            { (_: AnyObject, link: CADisplayLink) in
+                link.isPaused = true
+            } as @convention(block) (AnyObject, CADisplayLink) -> Void
         }
-        swizzled_layoutSubviews()
-        vc.disableLayoutSubview = true
+    }
+
+    private static func hook<Function>(
+        _ cls: AnyClass,
+        _ selector: Selector,
+        _ makeBlock: (Function) -> Any
+    ) {
+        guard let method = class_getInstanceMethod(cls, selector),
+              hookedMethods.insert(method).inserted
+        else { return }
+        let original = unsafeBitCast(method_getImplementation(method), to: Function.self)
+        method_setImplementation(method, imp_implementationWithBlock(makeBlock(original)))
     }
 }
 #endif

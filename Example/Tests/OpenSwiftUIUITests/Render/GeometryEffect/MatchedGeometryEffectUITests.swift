@@ -24,7 +24,7 @@ struct MatchedGeometryEffectUITests {
         }
         openSwiftUIAssertAnimationSnapshot(
             of: ContentView(),
-            precision: 0.8, // FIXME: general animation snapshot issue
+            precision: 0.98, // FIXME: Text and button rendering differ in the middle frame
             size: CGSize(width: 300, height: 150)
         )
     }
@@ -40,13 +40,10 @@ struct MatchedGeometryEffectUITests {
                 MatchedGeometryEffectClipShapeModifierExample(initialToggle: true)
             }
         }
-        withKnownIssue("clipShape rect bug") {
-            openSwiftUIAssertAnimationSnapshot(
-                of: ContentView(),
-                size: CGSize(width: 300, height: 150)
-            )
-        } when: {
-            viewRendererVendor == .osui
-        }
+        openSwiftUIAssertAnimationSnapshot(
+            of: ContentView(),
+            precision: 0.98, // FIXME: Text and button rendering differ in the middle frame
+            size: CGSize(width: 300, height: 150)
+        )
     }
 }
