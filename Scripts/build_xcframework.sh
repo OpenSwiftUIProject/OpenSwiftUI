@@ -121,15 +121,16 @@ if [ ${#FRAMEWORK_NAMES[@]} -eq 0 ] ||
     FRAMEWORK_NAMES=("${DEFAULT_FRAMEWORK_NAMES[@]}")
 fi
 
-# Default: macosx and iphonesimulator. Compute builds also include iphoneos.
+# Default: macOS, iOS Simulator, and visionOS device and simulator.
+# Compute builds also include iphoneos.
 # Note: iphoneos SDK support is blocked by an AG issue. See #835.
 if [ ${#SDKS[@]} -eq 0 ]; then
     if [ "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}" = "1" ]; then
-        SDKS=("macosx" "iphonesimulator" "iphoneos")
-        SDK_ARCHS=("" "" "")
+        SDKS=("macosx" "iphonesimulator" "iphoneos" "xros" "xrsimulator")
+        SDK_ARCHS=("" "" "" "" "")
     else
-        SDKS=("macosx" "iphonesimulator")
-        SDK_ARCHS=("" "")
+        SDKS=("macosx" "iphonesimulator" "xros" "xrsimulator")
+        SDK_ARCHS=("" "" "" "")
     fi
 fi
 
@@ -292,6 +293,8 @@ sdk_destination() {
         iphonesimulator) echo "generic/platform=iOS Simulator" ;;
         iphoneos) echo "generic/platform=iOS" ;;
         macosx) echo "generic/platform=macOS" ;;
+        xros) echo "generic/platform=visionOS" ;;
+        xrsimulator) echo "generic/platform=visionOS Simulator" ;;
         *) echo "generic/platform=$1" ;;
     esac
 }
@@ -598,6 +601,8 @@ copy_debug_symbols() {
             iphonesimulator) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-*simulator 2>/dev/null | head -1) ;;
             iphoneos) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-arm64 2>/dev/null | head -1) ;;
             macosx) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/macos-* 2>/dev/null | head -1) ;;
+            xros) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/xros-arm64 2>/dev/null | head -1) ;;
+            xrsimulator) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/xros-*simulator 2>/dev/null | head -1) ;;
         esac
 
         if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive/dSYMs" ]; then

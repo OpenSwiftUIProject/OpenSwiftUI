@@ -67,9 +67,21 @@ runs:
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
+    - name: Install UIKit header overlay
+      shell: bash
+      run: |
+        overlay_dir="${RUNNER_TEMP:-/tmp}/xcframework-xr-uikit-overlay-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}"
+        ../DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh --output "$overlay_dir"
+        echo "OPENSWIFTUI_XR_OVERLAY=$overlay_dir/overlay.yaml" >> "$GITHUB_ENV"
     - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh --compute OpenSwiftUI
       shell: bash
+    - name: Clean up UIKit header overlay
+      if: always()
+      shell: bash
+      run: |
+        overlay_dir="${RUNNER_TEMP:-/tmp}/xcframework-xr-uikit-overlay-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}"
+        rm -rf "$overlay_dir"
     - name: Code sign XCFrameworks
       if: ${{ inputs.signing-certificate-base64 != '' }}
       uses: ./.github/actions/codesign-xcframework

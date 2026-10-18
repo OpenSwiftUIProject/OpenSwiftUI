@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: [self-hosted, macos-15, xcode-26.6]
+    runs-on: [self-hosted, macos-15, xcode-26.6, visionos-simulator-2.5]
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       sha: ${{ steps.checkout.outputs.commit }}
