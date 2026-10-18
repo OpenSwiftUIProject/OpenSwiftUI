@@ -458,9 +458,7 @@ where Content: PlatformViewRepresentable {
             return cachedImplementsFittingSize
         }
         guard let hostedView else { return false }
-        let implementation = hostedView.method(for: fittingSizeSelector).map {
-            unsafeBitCast($0, to: OpaquePointer.self)
-        }
+        let implementation = hostedView.method(for: fittingSizeSelector)
         let result = implementation != defaultFittingSizeIMP
         cachedImplementsFittingSize = result
         return result
@@ -702,9 +700,7 @@ extension PlatformViewHost: PlatformLayoutContainer {}
 
 private let fittingSizeSelector = #selector(getter: NSView.fittingSize)
 
-private let defaultFittingSizeIMP = NSView.instanceMethod(for: fittingSizeSelector).map {
-    unsafeBitCast($0, to: OpaquePointer.self)
-}
+private let defaultFittingSizeIMP = NSView.instanceMethod(for: fittingSizeSelector)
 #endif
 
 #endif
