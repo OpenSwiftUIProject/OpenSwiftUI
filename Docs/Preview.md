@@ -8,9 +8,9 @@
 
 OpenSwiftUI declares a `Preview` macro overload whose view builder produces `OpenSwiftUI.View`. UIKit and AppKit continue to provide the controller-oriented Preview overloads. When these modules are imported together, Swift selects the matching macro from the type produced by the body:
 
-1. `#Preview` with an `OpenSwiftUI.View` body resolves to OpenSwiftUI's macro and collects the content in a `Group`
-2. `_previewVC()` wraps that content in `NSHostingController` or `UIHostingController`
-3. The expansion emits the `DeveloperToolsSupport.PreviewRegistry` that Xcode discovers and returns a preview containing the resulting controller
+1. `#Preview` with an `OpenSwiftUI.View` body resolves to OpenSwiftUI's macro
+2. The expansion emits the `DeveloperToolsSupport.PreviewRegistry` that Xcode discovers. Like SwiftUI's expansion, `makePreview()` applies `ViewBuilder` to the body through a local `__b_buildView(body:)` function
+3. The result goes to OpenSwiftUI's `Preview.init(_:traits:body:)` overload, which takes an `OpenSwiftUI.View` body
 
 ```swift
 import AppKit
@@ -27,7 +27,7 @@ import OpenSwiftUI
 
 The first declaration uses OpenSwiftUI's Preview macro because its body produces an `OpenSwiftUI.View`. The second continues to use AppKit's Preview macro because its body produces an `NSViewController`. The same overload selection applies to UIKit and `UIViewController`; these common cases do not require explicit module qualification.
 
-Native macOS targets return an `NSViewController`; iOS, Mac Catalyst, and visionOS targets return a `UIViewController`. The current hosting-controller path does not support tvOS or watchOS because OpenSwiftUI does not provide a hosting controller on those platforms.
+The initializer puts the view in an `NSHostingController` on macOS, or a `UIHostingController` on iOS, Mac Catalyst, and visionOS. It then wraps the controller in a SwiftUI view and uses SwiftUI's view Preview initializer. Xcode applies the platform canvas to SwiftUI previews only, for example the visionOS window canvas and camera controls. The current path does not support tvOS or watchOS because OpenSwiftUI does not provide a hosting controller on those platforms.
 
 The macro accepts the same `traits:` and additional trait arguments as SwiftUI's view Preview macro.
 
@@ -43,16 +43,19 @@ Xcode Preview's XOJIT loading model requires both `OpenSwiftUI.framework` and `O
 
 Link `OpenSwiftUICore` with `-ObjC` when building the framework so Objective-C categories from the static `OpenSwiftUI_SPI` dependency are retained in the Core dylib. This is a framework-build setting; consumers of the resulting XCFrameworks do not need to add `-ObjC`.
 
-Consumers that integrate the XCFrameworks directly instead of using `OpenSwiftUI-spm` must provide the matching macro plugin separately. Without it, they can still wrap the view with `_previewVC()` explicitly so overload resolution selects the platform Preview macro. For example, on macOS:
+Consumers that integrate the XCFrameworks directly instead of using `OpenSwiftUI-spm` must provide the matching macro plugin separately. Without it, they can declare a `PreviewProvider` instead:
 
 ```swift
-import AppKit
 import OpenSwiftUI
 
-#Preview("HostingVC") {
-    ContentView()._previewVC()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
 ```
+
+The `_previewVC()` helper is deprecated. It wraps the view in a hosting controller for the UIKit and AppKit Preview macros, so it does not get the visionOS window canvas.
 
 ### The `waitingForPreviewThunks` Problem
 
@@ -104,8 +107,8 @@ sequenceDiagram
 The current shim-based approach is a temporary bridge. The long-term goal is for OpenSwiftUI to have its **own** native preview support:
 
 ### Phase 1: Native OpenSwiftUI Preview Expansion
-- Replace the current hosting-controller registry body with one that previews `OpenSwiftUI.View` directly
-- Eliminate the internal `_previewVC()` shim and hosting controller wrapper
+- Replace the hosting controller inside `Preview.init(_:traits:body:)` with a preview that renders `OpenSwiftUI.View` directly
+- Remove the deprecated `_previewVC()` shim and the hosting controller wrapper
 - Keep the `#Preview { MyView() }` source interface while changing its implementation
 
 ### Phase 2: Own Preview Thunk Registration

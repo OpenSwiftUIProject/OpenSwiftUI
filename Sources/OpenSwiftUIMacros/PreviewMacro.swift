@@ -17,7 +17,7 @@ package struct PreviewMacro: DeclarationMacro {
         if let body = node.trailingClosure {
             trailingClosure = wrappedBody(body)
         } else if let bodyIndex = arguments.lastIndex(where: { $0.label?.text == "body" }) {
-            arguments[bodyIndex].expression = ExprSyntax(wrappedBody(arguments[bodyIndex].expression))
+            arguments[bodyIndex].expression = wrappedBody(arguments[bodyIndex].expression)
             trailingClosure = nil
         } else {
             throw MacroExpansionErrorMessage("#Preview requires a view body")
@@ -71,40 +71,33 @@ package struct PreviewMacro: DeclarationMacro {
         return [registry]
     }
 
-    private static func wrappedBody(_ body: ExprSyntax) -> ClosureExprSyntax {
+    private static func wrappedBody(_ body: ExprSyntax) -> ExprSyntax {
+        // A referenced body already matches the OpenSwiftUI Preview initializer.
         guard let closure = body.as(ClosureExprSyntax.self) else {
-            // A referenced body returns an existential View, so erase its
-            // result to a concrete root before creating the hosting controller.
-            let wrappedBody: ExprSyntax = """
-                {
-                    OpenSwiftUI::AnyView((\(body))())
-                        ._previewVC()
-                }
-                """
-            return wrappedBody.as(ClosureExprSyntax.self)!
+            return body
         }
-        return wrappedBody(closure)
+        return ExprSyntax(wrappedBody(closure))
     }
 
     private static func wrappedBody(_ body: ClosureExprSyntax) -> ClosureExprSyntax {
+        // Apply the view builder to the statements without an extra root view.
+        let buildView: DeclSyntax =
+            """
+            func __b_buildView(@OpenSwiftUI::ViewBuilder body: () -> any OpenSwiftUI::View) -> any OpenSwiftUI::View {
+                body()
+            }
+            """
         let content = ClosureExprSyntax(statements: body.statements)
-        let group = FunctionCallExprSyntax(
-            callee: DeclReferenceExprSyntax(
-                moduleSelector: ModuleSelectorSyntax(moduleName: .identifier("OpenSwiftUI")),
-                baseName: .identifier("Group")
-            ),
-            trailingClosure: content
-        )
-        let previewVC = FunctionCallExprSyntax(
-            callee: MemberAccessExprSyntax(
-                base: group,
-                period: .periodToken(leadingTrivia: .newline),
-                declName: DeclReferenceExprSyntax(baseName: .identifier("_previewVC"))
+        let returnBuiltView = ReturnStmtSyntax(
+            expression: FunctionCallExprSyntax(
+                callee: DeclReferenceExprSyntax(baseName: .identifier("__b_buildView")),
+                trailingClosure: content
             )
         )
         var wrappedBody = body
         wrappedBody.statements = CodeBlockItemListSyntax([
-            CodeBlockItemSyntax(item: .expr(ExprSyntax(previewVC)))
+            CodeBlockItemSyntax(item: .decl(buildView)),
+            CodeBlockItemSyntax(item: .stmt(StmtSyntax(returnBuiltView))),
         ])
         return wrappedBody.formatted().cast(ClosureExprSyntax.self)
     }
