@@ -55,6 +55,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
+- (void)_noteTraitsDidChangeRecursively_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_noteTraitsDidChangeRecursively());
 @property(nonatomic, readonly, nullable) UIResponder *firstResponder_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(firstResponder);
 - (nullable id<UILargeContentViewerItem>)_largeContentViewerItemAtPoint:(CGPoint)point OPENSWIFTUI_SWIFT_NAME(_largeContentViewerItem(at:));
 - (instancetype)_initWithLayer:(CALayer *)layer;
@@ -93,6 +94,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 #endif
 
 @interface UIViewController (OpenSwiftUI_SPI)
+- (void)_noWarn_setOverrideTraitCollection_openswiftui_safe_wrapper:(UITraitCollection *)traits forChild:(UIViewController *)child OPENSWIFTUI_SWIFT_NAME(_noWarn_setOverrideTraitCollection(_:forChild:));
 + (nullable UIViewController *)viewControllerForView_openswiftui_safe_wrapper:(UIView *)view OPENSWIFTUI_SWIFT_NAME(viewController(for:));
 @property (nonatomic, readonly) BOOL _shouldIgnoreChildFocusRegions_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_shouldIgnoreChildFocusRegions);
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);

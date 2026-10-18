@@ -56,6 +56,11 @@
 @end
 
 @implementation UIView (OpenSwiftUI_SPI)
+- (void)_noteTraitsDidChangeRecursively_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_noteTraitsDidChangeRecursively", );
+    func(self, selector);
+}
+
 - (UIResponder *)firstResponder_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIResponder *, @"firstResponder", nil);
     return func(self, selector);
@@ -93,6 +98,11 @@
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)
+- (void)_noWarn_setOverrideTraitCollection_openswiftui_safe_wrapper:(UITraitCollection *)traits forChild:(UIViewController *)child {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_noWarn_setOverrideTraitCollection:forChild:", , UITraitCollection *, UIViewController *);
+    func(self, selector, traits, child);
+}
+
 + (UIViewController *)viewControllerForView_openswiftui_safe_wrapper:(UIView *)view {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIViewController *, @"viewControllerForView:", nil, UIView *);
     return func(self, selector, view);

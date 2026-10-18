@@ -243,4 +243,27 @@ extension EnvironmentValues {
     }
 }
 
+extension UIView {
+    func adoptEnvironment(_ environment: EnvironmentValues, hostedSubview: UIView) {
+        let isEnabled = environment.isEnabled
+        Update.enqueueAction(reason: nil) {
+            if self.isUserInteractionEnabled != isEnabled {
+                self.isUserInteractionEnabled = isEnabled
+            }
+            if let control = hostedSubview as? UIControl, control.isEnabled != isEnabled {
+                control.isEnabled = isEnabled
+            }
+        }
+        let semanticContentAttribute: UISemanticContentAttribute = environment.layoutDirection == .rightToLeft
+            ? .forceRightToLeft : .forceLeftToRight
+        if hostedSubview.semanticContentAttribute != semanticContentAttribute {
+            hostedSubview.semanticContentAttribute = semanticContentAttribute
+        }
+        if let tint = Semantics.UIKitEnvironmentPrefersTint.isEnabled
+            ? environment.tintColor ?? environment.accentColor
+            : environment.accentColor {
+            tintColor = unsafeDowncast(tint.resolve(in: environment).kitColor, to: UIColor.self)
+        }
+    }
+}
 #endif
