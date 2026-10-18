@@ -4,7 +4,7 @@
 
 #if os(macOS)
 import AppKit
-@testable import OpenSwiftUI
+@_spi(Private) @testable import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
