@@ -8,6 +8,19 @@ UI tests run only through manual dispatch or a trusted PR comment. Pushes and pu
 
 The workflow uses the same Example setup entry point as local development. Non-Compute configurations run `Example/setup.sh`, and Compute configurations run `Example/setup.sh --compute`.
 
+Each iOS recording or verification invocation creates a new simulator with the
+requested device type and OS version. The action passes its UDID to Xcode without
+booting it first. UI tests retain parallel testing, so Xcode can clone a source
+that has no Spotlight index protected by the host's locked keybag. Recording and
+verification use separate source devices, even when they run in the same job.
+Interaction tests keep their existing serial execution setting.
+
+An `always()` step removes the source devices and their named parallel workers
+from the default and testing device sets. It does not reset shared simulators or
+change data protection. If cleanup fails, the action retains the temporary test
+directory and simulator ownership files for diagnosis. A stopped runner or a
+force-terminated job can prevent cleanup from running.
+
 ## Default Matrix
 
 Requests without a platform or configuration selection run the default matrix on both iOS Simulator and macOS:

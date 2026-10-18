@@ -169,6 +169,7 @@ runs:
       continue-on-error: true
       shell: bash
       env:
+        TEST_DESTINATION: ${{ inputs.destination }}
         UITEST_ONLY_TESTING: ${{ inputs.only-testing }}
         TEST_RUNNER_SNAPSHOT_REFERENCE_DIR: ${{ steps.reference.outputs.root }}
       run: |
@@ -261,12 +262,16 @@ runs:
         done
         trap remove_current_lock EXIT INT TERM
 
+        test_destination="$TEST_DESTINATION"
+        if [[ "${{ inputs.platform }}" == "ios" ]]; then
+          test_destination="$(ruby ../Scripts/CI/test_simulator.rb create "${{ steps.paths.outputs.root }}/record-simulator.json" "$TEST_DESTINATION")"
+        fi
         result_bundle="${{ steps.paths.outputs.artifacts }}/SUI_${{ inputs.test-suite }}.xcresult"
         test_log="${{ steps.paths.outputs.artifacts }}/SUI_${{ inputs.test-suite }}.log"
         record_status=0
         NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test \
           -scheme "SUI_${{ inputs.test-suite }}" \
-          -destination "${{ inputs.destination }}" \
+          -destination "$test_destination" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -derivedDataPath "${{ steps.paths.outputs.derived-data-path }}" \
@@ -320,6 +325,7 @@ runs:
       continue-on-error: true
       shell: bash
       env:
+        TEST_DESTINATION: ${{ inputs.destination }}
         UITEST_ONLY_TESTING: ${{ inputs.only-testing }}
         TEST_RUNNER_SNAPSHOT_REFERENCE_DIR: ${{ steps.reference.outputs.root }}
       run: |
@@ -333,12 +339,16 @@ runs:
         if [[ -n "$UITEST_ONLY_TESTING" ]]; then
           test_arguments+=("-only-testing:$UITEST_ONLY_TESTING")
         fi
+        test_destination="$TEST_DESTINATION"
+        if [[ "${{ inputs.platform }}" == "ios" ]]; then
+          test_destination="$(ruby ../Scripts/CI/test_simulator.rb create "${{ steps.paths.outputs.root }}/verify-simulator.json" "$TEST_DESTINATION")"
+        fi
         result_bundle="${{ steps.paths.outputs.artifacts }}/OSUI_${{ inputs.test-suite }}.xcresult"
         test_log="${{ steps.paths.outputs.artifacts }}/OSUI_${{ inputs.test-suite }}.log"
         test_status=0
         NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test \
           -scheme "OSUI_${{ inputs.test-suite }}" \
-          -destination "${{ inputs.destination }}" \
+          -destination "$test_destination" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -derivedDataPath "${{ steps.paths.outputs.derived-data-path }}" \
@@ -377,8 +387,21 @@ runs:
         path: ${{ steps.paths.outputs.artifacts }}
         retention-days: 7
 
+    - name: Clean up test simulators
+      id: simulator-cleanup
+      if: always() && steps.paths.outputs.root != '' && inputs.platform == 'ios'
+      shell: bash
+      env:
+        TEST_ROOT: ${{ steps.paths.outputs.root }}
+      run: |
+        cleanup_status=0
+        for phase in record verify; do
+          ruby Scripts/CI/test_simulator.rb cleanup "$TEST_ROOT/$phase-simulator.json" || cleanup_status=1
+        done
+        exit "$cleanup_status"
+
     - name: Clean up isolated test directories
-      if: always() && steps.paths.outputs.root != ''
+      if: always() && steps.paths.outputs.root != '' && steps.simulator-cleanup.outcome != 'failure'
       shell: bash
       env:
         TEST_ROOT: ${{ steps.paths.outputs.root }}
