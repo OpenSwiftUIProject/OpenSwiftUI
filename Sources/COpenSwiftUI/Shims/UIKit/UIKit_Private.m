@@ -93,6 +93,16 @@
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)
++ (UIViewController *)viewControllerForView_openswiftui_safe_wrapper:(UIView *)view {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIViewController *, @"viewControllerForView:", nil, UIView *);
+    return func(self, selector, view);
+}
+
+- (BOOL)_shouldIgnoreChildFocusRegions_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_shouldIgnoreChildFocusRegions", NO);
+    return func(self, selector);
+}
+
 - (BOOL)_canShowWhileLocked_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_canShowWhileLocked", NO);
     return func(self, selector);

@@ -116,6 +116,25 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     package let eventBindingManager = EventBindingManager()
 
+    var focusBridge = FocusBridge()
+
+    var focusedValues = FocusedValues() {
+        didSet {
+            invalidateProperties(.focusedValues)
+        }
+    }
+
+    // TODO: Forward changes to AccessibilityViewGraph when that feature is available.
+    var currentAccessibilityFocusStore = AccessibilityFocusStore()
+
+    private var keyEventTracker = KeyEvent.Tracker()
+
+    private var isOfferingKeyEventToFirstResponder = false
+
+    private var eventsInProgress: Set<EventID> = []
+
+    private var eventsPendingReset: Set<EventID> = []
+
     private var hitTestEventMonitor: Any?
 
     private var geometryChangeRegistrationPhase: HostingViewGeometryRegistrationPhase = .unregistered
@@ -275,6 +294,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         )
         // TODO
         super.init(frame: .zero)
+        eventBindingManager.addForwardedEventDispatcher(KeyEventDispatcher())
         appendViewGraphFeatures()
         initializeViewGraph()
         // TODO
@@ -286,9 +306,16 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         eventBindingManager.host = self
         if GestureRecognizerBasedEvents.isEnabled {
             eventBindingManager.delegate = eventBridge
-            addGestureRecognizer(eventBridge.recognizer)
         } else {
             eventBindingManager.delegate = self
+        }
+        focusBridge._host = self
+        viewGraph.addPreference(FocusedValueList.Key.self)
+        viewGraph.addPreference(FocusStoreList.Key.self)
+        viewGraph.addPreference(AccessibilityFocusStoreList.Key.self)
+        viewGraph.addPreference(KeyViewLoopSeedKey.self)
+        if GestureRecognizerBasedEvents.isEnabled {
+            addGestureRecognizer(eventBridge.recognizer)
         }
         HostingViewRegistry.shared.add(self)
         if _eventDebugTriggers.contains(.hitTest) {
@@ -440,7 +467,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             center.addObserver(self, selector: #selector(windowWillBeginSheet), name: NSWindow.willBeginSheetNotification, object: newWindow)
             center.addObserver(self, selector: #selector(windowDidEndSheet), name: NSWindow.didEndSheetNotification, object: newWindow)
             center.addObserver(self, selector: #selector(windowDidChangeScreen), name: NSWindow.didChangeScreenNotification, object: newWindow)
-            // TODO: FirstResponderObserver KVO setup
+            newWindow.observeFirstResponderChanges()
             // TODO: KVO on "showsWindowSharingTitlebarButton"
         }
         invalidateProperties(.environment)
@@ -478,6 +505,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         updateRemovedState()
         // TODO: initialInheritedEnvironment / inferredGraphTraits
         super.viewDidMoveToWindow()
+        focusBridge.hostHierarchyDidChange()
         Update.end()
     }
 
@@ -495,6 +523,134 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         if key == "safeAreaInsets" {
             invalidateSafeAreaInsets()
         }
+    }
+
+    // MARK: - Key events [TBA]
+
+    open override var acceptsFirstResponder: Bool {
+        focusBridge.hostAcceptsFirstResponder
+    }
+
+    open override func _recursiveSetDefaultKeyViewLoop() -> NSView? {
+        focusBridge.updateDefaultKeyViewLoop()
+    }
+
+    open override func designatedFocusRing() -> NSView? {
+        focusBridge.designatedFocusRingView
+    }
+
+    open override func _recursiveGatherAllKeyViewCandidates(in array: NSMutableArray) {
+        guard let candidates = focusBridge.sortedCandidateKeyViews else { return }
+        for view in candidates where view !== self {
+            if view.canBecomeKeyView {
+                array.add(view)
+            }
+            view._recursiveGatherAllKeyViewCandidates(in: array)
+        }
+    }
+
+    open override func _firstResponder(for event: NSEvent) -> NSResponder? {
+        hasFilter(for: event) ? self : super._firstResponder(for: event)
+    }
+
+    private func hasFilter(for event: NSEvent) -> Bool {
+        guard lastInterceptedKeyEvent !== event,
+              event.type == .keyDown || event.type == .keyUp,
+              let keyEvent = event.resolve(phase: .active),
+              eventBindingManager.binds(keyEvent)
+        else {
+            return false
+        }
+        lastInterceptedKeyEvent = event
+        return true
+    }
+
+    open override func keyDown(with event: NSEvent) {
+        guard !isOfferingKeyEventToFirstResponder,
+              lastInterceptedKeyEvent === event
+        else {
+            // TODO: Interpret responder commands before forwarding.
+            super.keyDown(with: event)
+            return
+        }
+        guard !sendKeyEvent(event, phase: .began) else {
+            return
+        }
+        if lastInterceptedKeyEvent === event, let firstResponder = window?.firstResponder {
+            isOfferingKeyEventToFirstResponder = true
+            firstResponder.keyDown(with: event)
+            isOfferingKeyEventToFirstResponder = false
+        } else {
+            // TODO: Interpret responder commands before forwarding.
+            super.keyDown(with: event)
+        }
+    }
+
+    open override func keyUp(with event: NSEvent) {
+        guard !isOfferingKeyEventToFirstResponder else {
+            super.keyUp(with: event)
+            return
+        }
+        guard !sendKeyEvent(event, phase: .ended) else {
+            return
+        }
+        if lastInterceptedKeyEvent === event, let firstResponder = window?.firstResponder {
+            isOfferingKeyEventToFirstResponder = true
+            firstResponder.keyUp(with: event)
+            isOfferingKeyEventToFirstResponder = false
+        } else {
+            super.keyUp(with: event)
+        }
+    }
+
+    private func sendKeyEvent(_ event: NSEvent, phase: EventPhase) -> Bool {
+        guard let keyEvent = event.resolve(phase: phase) else {
+            return false
+        }
+        return sendEvent(keyEvent, serial: keyEventTracker.serial(for: keyEvent), track: true)
+    }
+
+    package func sendEvent<E>(_ event: E, serial: Int, track: Bool) -> Bool where E: EventType {
+        let id = EventID(type: E.self, serial: serial)
+        return sendEvents([id: event], track: track) == [id]
+    }
+
+    package func sendEvents(_ events: [EventID: any EventType], track: Bool) -> Set<EventID> {
+        if GestureRecognizerBasedEvents.isEnabled {
+            return eventBridge.send(events, source: eventBindingSource)
+        }
+        guard track else {
+            return eventBindingManager.send(events)
+        }
+        if _TestApp.host != nil,
+           let event = events.first?.value,
+           HoverEvent(event) != nil || KeyEvent(event) != nil {
+            return eventBindingManager.send(events)
+        }
+        var downstreamEvents: [EventID: any EventType] = [:]
+        for (id, event) in events {
+            if !event.phase.isTerminal {
+                eventsInProgress.insert(id)
+            }
+            if !eventsPendingReset.contains(id) {
+                downstreamEvents[id] = event
+            }
+        }
+        let handledEvents = downstreamEvents.isEmpty ? [] : eventBindingManager.send(downstreamEvents)
+        for (id, event) in events where event.phase.isTerminal {
+            eventsInProgress.remove(id)
+            eventsPendingReset.remove(id)
+        }
+        return handledEvents
+    }
+
+    package func resetEventState() {
+        guard !GestureRecognizerBasedEvents.isEnabled else {
+            return
+        }
+        eventsPendingReset.formUnion(eventsInProgress)
+        eventsInProgress = []
+        eventBindingManager.reset()
     }
 
     private func geometryInWindowDidChange() {
@@ -1104,6 +1260,7 @@ extension NSHostingView: ViewRendererHost {
         if let environmentOverride {
             environment.plist.override(with: environmentOverride.plist)
         }
+        focusBridge.updateEnvironment(&environment)
         viewGraph.setEnvironment(environment)
     }
 
@@ -1131,6 +1288,27 @@ extension NSHostingView: ViewRendererHost {
         viewGraph.setRootView(rootView)
     }
 
+    package func updateFocusedItem() {
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusedItem(focusedItem)
+    }
+
+    package func updateFocusedValues() {
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusedValues(focusedValues)
+    }
+
+    package func updateFocusStore() {
+        guard viewGraph.requestedOutputs.contains(.focus) else { return }
+        viewGraph.setFocusStore(focusBridge.focusStore)
+    }
+
+    @_spi(ForOpenSwiftUIOnly)
+    public func preferencesDidChange() {
+        focusBridge.preferencesDidChange(viewGraph.preferenceValues())
+        // TODO: Notify the remaining preference bridges.
+    }
+
     package func `as`<T>(_ type: T.Type) -> T? {
         if ViewGraphRenderDelegate.self == T.self {
             return unsafeBitCast(self as any ViewGraphRenderDelegate, to: T.self)
@@ -1140,6 +1318,8 @@ extension NSHostingView: ViewRendererHost {
             return unsafeBitCast(self as any EventGraphHost, to: T.self)
         } else if RootTransformProvider.self == T.self {
             return unsafeBitCast(self as any RootTransformProvider, to: T.self)
+        } else if (any FocusHost).self == T.self {
+            return unsafeBitCast(self as any FocusHost, to: T.self)
         } else {
             return nil
         }
@@ -1236,6 +1416,8 @@ private enum HostingViewGeometryRegistrationPhase: Hashable {
     case registered
 }
 
+private weak var lastInterceptedKeyEvent: NSEvent?
+
 @_spi(Private)
 @available(iOS, unavailable)
 @available(tvOS, unavailable)
@@ -1266,9 +1448,24 @@ extension NSHostingView/*: TestHost*/ {
 
 extension NSHostingView: EventGraphHost {
     package var focusedResponder: ResponderNode? {
-        // TODO: Return focusBridge.focusedItem?.responder when FocusBridge is available.
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        focusBridge.focusedItem?.responder
+    }
+}
+
+// MARK: - NSHostingView + FocusHost [TBA]
+
+extension NSHostingView: FocusHost, FocusBridgeProvider {
+    var focusedItem: FocusItem? {
+        focusBridge.focusedItem
+    }
+
+    func focus(item: FocusItem) {
+        focusBridge.moveFocus(to: item, designatedPlatformResponder: nil)
+    }
+
+    func focusDidChange() {
+        guard let firstResponder = window?.firstResponder else { return }
+        focusBridge.firstResponderDidChange(to: firstResponder, rootResponder: responderNode)
     }
 }
 

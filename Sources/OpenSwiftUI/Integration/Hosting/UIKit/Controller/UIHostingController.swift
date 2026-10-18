@@ -48,6 +48,18 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     open override func loadView() {
         view = host
     }
+
+    open override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        host.viewControllerDidAppear(transitionCoordinator: transitionCoordinator, animated: animated)
+        // TODO: Notify the remaining controller bridges.
+    }
+
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        host.viewControllerWillDisappear(transitionCoordinator: transitionCoordinator, animated: animated)
+        // TODO: Notify the remaining controller bridges.
+    }
     
     public var rootView: Content {
         get { host.rootView }

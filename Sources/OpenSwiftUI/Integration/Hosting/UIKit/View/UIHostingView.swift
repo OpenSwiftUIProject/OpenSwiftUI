@@ -115,6 +115,8 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     var eventBridge: UIKitEventBindingBridge
 
+    let focusBridge = FocusBridge()
+
     var colorScheme: ColorScheme? = nil {
         didSet {
             didChangeColorScheme(from: oldValue)
@@ -131,7 +133,8 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
 
     weak var delegate: UIHostingViewDelegate?
 
-    // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
+    // TODO: Forward changes to the pending store when AccessibilityViewGraph is available.
+    var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
 
     var appliesContainerBackgroundFallbackColor: Bool = false {
         didSet {
@@ -180,6 +183,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             options: options
         )
         _base.viewGraph.append(feature: FocusViewGraph(graph: _base.viewGraph))
+        _base.eventBindingManager.addForwardedEventDispatcher(KeyEventDispatcher())
         eventBridge = UIKitEventBindingBridge(eventBindingManager: _base.eventBindingManager)
         // TODO
         if _UIUpdateAdaptiveRateNeeded() {
@@ -203,6 +207,10 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         #if os(iOS)
         feedbackCache.host = self
         #endif
+        focusBridge._host = self
+        viewGraph.addPreference(FocusedValueList.Key.self)
+        viewGraph.addPreference(FocusStoreList.Key.self)
+        viewGraph.addPreference(AccessibilityFocusStoreList.Key.self)
         // TODO
         eventBindingManager.host = self
         eventBindingManager.delegate = eventBridge
@@ -591,6 +599,33 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         eventBridge.keyPressResponder ?? defaultNextResponder
     }
 
+    override dynamic open var canBecomeFirstResponder: Bool {
+        focusBridge.acceptsFirstResponder
+    }
+
+    override dynamic open var preferredFocusEnvironments: [any UIFocusEnvironment] {
+        _preferredFocusEnvironments
+    }
+
+    @_implementationOnly
+    override dynamic open func _didChange(toFirstResponder responder: UIResponder?) {
+        super._didChange(toFirstResponder: responder)
+        focusBridge.firstResponderDidChange(to: responder, rootResponder: responderNode)
+    }
+
+    override dynamic open func focusItems(in rect: CGRect) -> [any UIFocusItem] {
+        let items = super.focusItems(in: rect).filter { !($0 is UIView) }
+        guard viewController?._shouldIgnoreChildFocusRegions != true else { return items }
+        return childFocusItems(in: rect) + items
+    }
+
+    override dynamic open func didUpdateFocus(
+        in context: UIFocusUpdateContext,
+        with coordinator: UIFocusAnimationCoordinator
+    ) {
+        focusBridge.didUpdateFocus(in: context, with: coordinator)
+    }
+
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())
@@ -743,7 +778,33 @@ extension _UIHostingView {
     }
 
     package func focusDidChange() {
-        _openSwiftUIUnimplementedWarning()
+        let rootResponder = responderNode
+        focusBridge.host?.setNeedsFocusUpdate()
+        focusBridge.focusDidChange_PhoneWatch(rootResponder: rootResponder)
+    }
+
+    func viewControllerWillDisappear(
+        transitionCoordinator: (any UIViewControllerTransitionCoordinator)?,
+        animated: Bool
+    ) {
+        guard focusBridge.canAcceptFocus, let host = focusBridge.host else { return }
+        focusBridge.canAcceptFocus = false
+        if let item = focusBridge.focusedItem {
+            (item.platformResponder ?? host).resignFirstResponder()
+        }
+    }
+
+    func viewControllerDidAppear(
+        transitionCoordinator: (any UIViewControllerTransitionCoordinator)?,
+        animated: Bool
+    ) {
+        guard !focusBridge.canAcceptFocus else { return }
+        focusBridge.canAcceptFocus = true
+        if focusBridge.focusedItem == nil {
+            focusBridge.flags.insert(.resettingFocus)
+        }
+        focusBridge.hostDidBecomeFirstResponder(in: nil)
+        focusBridge.flags.remove(.resettingFocus)
     }
 }
 

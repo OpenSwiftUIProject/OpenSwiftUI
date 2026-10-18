@@ -7,7 +7,23 @@
 
 #if os(macOS)
 import AppKit
+@_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
+
+// MARK: - NSEvent + KeyEventProvider
+
+extension NSEvent: KeyEventProvider {
+    func resolve(phase: EventPhase) -> KeyEvent? {
+        KeyEvent(
+            phase: isARepeat ? .active : phase,
+            timestamp: Time(seconds: timestamp),
+            modifiers: EventModifiers(modifierFlags),
+            keys: charactersIgnoringModifiers ?? "",
+            stringValue: characters ?? "",
+            keyID: AnyHashable(keyCode)
+        )
+    }
+}
 
 // MARK: - EventModifiers + NSEvent.ModifierFlags
 

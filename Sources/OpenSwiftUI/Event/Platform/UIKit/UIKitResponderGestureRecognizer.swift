@@ -244,9 +244,4 @@ extension UIGestureRecognizer {
     }
 }
 
-// TODO: ScrollView
-class HostingScrollView: UIScrollView {
-    weak var responder: ViewResponder?
-}
-
 #endif
