@@ -1,0 +1,63 @@
+name: Binary Interface
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    outputs:
+      verified-sha:
+        value: ${{ jobs.verify.outputs.sha }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify:
+    name: Build the binary package Example
+    runs-on: [self-hosted, macos-15, xcode-26.6]
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: OpenSwiftUIProject/setup-xcode@v2
+        with:
+          xcode-version: '26.6'
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: false
+      - name: Set up dependencies
+        run: Scripts/CI/darwin_setup_build.sh
+      - name: Set up Tuist
+        run: |
+          source Scripts/Tuist/common.sh
+          tuist_use_mise_environment compute
+          tuist_ci_setup
+      - name: Build and verify local binary interfaces
+        env:
+          PROJECT_BUILD_DIR: ${{ runner.temp }}/binary-interface
+          OPENSWIFTUI_BINARY_PACKAGE_PATH: ${{ runner.temp }}/OpenSwiftUI-spm
+        run: Scripts/CI/check_binary_interface.sh
+      - name: Upload verification results
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: binary-interface-results
+          path: |
+            ${{ runner.temp }}/binary-interface/interface-check.*/setup.log
+            ${{ runner.temp }}/binary-interface/interface-check.*/build.log
+            ${{ runner.temp }}/binary-interface/interface-check.*/Example.xcresult

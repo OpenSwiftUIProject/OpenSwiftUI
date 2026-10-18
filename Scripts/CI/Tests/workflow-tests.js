@@ -32,7 +32,7 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
 
 test("pre-release covers every check family at one SHA and all optional configurations", () => {
   const { jobs } = workflows.release_checks;
-  assert.deepEqual(release.requiredChecks, ["macos", "ios", "visionos", "ubuntu", "ui", "interaction", "compatibility", "stdout"]);
+  assert.deepEqual(release.requiredChecks, ["macos", "ios", "visionos", "ubuntu", "ui", "interaction", "compatibility", "stdout", "binary-interface"]);
   assert.deepEqual(jobs.verify.needs, ["prepare", ...release.requiredChecks]);
   assert.equal(jobs.verify.if, "always()");
   for (const name of release.requiredChecks) {
