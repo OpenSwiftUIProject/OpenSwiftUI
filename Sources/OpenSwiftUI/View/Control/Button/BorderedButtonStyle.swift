@@ -53,7 +53,7 @@ public struct BorderedButtonStyle: PrimitiveButtonStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        #if os(macOS) || os(iOS) || os(visionOS)
+        #if canImport(Darwin)
         Button(configuration)
             #if os(iOS) || os(visionOS)
             .modifier(StaticIf(

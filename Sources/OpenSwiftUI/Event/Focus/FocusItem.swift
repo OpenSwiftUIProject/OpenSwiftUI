@@ -218,7 +218,7 @@ private struct PlatformSubtreeIterator: Sequence, IteratorProtocol {
     var count: Int = 0
 
     mutating func next() -> PlatformView? {
-        #if os(iOS) || os(visionOS) || os(macOS)
+        #if canImport(Darwin)
         #if os(iOS) || os(visionOS)
         guard count < 10 else { return nil }
         #else

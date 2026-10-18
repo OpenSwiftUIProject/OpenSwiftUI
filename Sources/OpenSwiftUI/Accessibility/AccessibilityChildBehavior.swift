@@ -312,7 +312,7 @@ public struct AccessibilityChildBehavior: Hashable {
                 for index in children.indices where children[index].platformElement != nil {
                     let bridgedProperties = Graph.withoutUpdate {
                         childProperties[index].bridgedElement.map { element -> AccessibilityProperties in
-                            #if os(macOS) || os(iOS) || os(visionOS)
+                            #if canImport(Darwin)
                             element.bridgedProperties
                             #else
                             _openSwiftUIPlatformUnimplementedFailure()

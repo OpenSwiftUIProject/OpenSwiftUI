@@ -25,7 +25,7 @@ extension OpenSwiftUI.View {
 }
 #endif
 
-#if canImport(DeveloperToolsSupport) && canImport(SwiftUI) && (os(macOS) || os(iOS) || os(visionOS))
+#if canImport(DeveloperToolsSupport)
 public import DeveloperToolsSupport
 import SwiftUI
 

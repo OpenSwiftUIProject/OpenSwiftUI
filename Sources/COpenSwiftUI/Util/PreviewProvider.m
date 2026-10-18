@@ -5,8 +5,6 @@
 #include "OpenSwiftUIBase.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
-#include <TargetConditionals.h>
-#if TARGET_OS_OSX || TARGET_OS_IOS || TARGET_OS_VISION
 
 #import <Foundation/Foundation.h>
 #include <dlfcn.h>
@@ -385,5 +383,4 @@ static void install_preview_support(void) {
 
 #undef PREVIEW_PTRAUTH
 #endif /* __arm64__ || __x86_64__ */
-#endif /* TARGET_OS_OSX || TARGET_OS_IOS || TARGET_OS_VISION */
 #endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
