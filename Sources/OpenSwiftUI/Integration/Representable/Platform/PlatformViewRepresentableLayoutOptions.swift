@@ -11,6 +11,7 @@
 public struct _PlatformViewRepresentableLayoutOptions: OptionSet {
     public let rawValue: Int
 
+    static var _0: _PlatformViewRepresentableLayoutOptions { .init(rawValue: 1 << 0) }
     static var _1: _PlatformViewRepresentableLayoutOptions { .init(rawValue: 1 << 1) }
 
     @_spi(Private)

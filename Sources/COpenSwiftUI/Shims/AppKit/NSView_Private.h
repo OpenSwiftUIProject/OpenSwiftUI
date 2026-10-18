@@ -23,6 +23,11 @@
 @property (nonatomic) BOOL ignoreHitTest_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(ignoreHitTest);
 @property (nullable, copy) id<NSContentStyle> contentStyle;
 @property NSUserInterfaceLayoutDirection userInterfaceLayoutDirection;
+@property (readonly) BOOL _wantsConstraintBasedLayout;
+
+- (void)_setWantsToHostAutolayoutEngine:(BOOL)value;
+- (CGSize)_layoutSizeThatFits:(CGSize)size fixedAxes:(unsigned long long)axes;
+- (NSLayoutPriority)_priorityForEngineHostConstraints;
 
 - (BOOL)_userInterfaceLayoutDirectionPropagatesToDescendants;
 - (void)_setUserInterfaceLayoutDirectionPropagatesToDescendants:(BOOL)propagates;

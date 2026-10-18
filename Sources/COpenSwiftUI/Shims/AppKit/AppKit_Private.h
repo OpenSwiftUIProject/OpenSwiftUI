@@ -103,6 +103,8 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 - (void)showActiveFirstResponderIndication;
 - (void)hideActiveFirstResponderIndication;
 - (void)_primitiveSetNextKeyView:(nullable NSView *)view OPENSWIFTUI_SWIFT_NAME(_primitiveSetNextKeyView(_:));
+- (void)_primitiveSetPreviousKeyView:(nullable NSView *)view OPENSWIFTUI_SWIFT_NAME(_primitiveSetPreviousKeyView(_:));
+- (void)_setDefaultKeyViewLoop;
 - (nullable NSView *)_recursiveSetDefaultKeyViewLoop;
 - (void)_recursiveGatherAllKeyViewCandidatesInArray:(NSMutableArray *)array OPENSWIFTUI_SWIFT_NAME(_recursiveGatherAllKeyViewCandidates(in:));
 @end

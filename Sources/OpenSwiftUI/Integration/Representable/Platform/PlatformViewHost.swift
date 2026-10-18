@@ -44,7 +44,11 @@ where Content: PlatformViewRepresentable {
 
     var viewHierarchyMode: ViewControllerParentingMode?
 
-    var focusedValues: FocusedValues
+    var focusedValues: FocusedValues {
+        didSet {
+            updateNestedHosts(.focusedValues, colorSchemeChanged: false)
+        }
+    }
 
     weak var responder: PlatformViewResponder?
 
@@ -60,6 +64,8 @@ where Content: PlatformViewRepresentable {
     #endif
 
     #if os(macOS)
+    @NSManaged var _safeAreaInsets: PlatformEdgeInsets
+
     var recursiveIgnoreHitTest: Bool = false
 
     var customAcceptsFirstMouse: Bool?
@@ -75,7 +81,6 @@ where Content: PlatformViewRepresentable {
 
     var cachedLayoutTraits: _LayoutTraits?
 
-    // FIXME: macOS
     init(
         _ provider: Content.PlatformViewProvider,
         host: ViewRendererHost?,
@@ -90,14 +95,21 @@ where Content: PlatformViewRepresentable {
         self.focusedValues = .init()
         self.importer = importer
         super.init(hostedView: nil)
+        #if os(iOS) || os(visionOS)
         if Content.isViewController {
             viewHierarchyMode = isLinkedOnOrAfter(.v6) ? .willMoveToSuperview : .didMoveToWindow
         }
-        #if os(iOS) || os(visionOS)
         if isLinkedOnOrAfter(.v6) {
             layer.allowsGroupOpacity = false
             layer.allowsGroupBlending = false
         }
+        #elseif os(macOS)
+        if isLinkedOnOrAfter(.v6) {
+            layer?.allowsGroupOpacity = false
+            layer?.allowsGroupBlending = false
+        }
+        clipsToBounds = false
+        _setWants(toHostAutolayoutEngine: true)
         #endif
         if !Content.isViewController {
             hostedView = Content.platformView(for: representedViewProvider)
@@ -206,6 +218,12 @@ where Content: PlatformViewRepresentable {
 
     func layoutTraits() -> _LayoutTraits {
         guard let cachedLayoutTraits else {
+            #if os(macOS)
+            let invalidator = layoutInvalidator
+            layoutInvalidator = nil
+            updateConstraintsForSubtreeIfNeeded()
+            layoutInvalidator = invalidator
+            #endif
             let traits = intrinsicLayoutTraits()
             cachedLayoutTraits = traits
             return traits
@@ -214,16 +232,59 @@ where Content: PlatformViewRepresentable {
     }
 
     func updateEnvironment(_ environment: EnvironmentValues, viewPhase: _GraphInputs.Phase) {
-        _openSwiftUIUnimplementedWarning()
+        let colorSchemeChanged = self.environment.colorScheme != environment.colorScheme
+        self.environment = environment
+        self.viewPhase = viewPhase
+        updateNestedHosts(.environment, colorSchemeChanged: colorSchemeChanged)
+        adoptEnvironment(environment, hostedSubview: Content.platformView(for: representedViewProvider))
     }
 
     func updateSafeAreaInsets(_ insets: PlatformEdgeInsets?) {
         safeAreaHelper.updateSafeAreaInsets(insets, delegate: self)
     }
 
+    private func updateNestedHosts(_ properties: ViewRendererHostProperties, colorSchemeChanged: Bool) {
+        #if os(iOS) || os(visionOS)
+        guard let viewController = representedViewProvider as? UIViewController else {
+            _noteTraitsDidChangeRecursively()
+            return
+        }
+        guard let parentController = host?.as(UIViewControllerProvider.self)?.uiViewController else {
+            return
+        }
+        let traits = traitCollection.byOverriding(
+            with: environment,
+            viewPhase: viewPhase,
+            focusedValues: focusedValues
+        )
+        Update.enqueueAction(reason: nil) { [weak parentController] in
+            parentController?._noWarn_setOverrideTraitCollection(traits, forChild: viewController)
+            viewController.updateTraitsIfNeeded()
+            if colorSchemeChanged {
+                parentController?.setNeedsStatusBarAppearanceUpdate()
+            }
+        }
+        #elseif os(macOS)
+        var views = subviews
+        while !views.isEmpty {
+            let view = views.removeFirst()
+            if let host = view as? ViewRendererHost {
+                host.invalidateProperties(properties)
+            } else {
+                views.append(contentsOf: view.subviews)
+            }
+        }
+        #endif
+    }
+
     override var hostedView: PlatformView? {
         get { super.hostedView }
-        set { super.hostedView = newValue }
+        set {
+            super.hostedView = newValue
+            #if os(macOS)
+            cachedImplementsFittingSize = nil
+            #endif
+        }
     }
 
     #if os(iOS) || os(visionOS)
@@ -280,14 +341,14 @@ where Content: PlatformViewRepresentable {
     #else
     override func viewWillMove(toSuperview newSuperview: NSView?) {
         defer { super.viewWillMove(toSuperview: newSuperview) }
-        guard let newSuperview else {
+        guard newSuperview != nil else {
             return
         }
         guard let viewController = representedViewProvider as? PlatformViewController else {
             return
         }
         let view = viewController.view
-        guard view.superview != newSuperview else {
+        guard view.superview != self else {
             return
         }
         hostedView = view
@@ -296,8 +357,18 @@ where Content: PlatformViewRepresentable {
 
     override func viewDidMoveToSuperview() {
         defer { super.viewDidMoveToSuperview() }
-        // TODO
-        // updateConstraintsForSubtreeIfNeeded()
+        guard superview != nil else { return }
+        _setDefaultKeyViewLoop()
+        _primitiveSetPreviousKeyView(host as? NSView)
+        _primitiveSetNextKeyView(host as? NSView)
+        updateConstraintsForSubtreeIfNeeded()
+    }
+
+    override func removeFromSuperview() {
+        if let viewController = representedViewProvider as? NSViewController {
+            viewController.view.removeFromSuperview()
+        }
+        super.removeFromSuperview()
     }
     #endif
 
@@ -359,6 +430,123 @@ where Content: PlatformViewRepresentable {
     override func layout() {
         updateHostedViewBounds()
     }
+
+    private func layoutHostedView() {
+        guard let hostedView,
+              !hostedView._wantsConstraintBasedLayout,
+              bounds.width != .zero, bounds.height != .zero else {
+            return
+        }
+        hostedView.frame = hostedView.frame(forAlignmentRect: bounds)
+    }
+
+    override func resizeSubviews(withOldSize oldSize: CGSize) {
+        super.resizeSubviews(withOldSize: oldSize)
+        layoutHostedView()
+    }
+
+    override var fittingSize: CGSize {
+        if Content.isViewController {
+            return super.fittingSize
+        } else {
+            return Content.platformView(for: representedViewProvider).fittingSize
+        }
+    }
+
+    private var implementsFittingSize: Bool {
+        if let cachedImplementsFittingSize {
+            return cachedImplementsFittingSize
+        }
+        guard let hostedView else { return false }
+        let implementation = hostedView.method(for: fittingSizeSelector)
+        let result = implementation != defaultFittingSizeIMP
+        cachedImplementsFittingSize = result
+        return result
+    }
+
+    override func _layoutSizeThatFits(_ size: CGSize, fixedAxes: UInt64) -> CGSize {
+        let wasInLayoutSizeThatFits = inLayoutSizeThatFits
+        inLayoutSizeThatFits = true
+        defer { inLayoutSizeThatFits = wasInLayoutSizeThatFits }
+        guard let hostedView else { return size }
+        let wantsConstraints = hostedView._wantsConstraintBasedLayout
+        let boundsSize = hostedView.bounds.size
+        var result: CGSize
+        if let control = hostedView as? NSControl {
+            result = control._layoutSizeThatFits(size, fixedAxes: fixedAxes)
+        } else {
+            result = super._layoutSizeThatFits(size, fixedAxes: fixedAxes)
+        }
+        if (result.width == boundsSize.width || result.height == boundsSize.height),
+           !wantsConstraints, !implementsFittingSize {
+            let intrinsicSize = hostedView.intrinsicContentSize
+            if result.width == boundsSize.width {
+                result.width = intrinsicSize.width == NSView.noIntrinsicMetric ? size.width : intrinsicSize.width
+            }
+            if result.height == boundsSize.height {
+                result.height = intrinsicSize.height == NSView.noIntrinsicMetric ? size.height : intrinsicSize.height
+            }
+        }
+        if !wantsConstraints, !implementsFittingSize {
+            if result.width < size.width,
+               hostedView.contentHuggingPriority(for: .horizontal) < .defaultHigh {
+                result.width = size.width
+            } else if result.width > size.width,
+                      hostedView.contentCompressionResistancePriority(for: .horizontal) < .defaultHigh {
+                result.width = size.width
+            }
+            if result.height < size.height,
+               hostedView.contentHuggingPriority(for: .vertical) < .defaultHigh {
+                result.height = size.height
+            } else if result.height > size.height,
+                      hostedView.contentCompressionResistancePriority(for: .vertical) < .defaultHigh {
+                result.height = size.height
+            }
+        }
+        return result
+    }
+
+    func invalidateLayout() {
+        cachedLayoutTraits = nil
+        if let layoutInvalidator, let graphHost = layoutInvalidator.graphHost {
+            graphHost.asyncTransaction(invalidating: layoutInvalidator.layoutComputer)
+        }
+        invalidationPending = false
+    }
+
+    func enqueueLayoutInvalidation() {
+        guard layoutInvalidator != nil else {
+            cachedLayoutTraits = nil
+            return
+        }
+        guard !invalidationPending, superview != nil else { return }
+        invalidationPending = true
+        Update.enqueueAction(reason: nil) { [weak self] in
+            self?.invalidateLayout()
+        }
+    }
+
+    override func _layoutMetricsInvalidatedForHostedView() {
+        super._layoutMetricsInvalidatedForHostedView()
+        if Content.layoutOptions(representedViewProvider).contains(._0),
+           !inLayoutSizeThatFits, hostedView != nil {
+            enqueueLayoutInvalidation()
+        }
+    }
+
+    override var alignmentRectInsets: NSEdgeInsets { .zero }
+
+    override func updateConstraints() {
+        _ = enableUnifiedLayout()
+        if let hostedView, hostedView._wantsConstraintBasedLayout {
+            hostedView.translatesAutoresizingMaskIntoConstraints = false
+        }
+        super.updateConstraints()
+    }
+
+    override func _priorityForEngineHostConstraints() -> NSLayoutConstraint.Priority {
+        .init(500)
+    }
     #endif
 
     #if os(iOS) || os(visionOS)
@@ -404,6 +592,19 @@ where Content: PlatformViewRepresentable {
     override var computedSafeAreaInsets: PlatformEdgeInsets {
         safeAreaHelper.resolvedSafeAreaInsets(delegate: self)
     }
+
+    @objc static func automaticallyTracksDependenciesOn_safeAreaInsets() -> Bool {
+        true
+    }
+
+    @objc static func default_safeAreaInsets() -> NSEdgeInsets {
+        .init(
+            top: .greatestFiniteMagnitude,
+            left: .greatestFiniteMagnitude,
+            bottom: .greatestFiniteMagnitude,
+            right: .greatestFiniteMagnitude
+        )
+    }
     #endif
 
     override var intrinsicContentSize: CGSize {
@@ -426,18 +627,6 @@ extension PlatformViewHost: PlatformFocusViewProvider {
 }
 
 extension PlatformViewHost: SafeAreaHelperDelegate {
-    #if os(macOS)
-    var _safeAreaInsets: PlatformEdgeInsets {
-        get {
-            _openSwiftUIUnimplementedWarning()
-            return .zero
-        }
-        set {
-            _openSwiftUIUnimplementedWarning()
-        }
-    }
-    #endif
-
     var defaultSafeAreaInsets: PlatformEdgeInsets {
         #if os(iOS) || os(visionOS)
         super.safeAreaInsets
@@ -505,6 +694,14 @@ extension PlatformViewHost: HitTestingLeafPlatformView {
 extension PlatformViewHost: AcceptsFirstMouseCustomizing {}
 
 extension PlatformViewHost: RecursiveIgnoreHitTestCustomizing {}
+
+#if os(macOS)
+extension PlatformViewHost: PlatformLayoutContainer {}
+
+private let fittingSizeSelector = #selector(getter: NSView.fittingSize)
+
+private let defaultFittingSizeIMP = NSView.instanceMethod(for: fittingSizeSelector)
+#endif
 
 #endif
 

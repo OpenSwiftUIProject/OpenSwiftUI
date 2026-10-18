@@ -132,6 +132,11 @@ extension PlatformViewRepresentable {
         buffer.traceMountedProperties(to: view, fields: fields)
         // TODO
         var outputs = PlatformViewChild<Self>.Value.makeDebuggableView(view: .init(child), inputs: inputs)
+        if inputs.preferences.requiresViewResponders {
+            outputs[ViewRespondersKey.self] = Attribute(
+                ViewResponderFilter(inputs: inputs, view: child)
+            )
+        }
         // TODO
         return outputs
         #else
@@ -145,6 +150,64 @@ extension PlatformViewRepresentable {
 }
 
 #if canImport(Darwin)
+
+// MARK: - ViewResponderFilter
+
+private struct ViewResponderFilter<Content>: StatefulRule where Content: PlatformViewRepresentable {
+    @Attribute var view: ViewLeafView<Content>
+    @Attribute var position: CGPoint
+    @Attribute var size: ViewSize
+    @Attribute var transform: ViewTransform
+    @Attribute var layoutDirection: LayoutDirection
+    let responder: PlatformViewResponder
+    #if os(macOS)
+    @Attribute var evaluateDefaultFocus: EvaluateDefaultFocusAction?
+    @Attribute var delegatesFocusEffect: Bool
+    @Attribute var isEnabled: Bool
+    #endif
+    @Attribute var keyPressHandlers: [KeyPress.Handler]
+
+    init(inputs: _ViewInputs, view: Attribute<ViewLeafView<Content>>) {
+        _view = view
+        _position = inputs.animatedPosition()
+        _size = inputs.animatedSize()
+        _transform = inputs.transform
+        _layoutDirection = inputs.base.layoutDirection
+        responder = PlatformViewResponder()
+        #if os(macOS)
+        _evaluateDefaultFocus = inputs.base.mapEnvironment(id: .evaluateDefaultFocus) { $0.evaluateDefaultFocus }
+        _delegatesFocusEffect = inputs.base.delegatesFocusEffect
+        _isEnabled = inputs.base.isEnabled
+        #endif
+        _keyPressHandlers = inputs.base.keyPressHandlers
+    }
+
+    typealias Value = [ViewResponder]
+
+    mutating func updateValue() {
+        responder.hostView = view.platformView
+        responder.representedView = Content.platformView(for: view.representedViewProvider)
+        responder.helper.update(
+            data: (TrivialContentResponder(), false),
+            size: $size.changedValue(),
+            position: $position.changedValue(),
+            transform: $transform.changedValue(),
+            parent: responder
+        )
+        responder.keyPressHandlers = keyPressHandlers
+        // TODO: Resolve RepresentablePreferredFocusableViewInput.
+        view.platformView.responder = responder
+        #if os(macOS)
+        responder.effectiveLayoutDirection = layoutDirection
+        responder.delegatesFocusEffect = delegatesFocusEffect
+        responder.isEnabled = isEnabled
+        responder.evaluateDefaultFocus = evaluateDefaultFocus
+        #endif
+        if !hasValue {
+            value = [responder]
+        }
+    }
+}
 
 extension PlatformViewRepresentable where PlatformViewProvider: PlatformView {
     static func platformView(for provider: PlatformViewProvider) -> PlatformView {
