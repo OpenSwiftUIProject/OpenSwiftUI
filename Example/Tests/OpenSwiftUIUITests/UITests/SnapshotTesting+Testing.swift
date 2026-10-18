@@ -188,17 +188,19 @@ func openSwiftUIAssertAnimationSnapshot<V: AnimationTestView>(
         default:
             vc.advance(interval: interval)
         }
-        openSwiftUIAssertSnapshotValue(
-            of: vc,
-            as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
-            named: "\(index)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
-            record: recording,
-            timeout: timeout,
-            fileID: fileID,
-            file: filePath,
-            testName: testName,
-            line: line,
-            column: column
-        )
+        vc.withFixedTime {
+            openSwiftUIAssertSnapshotValue(
+                of: vc,
+                as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
+                named: "\(index)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
+                record: recording,
+                timeout: timeout,
+                fileID: fileID,
+                file: filePath,
+                testName: testName,
+                line: line,
+                column: column
+            )
+        }
     }
 }

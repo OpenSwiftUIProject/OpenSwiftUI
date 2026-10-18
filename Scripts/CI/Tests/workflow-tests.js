@@ -32,22 +32,43 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
 
 test("pre-release covers every check family at one SHA and all optional configurations", () => {
   const { jobs } = workflows.release_checks;
-  assert.deepEqual(release.requiredChecks, ["macos", "ios", "ubuntu", "ui", "interaction", "compatibility", "stdout"]);
+  assert.deepEqual(release.requiredChecks, ["macos", "ios", "visionos", "ubuntu", "ui", "interaction", "compatibility", "stdout"]);
   assert.deepEqual(jobs.verify.needs, ["prepare", ...release.requiredChecks]);
   assert.equal(jobs.verify.if, "always()");
   for (const name of release.requiredChecks) {
     assert.equal(jobs[name].with.ref, "${{ needs.prepare.outputs.sha }}");
     assert.equal(jobs[name].needs, "prepare");
   }
+  assert.equal(jobs.visionos.uses, "./.github/workflows/visionos.yml");
   assert.equal(jobs.ui.with.platform, "all");
   assert.equal(jobs.ui.with.configuration, "all");
-  assert.equal(jobs.ui.with.update_reference, false);
+  assert.equal(jobs.ui.with.update_reference, "${{ inputs.update_reference }}");
   assert.equal(jobs.interaction.uses, "./.github/workflows/interaction_tests.yml");
   assert.equal(jobs.interaction.with.platform, "all");
   assert.equal(jobs.interaction.with.configuration, "all");
-  assert.equal(jobs.interaction.with.update_reference, false);
+  assert.equal(jobs.interaction.with.update_reference, "${{ inputs.update_reference }}");
   assert.equal(jobs.compatibility.with.platform, "all");
   assert.equal(jobs.stdout.with.backend, "all");
+});
+
+test("pre-release reference updates require an explicit request", () => {
+  const workflow = workflows.release_checks;
+  for (const entry of ["workflow_dispatch", "workflow_call"]) {
+    const input = workflow.true[entry].inputs.update_reference;
+    assert.equal(input.type, "boolean");
+    assert.equal(input.default, false);
+  }
+  for (const name of ["ui", "interaction"]) {
+    const condition = workflow.jobs[name].with.update_reference.replace(/^\$\{\{\s*|\s*\}\}$/g, "");
+    for (const entry of ["workflow_dispatch", "workflow_call"]) {
+      const defaultValue = workflow.true[entry].inputs.update_reference.default;
+      for (const value of [undefined, false, true]) {
+        const inputs = { update_reference: value ?? defaultValue };
+        assert.equal(vm.runInNewContext(condition, { inputs }), value === true);
+      }
+    }
+  }
+  assert.equal(workflows.release_create.jobs.checks.with.update_reference, undefined);
 });
 
 function canRun(jobId, results, overrides = {}, cancelled = false, github = { event_name: "workflow_dispatch", event: {} }) {

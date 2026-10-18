@@ -26,6 +26,7 @@ By default, the release gate requires all of these checks:
 | --- | --- |
 | macOS tests | Existing macOS test matrix |
 | iOS tests | Existing iOS test matrix |
+| visionOS build | visionOS Simulator build |
 | Ubuntu tests | Existing Linux test matrix |
 | UI tests | iOS and macOS; all four renderer and attribute graph configurations |
 | interaction tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
@@ -33,9 +34,9 @@ By default, the release gate requires all of these checks:
 | Stdout Renderer | AttributeGraph and Compute on macOS |
 
 Each workflow returns its checked-out commit SHA. In the default mode, a
-failed, cancelled, skipped, or missing check cannot pass the gate. UI checks do
-not request reference image updates. The signed build starts after the checks
-pass, or when an operator explicitly skips them as described below. The tag job
+failed, cancelled, skipped, or missing check cannot pass the gate. Snapshot checks
+do not request reference image updates by default. The signed build starts after
+the checks pass, or when an operator explicitly skips them as described below. The tag job
 always requires stored artifacts to name the candidate SHA. It also requires
 matching check results unless `skip_checks` is enabled.
 
@@ -103,6 +104,18 @@ gh workflow run release_checks.yml \
 The selected branch resolves to one commit for the entire run. The summary
 records the verified SHA. This checks readiness; a release request runs the
 shared checks again on its own candidate commit.
+
+To update SwiftUI references before the UI and interaction checks in the same
+run, explicitly set `update_reference=true`:
+
+```shell
+gh workflow run release_checks.yml \
+  --repo OpenSwiftUIProject/OpenSwiftUI --ref main \
+  -f update_reference=true
+```
+
+Replace `main` with the candidate branch when needed. Updates are off by default;
+the release publication workflow continues to verify existing references.
 
 ## Publish a Release
 

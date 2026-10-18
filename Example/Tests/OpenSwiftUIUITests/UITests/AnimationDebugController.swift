@@ -3,6 +3,9 @@
 //  OpenSwiftUIUITests
 
 import Foundation
+#if os(macOS)
+import QuartzCore
+#endif
 import TestingHost
 
 struct AnimationTestModel: Hashable {
@@ -30,6 +33,10 @@ protocol AnimationTestView: View {
 }
 
 final class AnimationDebugController<V>: PlatformHostingController<V> where V: View {
+    #if os(macOS)
+    private let presentationTime = NSNumber(value: CACurrentMediaTime())
+    #endif
+
     init(_ view: V) {
         super.init(rootView: view)
     }
@@ -49,6 +56,17 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
 
     func advanceAsync(interval: Double) -> Bool {
         host._renderAsyncForTest(interval: interval)
+    }
+
+    func withFixedTime<Result>(_ body: () -> Result) -> Result {
+        #if os(macOS)
+        // Capture can update AppKit constraints. Keep those updates from adding
+        // wall-clock time to the frames advanced by _renderForTest.
+        CATransaction.begin()
+        CATransaction.setValue(presentationTime, forKey: "NSHostingViewPresentationTime")
+        defer { CATransaction.commit() }
+        #endif
+        return body()
     }
 
     override func viewDidLoad() {
