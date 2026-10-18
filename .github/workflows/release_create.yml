@@ -193,6 +193,7 @@ jobs:
     secrets:
       BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      INTERFACE_COVERAGE_PAT: ${{ secrets.INTERFACE_COVERAGE_PAT }}
 
   documentation:
     needs: publish

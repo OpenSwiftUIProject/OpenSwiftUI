@@ -20,6 +20,8 @@ on:
         required: true
       COPILOT_GITHUB_TOKEN:
         required: false
+      INTERFACE_COVERAGE_PAT:
+        required: false
 
 permissions:
   contents: write
@@ -128,3 +130,22 @@ jobs:
           RELEASE_MANIFEST: ${{ needs.assets.outputs.manifest }}
           VERSION: ${{ inputs.version }}
         run: bash Scripts/CI/update_binary_package.sh "$PWD" "$PWD/binary-repo" "$PWD/observation-repo"
+
+  coverage:
+    name: Request interface coverage
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      # InterfaceCoverage compares the published XCFrameworks with the SDK
+      # baselines, deploys its site, and adds a coverage table to these notes.
+      - name: Dispatch the coverage update
+        env:
+          GH_TOKEN: ${{ secrets.INTERFACE_COVERAGE_PAT }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::notice::INTERFACE_COVERAGE_PAT is not set. Skipping the coverage update."
+            exit 0
+          fi
+          gh api repos/OpenSwiftUIProject/InterfaceCoverage/dispatches \
+            -f event_type=openswiftui-release -f "client_payload[version]=$VERSION"
