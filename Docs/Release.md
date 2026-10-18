@@ -32,7 +32,7 @@ By default, the release gate requires all of these checks:
 | interaction tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
 | Compatibility tests | iOS and macOS |
 | Stdout Renderer | AttributeGraph and Compute on macOS |
-| Binary Interface | Build iOS Simulator arm64 XCFrameworks and compile the binary package Example from textual interfaces |
+| Binary Interface | Build complete release XCFrameworks and compile the binary package Example from textual interfaces on iOS, macOS, and visionOS |
 
 Each workflow returns its checked-out commit SHA. In the default mode, a
 failed, cancelled, skipped, or missing check cannot pass the gate. Snapshot checks
@@ -201,8 +201,9 @@ Run the same consumer check used by the release gate:
 Scripts/CI/check_binary_interface.sh
 ```
 
-This builds all seven release XCFrameworks for iOS Simulator arm64 with Compute,
-then builds the `OpenSwiftUI-spm/Example` app. It does not boot a simulator.
+This uses the complete release XCFramework build with Compute and the visionOS
+UIKit overlay, then builds the `OpenSwiftUI-spm/Example` app for iOS Simulator,
+macOS, and visionOS Simulator (arm64). It does not boot a simulator.
 The consumer prefers textual interfaces, even with the same compiler as the
 producer, and uses fresh DerivedData to avoid cached modules hiding errors.
 
@@ -218,8 +219,10 @@ The script uses `../OpenSwiftUI-spm`, or clones it with `gh` when absent. Set
 `OPENSWIFTUI_BINARY_PACKAGE_PATH` to use another checkout. The script passes
 `OPENSWIFTUI_LOCAL_XCFRAMEWORKS_PATH` to the package without editing its manifest,
 and rejects missing local frameworks instead of downloading published binaries.
-Use `--skip-build` to verify existing output. Logs and the Example result bundle
-are retained in a new `interface-check.*` directory under the build directory.
+Use `--skip-build` to verify existing output. Each platform has separate logs,
+DerivedData, and an Example result bundle in a new `interface-check.*` directory
+under the build directory. A consumer failure does not skip the other platforms;
+the check fails if any platform fails.
 
 ## Skip Pre-release Checks
 
