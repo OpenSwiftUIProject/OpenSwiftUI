@@ -197,9 +197,143 @@ public struct _FocusableModifier: ViewModifier, MultiViewModifier, PrimitiveView
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
+        #if os(iOS) || os(visionOS)
+        let options = Attribute(ResolvedOptions(
+            modifier: modifier.value,
+            environment: inputs.environment
+        ))
+        let item = Attribute(UpdateViewFocusItem(
+            modifier: modifier.value,
+            options: options,
+            inputs: inputs
+        ))
+        item.flags = .transactional
+        let responder = FocusableViewResponder(inputs: inputs)
+        var newInputs = inputs
+        newInputs[IOSFocusEnabledFlag.self] = true
+        let isFocused = Attribute(value: false)
+        newInputs.environment = Attribute(IsFocusedEnvironmentChild(
+            item: item,
+            environment: inputs.environment,
+            isPlatformItemFocused: isFocused
+        ))
+        newInputs.preferences.add(FocusableOptionsKey.self)
+        var outputs = body(_Graph(), newInputs)
+        if newInputs.preferences.requiresViewResponders {
+            responder.isFocused = WeakAttribute(isFocused)
+            let geometry = Attribute(UpdateViewGeometry(
+                transform: newInputs.transform,
+                position: newInputs.animatedPosition(),
+                size: newInputs.animatedSize(),
+                responder: responder
+            ))
+            let filter = Attribute(UpdateFocusableViewResponder(
+                inputs: newInputs,
+                outputs: outputs,
+                item: item,
+                geometry: geometry,
+                responder: responder
+            ))
+            let lifecycle = Attribute(UIKitHostedFocusItemLifecycle(inputs: newInputs, responder: filter))
+            lifecycle.flags = [.removable, .transactional]
+            outputs.preferences.viewResponders = filter
+            outputs.preferences.makePreferenceWriter(
+                inputs: newInputs.preferences,
+                key: FocusDelegationPreferenceKey.self,
+                value: Attribute(FocusDelegationPreferenceProvider(item: item, responder: responder))
+            )
+        }
+        outputs.preferences.makePreferenceWriter(
+            inputs: newInputs.preferences,
+            key: FocusableBounds.Key.self,
+            value: Attribute(FocusableBoundsTransform(
+                transform: newInputs.transform,
+                position: newInputs.animatedPosition(),
+                size: newInputs.animatedSize(),
+                isLazyContainer: false
+            ))
+        )
+        return outputs
+        #elseif os(macOS)
+        let options = Attribute(ResolvedOptions(
+            modifier: modifier.value,
+            environment: inputs.environment
+        ))
+        let item = Attribute(UpdateViewFocusItem(
+            modifier: modifier.value,
+            options: options,
+            inputs: inputs
+        ))
+        let attachment = Attribute(AccessibilityFocusItemAttachment(focusItem: item))
+        var responderInputs = inputs
+        responderInputs.transform = Attribute(FocusCoordinateSpaceTransform(
+            transform: inputs.transform,
+            position: inputs.animatedPosition()
+        ))
+        item.flags = .transactional
+        let responder = FocusableViewResponder(inputs: responderInputs)
+        var newInputs = responderInputs
+        newInputs.environment = Attribute(IsFocusedEnvironmentChild(
+            item: item,
+            environment: newInputs.environment,
+            focusedItem: .init(newInputs.focusedItem)
+        ))
+        newInputs.preferences.add(FocusableOptionsKey.self)
+        return AccessibilityAttachmentModifier._makeView(
+            modifier: _GraphValue(attachment),
+            inputs: newInputs
+        ) { _, bodyInputs in
+            let isEnabled = Attribute(IsFocusRingEnabled(
+                modifier: modifier.value,
+                options: options,
+                isArchivedOrFlattened: inputs.archivedView.isArchived || inputs[UsingGraphicsRenderer.self]
+            ))
+            let focusEffect = Attribute(UpdateFocusEffectView(
+                isEnabled: isEnabled,
+                responder: responder
+            ))
+            var outputs = makeSecondaryLayerView(
+                secondaryLayer: focusEffect,
+                alignment: Attribute(value: Alignment.center),
+                inputs: bodyInputs,
+                body: body,
+                flipOrder: false
+            )
+            guard newInputs.preferences.requiresViewResponders else {
+                return outputs
+            }
+            let geometry = Attribute(UpdateViewGeometry(
+                transform: newInputs.transform,
+                position: newInputs.animatedPosition(),
+                size: newInputs.animatedSize(),
+                responder: responder
+            ))
+            outputs.preferences.viewResponders = Attribute(UpdateFocusableViewResponder(
+                inputs: newInputs,
+                outputs: outputs,
+                item: item,
+                geometry: geometry,
+                responder: responder
+            ))
+            let seed = Attribute(KeyViewLoopSeedFilter(
+                phase: newInputs.viewPhase,
+                item: item,
+                size: newInputs.animatedSize(),
+                position: newInputs.animatedPosition()
+            ))
+            seed.flags = .transactional
+            outputs.preferences.makePreferenceWriter(
+                inputs: newInputs.preferences,
+                key: KeyViewLoopSeedKey.self,
+                value: seed
+            )
+            return outputs
+        }
+        #else
         // TODO: Install the focus item, responder, and onFocusChange callback.
         _openSwiftUIUnimplementedWarning()
         return body(_Graph(), inputs)
+        #endif
     }
 }
 
@@ -663,6 +797,29 @@ struct FocusableOptionsKey: PreferenceKey {
     }
 }
 
+#if os(iOS) || os(visionOS)
+// MARK: - FocusDelegationPreferenceKey
+
+struct FocusDelegationPreferenceKey: HostPreferenceKey {
+    static let defaultValue: FocusItem? = nil
+
+    static func reduce(value: inout FocusItem?, nextValue: () -> FocusItem?) {
+        value = value ?? nextValue()
+    }
+}
+
+// MARK: - FocusDelegationPreferenceProvider
+
+private struct FocusDelegationPreferenceProvider: Rule {
+    @Attribute var item: FocusItem.ViewItem
+    let responder: FocusableViewResponder
+
+    var value: FocusItem? {
+        FocusItem(base: .view(item), prefersFocusSystem: false, responder: responder)
+    }
+}
+#endif
+
 // MARK: - IsFocusedEnvironmentChild
 
 struct IsFocusedEnvironmentChild: Rule {
@@ -706,6 +863,106 @@ struct FocusCoordinateSpaceTransform: Rule {
         transform.appendPosition(position)
         transform.appendCoordinateSpace(id: focusCoordinateSpace)
         return transform
+    }
+}
+
+// MARK: - AccessibilityFocusItemAttachment [TBA]
+
+private struct AccessibilityFocusItemAttachment: Rule {
+    @Attribute var focusItem: FocusItem.ViewItem
+
+    var value: AccessibilityAttachmentModifier {
+        if focusItem.options.contains(.preventNavigationToSubviews) {
+            AccessibilityAttachmentModifier(AccessibilityProperties())
+        } else {
+            AccessibilityAttachmentModifier(AccessibilityProperties(
+                AccessibilityProperties.FocusViewItemIDKey.self,
+                focusItem.id
+            ))
+        }
+    }
+}
+#endif
+
+// MARK: - UpdateViewGeometry [TBA]
+
+#if os(iOS) || os(visionOS) || os(macOS)
+private struct UpdateViewGeometry: StatefulRule {
+    @Attribute var transform: ViewTransform
+    @Attribute var position: CGPoint
+    @Attribute var size: ViewSize
+    var helper: ContentResponderHelper<TrivialContentResponder> = .init()
+    let responder: ViewResponder
+
+    typealias Value = ContentResponderHelper<TrivialContentResponder>
+
+    mutating func updateValue() {
+        helper.update(
+            data: (TrivialContentResponder(), false),
+            size: $size.changedValue(),
+            position: $position.changedValue(),
+            transform: $transform.changedValue(),
+            parent: responder
+        )
+        value = helper
+    }
+}
+#endif
+
+// MARK: - IsFocusRingEnabled [TBA]
+
+#if os(macOS)
+struct IsFocusRingEnabled: Rule {
+    @Attribute var modifier: _FocusableModifier
+    @Attribute var options: FocusableOptions
+    var isArchivedOrFlattened: Bool
+
+    var value: Bool {
+        modifier.isFocusable
+            && !options.contains(.platformItemDrawsFocusRingMask)
+            && !isArchivedOrFlattened
+    }
+}
+
+// MARK: - KeyViewLoopSeedFilter [TBA]
+
+struct KeyViewLoopSeedFilter: StatefulRule {
+    @Attribute var phase: ViewPhase
+    @Attribute var item: FocusItem.ViewItem
+    @Attribute var size: ViewSize
+    @Attribute var position: CGPoint
+    var wasFocusable: Bool?
+    var lastResetSeed: UInt32 = 0
+
+    private static var seed: UInt32 = 0
+
+    typealias Value = VersionSeed
+
+    mutating func updateValue() {
+        if phase.resetSeed != lastResetSeed {
+            lastResetSeed = phase.resetSeed
+            wasFocusable = nil
+        }
+        let isFocusable = item.isFocusable
+        let (_, sizeChanged) = $size.changedValue()
+        let (_, positionChanged) = $position.changedValue()
+        let changed = wasFocusable != isFocusable
+        wasFocusable = isFocusable
+        if changed || sizeChanged || positionChanged || !hasValue {
+            let seed = Self.seed
+            Self.seed &+= 1
+            value = VersionSeed(value: seed)
+        }
+    }
+}
+
+// MARK: - KeyViewLoopSeedKey [TBA]
+
+struct KeyViewLoopSeedKey: HostPreferenceKey {
+    static var defaultValue: VersionSeed { .invalid }
+
+    static func reduce(value: inout VersionSeed, nextValue: () -> VersionSeed) {
+        value.merge(nextValue())
     }
 }
 #endif
@@ -852,7 +1109,7 @@ extension EnvironmentValues {
     ///
     /// If there is no focusable ancestor, the value is `false`.
     @available(OpenSwiftUI_v2_0, *)
-    public fileprivate(set) var isFocused: Bool {
+    public internal(set) var isFocused: Bool {
         get { self[IsFocusedKey.self] }
         set { self[IsFocusedKey.self] = newValue }
     }
