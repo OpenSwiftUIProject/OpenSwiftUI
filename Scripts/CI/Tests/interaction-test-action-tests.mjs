@@ -212,6 +212,10 @@ async function runTests(t, fixtures = {}, options = {}) {
   const bin = path.join(directory, 'bin');
   const referenceRoot = path.join(directory, 'Persistent references');
   const commandLog = path.join(directory, 'commands.jsonl');
+  const simulatorLog = path.join(directory, 'simulator-commands.jsonl');
+  const simulatorState = path.join(directory, 'simulators.json');
+  await fs.writeFile(simulatorLog, '');
+  await fs.writeFile(simulatorState, '[]');
   const suite = options.suite ?? 'InteractionTests';
   const platform = options.platform ?? 'ios';
   const snapshotPlatform = platform === 'ios' ? 'iOS_Simulator' : 'macOS';
@@ -267,6 +271,39 @@ process.exit(fixture.status ?? (recording ? 65 : 0));
 const fs = require('node:fs');
 const path = require('node:path');
 const args = process.argv.slice(2);
+if (args[0] === 'simctl') {
+  fs.appendFileSync(process.env.SIMULATOR_LOG, JSON.stringify(args) + '\\n');
+  const statePath = process.env.SIMULATOR_STATE;
+  const devices = JSON.parse(fs.readFileSync(statePath));
+  const runtime = 'com.apple.CoreSimulator.SimRuntime.iOS-18-5';
+  const testing = args[1] === '--set';
+  const command = args[testing ? 3 : 1];
+  const parameters = args.slice(testing ? 4 : 2);
+  if (command === 'list' && parameters[0] === 'runtimes') {
+    console.log(JSON.stringify({ runtimes: [{ identifier: runtime, version: '18.5', isAvailable: true,
+      supportedDeviceTypes: [{ name: 'iPhone 16 Pro', identifier: 'phone-type' }] }] }));
+  } else if (command === 'create') {
+    const udid = require('node:crypto').randomUUID();
+    devices.push({ name: parameters[0], udid, state: 'Shutdown', testing: false });
+    // Model a worker left by Xcode and an unrelated device that cleanup must preserve.
+    devices.push({ name: 'Clone 1 of ' + parameters[0], udid: require('node:crypto').randomUUID(), state: 'Booted', testing: true });
+    devices.push({ name: 'Unrelated iPhone', udid: require('node:crypto').randomUUID(), state: 'Booted', testing: true });
+    fs.writeFileSync(statePath, JSON.stringify(devices));
+    if (process.env.SIMULATOR_CREATE_FAILURE === 'true') process.exit(1);
+    console.log(udid);
+  } else if (command === 'list' && parameters[0] === 'devices') {
+    console.log(JSON.stringify({ devices: { [runtime]: devices.filter(device => device.testing === testing) } }));
+  } else if (command === 'delete' || command === 'shutdown') {
+    const device = devices.find(device => device.udid === parameters[0] && device.testing === testing);
+    if (!device || device.name === 'Unrelated iPhone') process.exit(2);
+    if (command === 'delete') {
+      if (process.env.SIMULATOR_DELETE_FAILURE === 'true') process.exit(1);
+      devices.splice(devices.indexOf(device), 1);
+    } else device.state = 'Shutdown';
+    fs.writeFileSync(statePath, JSON.stringify(devices));
+  } else process.exit(2);
+  process.exit(0);
+}
 if (args.slice(0, 3).join(' ') !== 'xcresulttool get test-results' || !['summary', 'tests'].includes(args[3])) process.exit(2);
 process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1], args[3] + '.json')));
 `, { mode: 0o755 });
@@ -274,7 +311,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   let inputs = {
     ...defaults(suite === 'InteractionTests' ? interactionAction : action),
     platform,
-    destination: platform === 'ios' ? destination : 'platform=macOS',
+    destination: platform === 'ios' ? (options.destination ?? destination) : 'platform=macOS',
     'artifact-name': 'snapshot-tests',
     'reference-root': referenceRoot,
     'only-testing': options.onlyTesting ?? '',
@@ -292,7 +329,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   let failed = false;
   const selectedSteps = new Set(['reference', 'paths', 'record-baseline', 'uitest']);
   for (const step of action.runs.steps) {
-    if (!selectedSteps.has(step.id) && !['Clean up snapshot reference lock', 'Fail if baseline recording failed'].includes(step.name) && !(options.collectArtifacts && step.name === 'Collect failure artifacts')) continue;
+    if (!selectedSteps.has(step.id) && !['Clean up snapshot reference lock', 'Fail if baseline recording failed', 'Clean up test simulators'].includes(step.name) && !(options.collectArtifacts && step.name === 'Collect failure artifacts')) continue;
     const bindings = { inputs, steps };
     // Steps without always() only run while no earlier step has failed.
     if (failed && !/always\(\)/.test(step.if ?? '')) continue;
@@ -311,6 +348,9 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
         GITHUB_OUTPUT: output,
         GITHUB_RUN_ID: '123', GITHUB_JOB: 'snapshot-tests', GITHUB_RUN_ATTEMPT: '1',
         INTERACTION_TEST_COMMAND_LOG: commandLog,
+        SIMULATOR_LOG: simulatorLog, SIMULATOR_STATE: simulatorState,
+        SIMULATOR_CREATE_FAILURE: String(options.simulatorCreateFailure ?? false),
+        SIMULATOR_DELETE_FAILURE: String(options.simulatorDeleteFailure ?? false),
         INTERACTION_TEST_FIXTURES: JSON.stringify(fixtures),
         INTERACTION_TEST_RECORDING_SUMMARY: JSON.stringify(recordingSummary),
         SNAPSHOT_PLATFORM: snapshotPlatform, SNAPSHOT_VERSION: snapshotVersion, TEST_SUITE: suite,
@@ -334,6 +374,8 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   const commands = (await fs.readFile(commandLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
   const verified = inputs.mode === 'record' ? steps['record-baseline'].outcome === 'success' : steps.uitest.outcome === 'success';
   return {
+    simulatorCommands: (await fs.readFile(simulatorLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line)),
+    remainingSimulators: JSON.parse(await fs.readFile(simulatorState, 'utf8')),
     status: failed || !verified ? 1 : 0,
     stdout, stderr, commands, steps, directory, referenceRoot, referenceDirectory,
     artifacts: steps.paths.outputs.artifacts,
@@ -347,7 +389,7 @@ test('interaction action records SwiftUI references before OpenSwiftUI verificat
   await assert.rejects(fs.access(result.steps.reference.outputs.lockfile), { code: 'ENOENT' });
   for (const [index, args] of result.commands.entries()) {
     assert.deepEqual(args.slice(0, 7), ['--env', 'compute', 'exec', '--', 'tuist', 'xcodebuild', 'test']);
-    assert.equal(args[args.indexOf('-destination') + 1], destination);
+    assert.match(args[args.indexOf('-destination') + 1], /^platform=iOS Simulator,id=[0-9a-f-]{36}$/);
     assert.equal(args[args.indexOf('-parallel-testing-enabled') + 1], 'NO');
     assert.equal(args[args.indexOf('-derivedDataPath') + 1], result.derivedData);
     assert.equal(args[args.indexOf('-resultBundlePath') + 1], path.join(result.artifacts, `${schemes[index]}.xcresult`));
@@ -481,3 +523,63 @@ for (const scheme of schemes) {
     assert.match(await fs.readFile(path.join(result.artifacts, scheme, 'logs/test_output.log'), 'utf8'), /Executed/);
   });
 }
+
+for (const mode of ['record', 'test']) {
+  test(`iOS UI ${mode} uses fresh destinations and cleans up only its devices`, async t => {
+    const result = await runTests(t, {}, { suite: 'UITests', update: true, mode });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const destinations = result.commands.map(args => args[args.indexOf('-destination') + 1]);
+    assert.equal(new Set(destinations).size, mode === 'record' ? 1 : 2);
+    for (const args of result.commands) {
+      assert.match(args[args.indexOf('-destination') + 1], /^platform=iOS Simulator,id=[0-9a-f-]{36}$/);
+      assert.ok(!args.includes('-parallel-testing-enabled'));
+    }
+    assert.ok(!result.simulatorCommands.some(args => args.includes('boot') || args.includes('erase')));
+    assert.ok(result.remainingSimulators.length > 0);
+    assert.ok(result.remainingSimulators.every(device => device.name === 'Unrelated iPhone' && device.state === 'Booted'));
+    await assert.rejects(fs.access(path.join(result.steps.paths.outputs.root, 'record-simulator.json')), { code: 'ENOENT' });
+  });
+}
+
+test('simulator cleanup runs after test failure and partial creation failure', async t => {
+  for (const creationFails of [false, true]) {
+    const result = await runTests(t, { OSUI_InteractionTests: { status: 65 } }, { simulatorCreateFailure: creationFails });
+    assert.equal(result.status, 1);
+    if (creationFails) assert.deepEqual(result.commands, []);
+    assert.ok(result.remainingSimulators.every(device => device.name === 'Unrelated iPhone'));
+  }
+});
+
+test('simulator cleanup reports deletion failure and retains ownership state', async t => {
+  const result = await runTests(t, {}, { simulatorDeleteFailure: true });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Simulator cleanup failed/);
+  await fs.access(path.join(result.steps.paths.outputs.root, 'verify-simulator.json'));
+  const cleanup = action.runs.steps.find(step => step.name === 'Clean up isolated test directories');
+  assert.equal(evaluate(cleanup.if, { steps: result.steps }), false);
+});
+
+test('macOS keeps its destination and does not manage simulators', async t => {
+  const result = await runTests(t, {}, { platform: 'macos' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(result.commands[0][result.commands[0].indexOf('-destination') + 1], 'platform=macOS');
+  assert.deepEqual(result.simulatorCommands, []);
+});
+
+test('simulator selection rejects a missing runtime or device type before running tests', async t => {
+  for (const destination of [
+    'platform=iOS Simulator,OS=18.6,name=iPhone 16 Pro',
+    'platform=iOS Simulator,OS=18.5,name=Unknown iPhone',
+  ]) {
+    const result = await runTests(t, {}, { destination });
+    assert.equal(result.status, 1);
+    assert.deepEqual(result.commands, []);
+    assert.ok(!result.simulatorCommands.some(args => args.includes('create')));
+    assert.deepEqual(result.remainingSimulators, []);
+  }
+});
+
+test('simulator selection accepts an explicit zero patch version', async t => {
+  const result = await runTests(t, {}, { destination: 'platform=iOS Simulator,OS=18.5.0,name=iPhone 16 Pro' });
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
