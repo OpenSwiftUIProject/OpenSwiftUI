@@ -30,6 +30,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)_requestFocusEffectUpdateToEnvironment:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_requestFocusEffectUpdate(to:));
 @end
 
+@interface UIView (OpenSwiftUIFocus)
+- (void)_didChangeToFirstResponder:(nullable UIResponder *)responder OPENSWIFTUI_SWIFT_NAME(_didChange(toFirstResponder:));
+@end
+
 @interface UIFocusSystem (OpenSwiftUI_SPI)
 - (void)_focusEnvironmentWillDisappear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_focusEnvironmentWillDisappear(_:));
 - (void)_focusEnvironmentDidAppear_openswiftui_safe_wrapper:(id<UIFocusEnvironment>)environment OPENSWIFTUI_SWIFT_NAME(_focusEnvironmentDidAppear(_:));
@@ -89,6 +93,8 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 #endif
 
 @interface UIViewController (OpenSwiftUI_SPI)
++ (nullable UIViewController *)viewControllerForView_openswiftui_safe_wrapper:(UIView *)view OPENSWIFTUI_SWIFT_NAME(viewController(for:));
+@property (nonatomic, readonly) BOOL _shouldIgnoreChildFocusRegions_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_shouldIgnoreChildFocusRegions);
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @property (nonatomic, readonly, nullable) NSArray<UIViewController<_UIBacklightEnvironmentObserver> *> *_effectiveControllersForAlwaysOnTimelines;

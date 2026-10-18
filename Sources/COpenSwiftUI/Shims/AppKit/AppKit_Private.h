@@ -99,6 +99,24 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 
 @interface NSView (OpenSwiftUI_SPI)
 - (nullable id)accessibilityFocusedUIElement;
+- (nullable NSView *)designatedFocusRingView OPENSWIFTUI_SWIFT_NAME(designatedFocusRing());
+- (void)showActiveFirstResponderIndication;
+- (void)hideActiveFirstResponderIndication;
+- (void)_primitiveSetNextKeyView:(nullable NSView *)view OPENSWIFTUI_SWIFT_NAME(_primitiveSetNextKeyView(_:));
+- (nullable NSView *)_recursiveSetDefaultKeyViewLoop;
+- (void)_recursiveGatherAllKeyViewCandidatesInArray:(NSMutableArray *)array OPENSWIFTUI_SWIFT_NAME(_recursiveGatherAllKeyViewCandidates(in:));
+@end
+
+@interface NSResponder (OpenSwiftUI_SPI)
+- (nullable NSResponder *)_firstResponderForEvent:(NSEvent *)event OPENSWIFTUI_SWIFT_NAME(_firstResponder(for:));
+@end
+
+@interface NSWindow (OpenSwiftUI_SPI)
+@property (nonatomic, readonly) BOOL _keyViewRedirectionDisabled;
++ (void)_postActiveFirstResponderChanged;
+- (void)_setKeyViewLoopNeedsRecalc:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setKeyViewLoopNeedsRecalc(_:));
+- (void)_setKeyViewSelectionDirection:(NSSelectionDirection)direction OPENSWIFTUI_SWIFT_NAME(_setKeyViewSelectionDirection(_:));
+- (nullable NSView *)_accessibilityViewCorrectedForFieldEditor:(nullable NSView *)view OPENSWIFTUI_SWIFT_NAME(_accessibilityViewCorrectedForFieldEditor(_:));
 @end
 
 @interface NSAccessibilityRemoteUIElement : NSObject
