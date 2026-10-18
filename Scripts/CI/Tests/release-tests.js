@@ -97,21 +97,23 @@ test("every required check must succeed on the candidate SHA", () => {
   }
 });
 
-test("Interaction checks cannot be omitted from a release or verify another commit", () => {
-  const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
-    result: "success", outputs: { "verified-sha": sha },
-  }]));
-  delete results.interaction;
-  assert.throws(() => release.assertChecks(results, sha), /interaction/);
-  for (const result of ["failure", "cancelled", "skipped"]) {
-    results.interaction = { result, outputs: { "verified-sha": sha } };
-    assert.throws(() => release.assertChecks(results, sha), /interaction/);
-  }
-  results.interaction = { result: "success", outputs: { "verified-sha": otherSHA } };
-  assert.throws(() => release.assertChecks(results, sha), /interaction/);
-  results.interaction.outputs["verified-sha"] = sha;
-  release.assertChecks(results, sha);
-});
+for (const name of ["interaction", "visionos"]) {
+  test(`${name} checks cannot be omitted from a release or verify another commit`, () => {
+    const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
+      result: "success", outputs: { "verified-sha": sha },
+    }]));
+    delete results[name];
+    assert.throws(() => release.assertChecks(results, sha), new RegExp(name));
+    for (const result of ["failure", "cancelled", "skipped"]) {
+      results[name] = { result, outputs: { "verified-sha": sha } };
+      assert.throws(() => release.assertChecks(results, sha), new RegExp(name));
+    }
+    results[name] = { result: "success", outputs: { "verified-sha": otherSHA } };
+    assert.throws(() => release.assertChecks(results, sha), new RegExp(name));
+    results[name].outputs["verified-sha"] = sha;
+    release.assertChecks(results, sha);
+  });
+}
 
 test("tag creation is idempotent and cannot move an existing tag", async () => {
   const mock = client();

@@ -2,12 +2,21 @@ name: Release / Checks
 
 on:
   workflow_dispatch:
+    inputs:
+      update_reference:
+        description: Update SwiftUI snapshot references before verification
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       ref:
         description: Full commit SHA to verify
         required: true
         type: string
+      update_reference:
+        description: Update SwiftUI snapshot references before verification
+        default: false
+        type: boolean
     secrets:
       CODECOV_TOKEN:
         required: false
@@ -58,6 +67,12 @@ jobs:
     with:
       ref: ${{ needs.prepare.outputs.sha }}
 
+  visionos:
+    needs: prepare
+    uses: ./.github/workflows/visionos.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+
   ubuntu:
     needs: prepare
     uses: ./.github/workflows/ubuntu.yml
@@ -73,7 +88,7 @@ jobs:
       ref: ${{ needs.prepare.outputs.sha }}
       platform: all
       configuration: all
-      update_reference: false
+      update_reference: ${{ inputs.update_reference }}
 
   interaction:
     needs: prepare
@@ -82,7 +97,7 @@ jobs:
       ref: ${{ needs.prepare.outputs.sha }}
       platform: all
       configuration: all
-      update_reference: false
+      update_reference: ${{ inputs.update_reference }}
 
   compatibility:
     needs: prepare
@@ -101,7 +116,7 @@ jobs:
   verify:
     name: Verify all required checks
     if: always()
-    needs: [prepare, macos, ios, ubuntu, ui, interaction, compatibility, stdout]
+    needs: [prepare, macos, ios, visionos, ubuntu, ui, interaction, compatibility, stdout]
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.verify.outputs.sha }}
