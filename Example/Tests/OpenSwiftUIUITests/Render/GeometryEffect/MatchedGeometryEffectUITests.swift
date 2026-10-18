@@ -45,6 +45,8 @@ struct MatchedGeometryEffectUITests {
                 of: ContentView(),
                 size: CGSize(width: 300, height: 150)
             )
+        } when: {
+            viewRendererVendor == .osui
         }
     }
 }
