@@ -7,7 +7,7 @@ const test = require("node:test");
 
 const frameworks = require("../release.js").frameworks;
 
-async function fixture(t, { missing, buildStatus = 0, consumerStatus = 0 } = {}) {
+async function fixture(t, { missing, buildStatus = 0, consumerStatus = 0, failingPlatform } = {}) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "binary interface "));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const source = path.join(root, "OpenSwiftUI");
@@ -16,6 +16,9 @@ async function fixture(t, { missing, buildStatus = 0, consumerStatus = 0 } = {})
   await fs.mkdir(path.join(source, "Scripts/CI"), { recursive: true });
   await fs.mkdir(path.join(binary, "Example"), { recursive: true });
   await fs.mkdir(path.join(root, "bin"));
+  await fs.mkdir(path.join(root, "DarwinPrivateFrameworks/Scripts/XR"), { recursive: true });
+  await fs.writeFile(path.join(root, "DarwinPrivateFrameworks/Scripts/XR/install_xr_uikit_overlay.sh"),
+    "#!/bin/bash\nexit 0\n", { mode: 0o755 });
   await fs.copyFile(path.join(__dirname, "../check_binary_interface.sh"), path.join(source, "Scripts/CI/check_binary_interface.sh"));
   await fs.writeFile(path.join(source, "Scripts/build_xcframework.sh"), `#!/bin/bash
 printf '%s\\n' "$@" > "$TEST_ROOT/build-args"
@@ -23,9 +26,11 @@ exit ${buildStatus}
 `, { mode: 0o755 });
   await fs.writeFile(path.join(binary, "Example/setup.sh"), "#!/bin/bash\nexit 0\n", { mode: 0o755 });
   await fs.writeFile(path.join(root, "bin/xcodebuild"), `#!/bin/bash
-printf '%s\\n' "$@" > "$TEST_ROOT/consumer-args"
+printf '%s\\n' "$@" >> "$TEST_ROOT/consumer-args"
 printf '%s' "$OPENSWIFTUI_LOCAL_XCFRAMEWORKS_PATH" > "$TEST_ROOT/local-path"
-exit ${consumerStatus}
+if [[ "$*" == *"${failingPlatform ?? "generic/platform="}"* ]]; then
+  exit ${consumerStatus}
+fi
 `, { mode: 0o755 });
   for (const name of frameworks.filter(name => name !== missing)) {
     await fs.mkdir(path.join(output, `${name}.xcframework`), { recursive: true });
@@ -39,14 +44,18 @@ exit ${consumerStatus}
   };
 }
 
-test("builds one simulator architecture and loads the local textual interfaces", async t => {
+test("uses the complete release build and checks all three platform interfaces", async t => {
   const f = await fixture(t);
   const result = f.run();
   assert.equal(result.status, 0, result.stderr);
   const build = await fs.readFile(path.join(f.root, "build-args"), "utf8");
-  assert.match(build, /--sdk\niphonesimulator\n--archs\narm64/);
+  assert.equal(build, "--compute\nOpenSwiftUI\n");
   const consumer = await fs.readFile(path.join(f.root, "consumer-args"), "utf8");
-  assert.match(consumer, /generic\/platform=iOS Simulator/);
+  for (const platform of ["iOS Simulator", "macOS", "visionOS Simulator"]) {
+    assert.ok(consumer.includes(`generic/platform=${platform}`));
+  }
+  const derivedData = [...consumer.matchAll(/-derivedDataPath\n([^\n]+)/g)].map(match => match[1]);
+  assert.equal(new Set(derivedData).size, 3);
   assert.match(consumer, /-module-load-mode.*prefer-interface/);
   assert.equal(await fs.readFile(path.join(f.root, "local-path"), "utf8"), await fs.realpath(f.output));
 });
@@ -69,3 +78,12 @@ test("a consumer compile failure cannot pass the check", async t => {
   const f = await fixture(t, { consumerStatus: 65 });
   assert.equal(f.run("--skip-build").status, 65);
 });
+
+for (const platform of ["iOS Simulator", "macOS", "visionOS Simulator"]) {
+  test(`a ${platform} failure is reported after checking all platforms`, async t => {
+    const f = await fixture(t, { consumerStatus: 65, failingPlatform: `generic/platform=${platform}` });
+    assert.equal(f.run("--skip-build").status, 65);
+    const consumer = await fs.readFile(path.join(f.root, "consumer-args"), "utf8");
+    assert.equal((consumer.match(/-destination/g) ?? []).length, 3);
+  });
+}
