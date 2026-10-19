@@ -3,8 +3,10 @@
 //  OpenSwiftUICoreTests
 
 @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
+@Suite(.tags(.aigc))
 struct HierarchicalShapeStyleTests {
     @Test
     func secondaryColorUsesBaseColor() {
