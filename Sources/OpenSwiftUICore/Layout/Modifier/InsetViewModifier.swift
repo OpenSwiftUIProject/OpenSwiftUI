@@ -113,7 +113,7 @@ extension View {
 
 @available(OpenSwiftUI_v3_0, *)
 @frozen
-public struct _InsetViewModifier<Content>: ViewModifier where Content: View {
+public struct _InsetViewModifier<Content>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Content: View {
     @usableFromInline
     var content: Content
 
