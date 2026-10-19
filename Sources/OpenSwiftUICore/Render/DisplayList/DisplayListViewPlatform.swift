@@ -508,20 +508,29 @@ extension DisplayList.ViewUpdater.Platform {
                 }
                 var options = RasterizationOptions()
                 options.isAccelerated = text.needsDrawingGroup
+                let content: PlatformDrawableContent.Storage
+                #if !canImport(CoreText)
+                content = .text(.init(
+                    string: text.text.storage ?? NSAttributedString(string: ""),
+                    lineLimit: text.text.layoutProperties.lineLimit
+                ))
+                #else
+                content = .platformCallback { size in
+                    text.text.draw(
+                        in: CGRect(origin: .zero, size: size),
+                        with: textSize,
+                        applyingMarginOffsets: true,
+                        containsResolvable: text.text.isDynamic,
+                        context: .shared,
+                        renderer: text.renderer
+                    )
+                }
+                #endif
                 updateDrawingView(
                     &viewInfo,
                     options: options,
                     contentsScale: state.pointee.globals.pointee.environment.contentsScale,
-                    content: .platformCallback { size in
-                        text.text.draw(
-                            in: CGRect(origin: .zero, size: size),
-                            with: textSize,
-                            applyingMarginOffsets: true,
-                            containsResolvable: text.text.isDynamic,
-                            context: .shared,
-                            renderer: text.renderer
-                        )
-                    },
+                    content: content,
                     sizeChanged: viewInfo.state.size != item.size
                 )
                 viewInfo.nextUpdate.formMin(

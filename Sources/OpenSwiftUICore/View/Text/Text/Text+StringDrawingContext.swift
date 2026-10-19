@@ -254,6 +254,23 @@ extension NSAttributedString {
                 hasTruncatedRanges: drawingContext.hasTruncatedRanges
             )
             #else
+            if let system = PlatformTextSystems.current {
+                var metrics = system.measure(self, in: requestedSize, lineLimit: lineLimit)
+                if widthIsFlexible { metrics.size.width = requestedSize.width }
+                if let lowerLineLimit, lowerLineLimit > 0 {
+                    let fontMetrics = system.fontMetrics(self)
+                    let minimumHeight = CoreFont.limitedHeight(
+                        by: lowerLineLimit,
+                        lineHeight: fontMetrics.ascender - fontMetrics.descender,
+                        leading: fontMetrics.leading
+                    )
+                    metrics.size.height = max(metrics.size.height, minimumHeight)
+                }
+                if isCollapsible && metrics.size.height > requestedSize.height {
+                    metrics.size = .zero
+                }
+                return metrics
+            }
             _openSwiftUIPlatformUnimplementedWarning()
             return Metrics(
                 size: .zero,
