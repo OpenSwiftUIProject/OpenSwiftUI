@@ -345,7 +345,7 @@ public struct HierarchicalShapeStyleModifier<Base>: ShapeStyle where Base: Shape
     }
 
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        if let primaryStyle = primaryStyle(in: shape.environment) {
+        if let primaryStyle = base.primaryStyle(in: shape.environment) {
             primaryStyle.offset(by: level)._apply(to: &shape)
         } else {
             base.offset(by: level)._apply(to: &shape)
