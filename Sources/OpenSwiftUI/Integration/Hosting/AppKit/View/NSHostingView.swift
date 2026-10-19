@@ -531,14 +531,17 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         focusBridge.hostAcceptsFirstResponder
     }
 
+    @_implementationOnly
     open override func _recursiveSetDefaultKeyViewLoop() -> NSView? {
         focusBridge.updateDefaultKeyViewLoop()
     }
 
+    @_implementationOnly
     open override func designatedFocusRing() -> NSView? {
         focusBridge.designatedFocusRingView
     }
 
+    @_implementationOnly
     open override func _recursiveGatherAllKeyViewCandidates(in array: NSMutableArray) {
         guard let candidates = focusBridge.sortedCandidateKeyViews else { return }
         for view in candidates where view !== self {
@@ -549,6 +552,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         }
     }
 
+    @_implementationOnly
     open override func _firstResponder(for event: NSEvent) -> NSResponder? {
         hasFilter(for: event) ? self : super._firstResponder(for: event)
     }
