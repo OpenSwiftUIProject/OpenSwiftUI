@@ -2,7 +2,7 @@
 //  ContentStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: BE30CA4BBA5F98638AD9D34F1557FB4D (SwiftUICore)
 
@@ -286,17 +286,15 @@ extension ContentStyle.ID: ColorProvider {
     }
 
     package init?(level: Int) {
-        self.init(rawValue: Int8(level & 0xFF))
+        guard (0..<5).contains(level) else {
+            return nil
+        }
+        self.init(rawValue: Int8(level))
     }
 
     package init(truncatingLevel level: Int) {
-        switch level {
-        case 0: self = .primary
-        case 1: self = .secondary
-        case 2: self = .tertiary
-        case 3: self = .quaternary
-        default: self = .quinary
-        }
+        let rawValue = Int8(truncatingIfNeeded: min(level, 4))
+        self = Self(rawValue: rawValue)!
     }
 }
 
@@ -345,7 +343,7 @@ public struct HierarchicalShapeStyleModifier<Base>: ShapeStyle where Base: Shape
     }
 
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        if let primaryStyle = primaryStyle(in: shape.environment) {
+        if let primaryStyle = base.primaryStyle(in: shape.environment) {
             primaryStyle.offset(by: level)._apply(to: &shape)
         } else {
             base.offset(by: level)._apply(to: &shape)
