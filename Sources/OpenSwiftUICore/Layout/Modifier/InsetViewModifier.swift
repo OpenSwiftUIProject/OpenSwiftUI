@@ -113,7 +113,7 @@ extension View {
 
 @available(OpenSwiftUI_v3_0, *)
 @frozen
-public struct _InsetViewModifier<Content>: ViewModifier where Content: View {
+public struct _InsetViewModifier<Content>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Content: View {
     @usableFromInline
     var content: Content
 
@@ -139,7 +139,7 @@ public struct _InsetViewModifier<Content>: ViewModifier where Content: View {
     ) -> _ViewOutputs {
         var primaryInputs = inputs
         var secondaryInputs = inputs
-        secondaryInputs.base.pushStableIndex(0)
+        primaryInputs.base.pushStableIndex(0)
         secondaryInputs.implicitRootType = _ZStackLayout.self
         secondaryInputs.base.pushStableIndex(1)
 
@@ -226,6 +226,7 @@ public struct _InsetViewModifier<Content>: ViewModifier where Content: View {
         for key in inputs.preferences.keys {
             key.visitKey(&visitor)
         }
+        visitor.result.layoutComputer = layoutComputer
         return visitor.result
     }
 }
