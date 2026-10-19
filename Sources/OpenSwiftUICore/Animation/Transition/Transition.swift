@@ -153,10 +153,14 @@ package struct ApplyTransitionModifier<TransitionType>: PrimitiveViewModifier, M
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        .init()
+        TransitionType.makeView(
+            view: _GraphValue(Child(modifier: modifier.value)),
+            inputs: inputs,
+            body: body
+        )
     }
 
-    nonisolated package static func _viewListCount(
+    nonisolated package static func viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
