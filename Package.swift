@@ -171,6 +171,8 @@ let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwin
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
+let androidUIKitCondition = envBoolValue("ANDROID_UIKIT", default: false)
+let androidSwiftStaticLibDir = envStringValue("ANDROID_SWIFT_STATIC_LIB_DIR")
 
 let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocGenerationBuild && !compatibilityTestCondition)
 
@@ -251,6 +253,9 @@ if !compatibilityTestCondition {
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
+}
+if androidUIKitCondition {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ANDROID_UIKIT", .when(platforms: [.android])))
 }
 
 sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
@@ -765,6 +770,56 @@ let openSwiftUIExtensionTarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
+var openSwiftUIAndroidDemoLinkerSettings: [LinkerSetting] = [
+    .linkedLibrary("ssl", .when(platforms: [.android])),
+    .linkedLibrary("crypto", .when(platforms: [.android])),
+    .linkedLibrary("z", .when(platforms: [.android])),
+    .unsafeFlags(["-Xlinker", "--allow-multiple-definition"], .when(platforms: [.android])),
+]
+
+if let androidSwiftStaticLibDir {
+    openSwiftUIAndroidDemoLinkerSettings.append(
+        .unsafeFlags(["-Xlinker", "-L\(androidSwiftStaticLibDir)"], .when(platforms: [.android]))
+    )
+}
+
+let openSwiftUIAndroidRuntimeShimsTarget = Target.target(
+    name: "OpenSwiftUIAndroidRuntimeShims",
+    cSettings: sharedCSettings
+)
+
+let openSwiftUIAndroidDemoTarget = Target.target(
+    name: "OpenSwiftUIAndroidDemo",
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUIDemoContent",
+        "OpenSwiftUICore",
+        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
+    ],
+    swiftSettings: sharedSwiftSettings + [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ],
+    linkerSettings: openSwiftUIAndroidDemoLinkerSettings
+)
+
+let openSwiftUILinuxDemoTarget = Target.executableTarget(
+    name: "OpenSwiftUILinuxDemo",
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUIDemoContent",
+    ],
+    swiftSettings: sharedSwiftSettings + (androidUIKitCondition ? [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ] : []),
+    linkerSettings: [
+        .linkedLibrary("ssl", .when(platforms: [.android])),
+        .linkedLibrary("crypto", .when(platforms: [.android])),
+        .linkedLibrary("z", .when(platforms: [.android])),
+    ] + (androidUIKitCondition ? [
+        .unsafeFlags(["-Xlinker", "--allow-multiple-definition"], .when(platforms: [.android])),
+    ] : [])
+)
+
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
@@ -870,6 +925,14 @@ if supportMultiProducts {
     ]
 }
 
+if !buildForDarwinPlatform {
+    products.append(.executable(name: "OpenSwiftUILinuxDemo", targets: ["OpenSwiftUILinuxDemo"]))
+}
+if androidUIKitCondition {
+    products.append(.library(name: "OpenSwiftUIAndroidDemo", type: .dynamic, targets: ["OpenSwiftUIAndroidDemo"]))
+    products.append(.library(name: "OpenSwiftUIAndroidHost", targets: ["OpenSwiftUIAndroidDemo"]))
+}
+
 // MARK: - Package
 
 let package = Package(
@@ -902,6 +965,21 @@ if versionedDocCPlugin {
 
 if renderGTKCondition {
     package.targets.append(cgtkTarget)
+}
+
+if !buildForDarwinPlatform {
+    package.targets.append(openSwiftUILinuxDemoTarget)
+}
+if !buildForDarwinPlatform || androidUIKitCondition {
+    package.targets.append(.target(
+        name: "OpenSwiftUIDemoContent",
+        dependencies: ["OpenSwiftUI"],
+        swiftSettings: sharedSwiftSettings
+    ))
+}
+if androidUIKitCondition {
+    package.targets.append(openSwiftUIAndroidRuntimeShimsTarget)
+    package.targets.append(openSwiftUIAndroidDemoTarget)
 }
 
 if !compatibilityTestCondition {
@@ -1060,6 +1138,34 @@ if swiftCryptoCondition {
     )
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
+}
+
+if androidUIKitCondition {
+    if let uikitPath = envStringValue("ANDROID_UIKIT_PATH") {
+        package.dependencies.append(.package(path: uikitPath))
+    } else if useLocalDeps {
+        package.dependencies.append(.package(path: "../UIKit-cross-platform"))
+    } else {
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/UIKit-cross-platform", branch: "android/dev")
+        )
+    }
+    if computeCondition && !useLocalDeps {
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/Compute", branch: "android/dev")
+        )
+    }
+    package.dependencies.append(.package(url: "https://github.com/SwiftAndroid/swift-jni", from: "3.0.0"))
+    openSwiftUIAndroidDemoTarget.dependencies.append("OpenSwiftUIAndroidRuntimeShims")
+    openSwiftUIAndroidDemoTarget.dependencies.append(
+        .product(name: "UIKit", package: "UIKit-cross-platform", condition: .when(platforms: [.android]))
+    )
+    openSwiftUIAndroidDemoTarget.dependencies.append(
+        .product(name: "JNI", package: "swift-jni", condition: .when(platforms: [.android]))
+    )
+    openSwiftUILinuxDemoTarget.dependencies.append(
+        "OpenSwiftUIAndroidDemo"
+    )
 }
 
 #if TUIST
