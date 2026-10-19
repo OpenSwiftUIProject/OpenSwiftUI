@@ -5,6 +5,8 @@
 //  Audited for 6.0.87
 //  Status: Complete
 
+import Foundation
+
 /// A geometric angle whose value you access in either radians or degrees.
 @frozen
 public struct Angle {
@@ -58,15 +60,15 @@ import WASILibc
 #endif
 
 package func cos(_ angle: Angle) -> Double {
-    cos(angle.radians)
+    Foundation.cos(angle.radians)
 }
 
 package func sin(_ angle: Angle) -> Double {
-    sin(angle.radians)
+    Foundation.sin(angle.radians)
 }
 
 package func tan(_ angle: Angle) -> Double {
-    tan(angle.radians)
+    Foundation.tan(angle.radians)
 }
 
 extension Angle: Animatable, _VectorMath {

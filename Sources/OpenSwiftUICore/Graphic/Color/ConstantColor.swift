@@ -400,7 +400,7 @@ func sRGBFromLinear(_ linear: Float) -> Float {
     } else if nonNegativeLinear == 1.0 {
         Float(1.0)
     } else {
-        pow(nonNegativeLinear, 1.0 / 2.4) * 1.055 - 0.055
+        Foundation.powf(nonNegativeLinear, 1.0 / 2.4) * 1.055 - 0.055
     }
     return linear > 0 ? result : -result
 }
@@ -414,9 +414,9 @@ func sRGBToLinear(_ sRGB: Float) -> Float {
         Float(1.0)
     } else {
         if Color.Resolved._alignWithSwiftUIImplementation {
-            pow(nonNegativeSRGB * (1 / 1.055) + 0.055 * (1 / 1.055), 2.4)
+            Foundation.powf(nonNegativeSRGB * (1 / 1.055) + 0.055 * (1 / 1.055), 2.4)
         } else {
-            pow((nonNegativeSRGB + 0.055) / 1.055, 2.4)
+            Foundation.powf((nonNegativeSRGB + 0.055) / 1.055, 2.4)
         }
     }
     return sRGB > 0 ? result : -result
