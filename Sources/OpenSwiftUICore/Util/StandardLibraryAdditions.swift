@@ -10,6 +10,8 @@ package import Foundation
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+#elseif canImport(Android)
+import Android
 #else
 #error("Unsupported Platform")
 #endif
@@ -55,6 +57,8 @@ extension Float {
         Darwin.round(self * 256.0) / 256.0
         #elseif canImport(Glibc)
         Glibc.round(self * 256.0) / 256.0
+        #elseif canImport(Android)
+        Android.round(self * 256.0) / 256.0
         #else
         #error("Unsupported Platform")
         #endif
@@ -67,6 +71,8 @@ extension CGFloat {
         Darwin.round(self * 256.0) / 256.0
         #elseif canImport(Glibc)
         Glibc.round(self * 256.0) / 256.0
+        #elseif canImport(Android)
+        Android.round(self * 256.0) / 256.0
         #else
         #error("Unsupported Platform")
         #endif
