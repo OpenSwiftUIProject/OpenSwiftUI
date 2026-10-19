@@ -78,7 +78,7 @@ extension AccessibilityProperties: AccessibilityCombinable {
         if subrole == nil {
             subrole = child.subrole
         }
-        #elseif canImport(UIKit)
+        #elseif !os(Android) && canImport(UIKit)
         uiKitTraits.merge(with: child.uiKitTraits)
         if uiKitBridgedInteraction == nil {
             uiKitBridgedInteraction = child.uiKitBridgedInteraction

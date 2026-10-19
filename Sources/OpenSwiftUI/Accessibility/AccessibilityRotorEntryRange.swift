@@ -12,7 +12,7 @@ import Foundation
 enum AccessibilityRotorEntryRange {
     case nsRange(NSRange)
     case stringRange(Range<String.Index>)
-    #if canImport(UIKit)
+    #if !os(Android) && canImport(UIKit)
     case uiTextRange(UITextRange)
     #endif
 }

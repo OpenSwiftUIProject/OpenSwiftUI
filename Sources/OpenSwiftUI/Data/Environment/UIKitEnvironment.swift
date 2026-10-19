@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 005A2BB2D44F4D559B7E508DC5B95FFB (SwiftUI)
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 import COpenSwiftUI
 @_spi(ClarityBoard)
 @_spi(Private)
