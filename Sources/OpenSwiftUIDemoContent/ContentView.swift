@@ -99,6 +99,15 @@ package struct BreathingColorView: View {
             .foregroundColor(.white)
             .padding()
         }
+        .onAppear {
+            guard let value = ProcessInfo.processInfo.environment["OPENSWIFTUI_DEMO_TOGGLE_DELAY"],
+                  let delay = Double(value), delay.isFinite, delay >= 0 else {
+                return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                usesBlue = false
+            }
+        }
     }
 }
 
