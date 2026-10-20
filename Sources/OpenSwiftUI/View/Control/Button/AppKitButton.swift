@@ -458,10 +458,29 @@ extension NSButton {
         var content = NSEdgeInsetsZero
         Update.syncMain {
             if isBordered {
+                #if OPENSWIFTUI_ATTRIBUTEGRAPH
+                if #available(macOS 26.0, *) {
+                    // AppKit's Amber support reads system SwiftUI attributes on macOS 26+.
+                    // OpenSwiftUI uses a separate AG namespace, so suspend dependency
+                    // tracking during this call to avoid a cross-namespace input.
+                    Graph.withoutUpdate {
+                        _ = _getIntrinsicArtworkSize(
+                            &size, alignmentRectInsets: &alignment,
+                            idealContentInsets: &content, maxContentInsets: nil
+                        )
+                    }
+                } else {
+                    _ = _getIntrinsicArtworkSize(
+                        &size, alignmentRectInsets: &alignment,
+                        idealContentInsets: &content, maxContentInsets: nil
+                    )
+                }
+                #else
                 _ = _getIntrinsicArtworkSize(
                     &size, alignmentRectInsets: &alignment,
                     idealContentInsets: &content, maxContentInsets: nil
                 )
+                #endif
             }
         }
         let alignmentInsets = EdgeInsets(top: alignment.top, leading: alignment.left, bottom: alignment.bottom, trailing: alignment.right)
