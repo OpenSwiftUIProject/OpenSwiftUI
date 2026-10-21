@@ -49,6 +49,9 @@ extension SceneList {
         #elseif os(macOS)
         // TODO: macOS specific properties
         var keyboardShortcut: KeyboardShortcut?
+        // TODO
+        var cascadeBehavior: WindowCascadeBehavior.Role = .automatic
+        // TODO
         #endif
 
         // MARK: - SceneList.Item.Summary

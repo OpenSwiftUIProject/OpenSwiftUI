@@ -60,10 +60,6 @@ final class WindowController<Content>: NSWindowController where Content: View {
     }
 }
 
-enum WindowSizeConstants {
-    static let defaultProposedSize = _ProposedSize(width: 900, height: 450)
-}
-
 // MARK: - RootEnvironmentModifier [FIXME]
 
 extension View {
