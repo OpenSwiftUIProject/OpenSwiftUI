@@ -63,6 +63,12 @@ public struct Link<Label>: View where Label: View {
             label
         }
         .accessibilityConfiguration(AccessibilityLinkModifier(destination, isArchive: false))
+        #if os(macOS)
+        .modifier(
+            PrimitiveButtonStyleContainerModifier(style: LinkButtonStyle())
+                .requiring(ButtonStylePredicate<DefaultButtonStyle>.self)
+        )
+        #endif
     }
 }
 
