@@ -9,11 +9,12 @@
 import AppKit
 import OpenSwiftUICore
 
-// MARK: - NSTextField + Environment [TBA]
+// MARK: - NSTextField + Environment
 
 extension NSTextField {
     func update(in environment: EnvironmentValues, axis: Axis) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 }
 #endif

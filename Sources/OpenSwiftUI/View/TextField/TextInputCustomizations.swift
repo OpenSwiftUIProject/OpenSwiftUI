@@ -1,10 +1,10 @@
 //
-//  TextFieldInputModifiers.swift
+//  TextInputCustomizations.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID: 358223D01E778F87FED5B25B5CFE864D (SwiftUI?)
+//  ID: 358223D01E778F87FED5B25B5CFE864D (SwiftUI)
 
 public import OpenSwiftUICore
 
