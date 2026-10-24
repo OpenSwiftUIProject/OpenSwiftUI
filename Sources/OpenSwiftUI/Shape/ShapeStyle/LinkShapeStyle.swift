@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by CatalogAppearance on macOS)
+//  Status: Complete
 
 public import OpenSwiftUICore
 
