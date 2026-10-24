@@ -556,44 +556,6 @@ final package class ImageProviderBox<Base>: AnyImageProviderBox, @unchecked Send
     }
 }
 
-// FIXME
-
-extension ORBSymbolAnimator {
-    // TODO: 2975F89CBD28662DFA5DA6D958CBE343
-    @discardableResult
-    fileprivate func addAnimation(
-        _ animation: ORBSymbolAnimation,
-        options: [ORBSymbolAnimation.OptionKey: Any],
-        animationListener: AnimationListener?,
-        logicalListener: AnimationListener?
-    ) -> UInt32 {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
-
-struct ORBSymbolAnimation: RawRepresentable {
-    let rawValue: Int
-
-    /// Variable value change
-    static let variableValue = ORBSymbolAnimation(rawValue: 0x0)
-    /// Symbol replace animation
-    static let replace = ORBSymbolAnimation(rawValue: 0x6)
-    /// Interpolate animation
-    static let interpolate = ORBSymbolAnimation(rawValue: 0x7)
-
-    struct OptionKey: RawRepresentable, Hashable {
-        let rawValue: String
-    }
-}
-
-extension ORBSymbolAnimation.OptionKey {
-    static let timing = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationTiming")
-    static let interpolateOptions = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationInterpolateOptions")
-    static let replaceOptions = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationReplaceOptions")
-    static let byLayer = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationByLayer")
-    static let speed = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationSpeed")
-}
-
 extension Animation {
     fileprivate var rbAnimation: ORBAnimation {
         let animation = ORBAnimation()
@@ -605,9 +567,9 @@ extension Animation {
 extension _SymbolEffect.ReplaceConfiguration {
     fileprivate var animationOptions: [ORBSymbolAnimation.OptionKey: Any] {
         [
-            .replaceOptions: self,
-//            .byLayer: byLayer,
-//            .speed: speed,
+            .replaceOptions: flags.rawValue,
+            .byLayer: layered,
+            .speed: speed,
         ]
     }
 }

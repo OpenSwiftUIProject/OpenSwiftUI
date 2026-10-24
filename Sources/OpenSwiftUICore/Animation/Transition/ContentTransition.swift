@@ -590,6 +590,7 @@ package enum ORBTransitionEffectType: UInt32, Equatable {
     case matchMove = 5
     case translationScale = 15
     case relativeBlur = 16
+    case symbolAppearDisappear = 17
 }
 
 // MARK: - DisablesContentTransitionsKey

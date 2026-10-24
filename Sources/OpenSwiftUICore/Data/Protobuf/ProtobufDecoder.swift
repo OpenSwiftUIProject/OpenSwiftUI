@@ -144,7 +144,7 @@ extension ProtobufDecoder {
     /// - Parameter field: The field to decode.
     /// - Returns: An unsigned 8-bit integer(UInt8) value.
     package mutating func uint8Field(_ field: ProtobufDecoder.Field) throws -> UInt8 {
-        try UInt8(uintField(field))
+        try UInt8(truncatingIfNeeded: uint64Field(field))
     }
     
     /// Decodes an unsigned 16-bit integer(UInt16) value field from the data.
@@ -152,7 +152,7 @@ extension ProtobufDecoder {
     /// - Parameter field: The field to decode.
     /// - Returns: An unsigned 16-bit integer(UInt16) value.
     package mutating func uint16Field(_ field: ProtobufDecoder.Field) throws -> UInt16 {
-        try UInt16(uintField(field))
+        try UInt16(truncatingIfNeeded: uint64Field(field))
     }
     
     /// Decodes an unsigned 32-bit integer(UInt32) value field from the data.
@@ -160,7 +160,7 @@ extension ProtobufDecoder {
     /// - Parameter field: The field to decode.
     /// - Returns: An unsigned 32-bit integer(UInt32) value.
     package mutating func uint32Field(_ field: ProtobufDecoder.Field) throws -> UInt32 {
-        try UInt32(uintField(field))
+        try UInt32(truncatingIfNeeded: uint64Field(field))
     }
 
     /// Decodes an unsigned 64-bit integer(UInt64) value field from the data.
@@ -358,7 +358,7 @@ extension ProtobufDecoder {
         switch field.wireType {
         case .lengthDelimited:
             let buffer = try decodeDataBuffer()
-            guard let baseAddress = buffer.baseAddress else {
+            guard let baseAddress = buffer.baseAddress, !buffer.isEmpty else {
                 return Data()
             }
             let startIndex = baseAddress - data.bytes
