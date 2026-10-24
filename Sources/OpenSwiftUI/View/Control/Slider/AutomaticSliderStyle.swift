@@ -27,24 +27,18 @@ extension SliderStyle where Self == AutomaticSliderStyle {
 @preconcurrency
 public struct AutomaticSliderStyle: SliderStyle {
     public func makeBody(configuration: Configuration) -> some View {
-        #if os(iOS) || os(visionOS)
         Slider(configuration)
             .modifier(
                 SliderStyleModifier(style: MenuSliderStyle())
                     .requiring(MenuStyleContext.self)
             )
             .sliderStyle(PlatformSliderStyle())
-        #elseif os(macOS)
-        Slider(configuration)
+            #if os(macOS)
             .modifier(
-                SliderStyleModifier(style: MenuSliderStyle())
-                    .requiring(MenuStyleContext.self)
+                ToolbarStyleContextModifier()
+                    .requiring(ToolbarStyleContext.self)
             )
-            .sliderStyle(PlatformSliderStyle(isVertical: false, showTickMarks: false))
-            .modifier(ToolbarStyleContextModifier().requiring(ToolbarStyleContext.self))
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
+            #endif
     }
 }
 

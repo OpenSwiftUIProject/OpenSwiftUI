@@ -9,6 +9,14 @@
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
+// MARK: View + map
+
+extension View {
+    func map<V>(_ transform: @escaping (MappedViewElement) -> V) -> some View where V: View {
+        MappedViews(content: self, transform: transform)
+    }
+}
+
 // MARK: - MappedViewElement
 
 struct MappedViewElement {
