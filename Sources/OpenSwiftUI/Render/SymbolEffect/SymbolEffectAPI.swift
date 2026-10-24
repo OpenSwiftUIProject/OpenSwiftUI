@@ -3,13 +3,13 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Symbols SPI
+//  Status: Complete
 //  ID: 1E42BCA1B3AC632454FB5BE9F835FBCE (SwiftUI)
 
-#if canImport(Symbols)
+#if OPENSWIFTUI_LINK_SYMBOLS
 import OpenAttributeGraphShims
 @_spi(Private) public import OpenSwiftUICore
-public import Symbols
+@_spi(Private) public import Symbols
 
 // MARK: - View + symbolEffect
 
@@ -398,16 +398,65 @@ extension WiggleSymbolEffect {
     }
 }
 
-// MARK: - Symbols conversion [Blocked]
-
-// The conversions below read Symbols SPI (`SymbolEffectConfiguration.effect`,
-// per-effect style getters, and `SymbolEffectOptions` repeat and speed
-// values). The public Symbols interface does not expose them.
+// MARK: - _SymbolEffect + Symbols
 
 extension _SymbolEffect {
     fileprivate init?(config: SymbolEffectConfiguration, options: SymbolEffectOptions) {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        let storage: Storage
+        switch config.effect {
+        case let .pulse(effect):
+            var value = PulseConfiguration()
+            value.layered = effect.isLayered ?? true
+            storage = .pulse(value)
+        case let .bounce(effect):
+            storage = .bounce(BounceConfiguration(
+                effect,
+                isContinuous: options.repeat == nil || options.prefersContinuous,
+                trigger: nil
+            ))
+        case let .variableColor(effect):
+            storage = .variableColor(VariableColorConfiguration(effect, trigger: nil))
+        case let .scale(effect):
+            var value = ScaleConfiguration()
+            value.layered = effect.isLayered ?? true
+            if let isUp = effect.isUp {
+                value.level = isUp ? .up : .down
+            }
+            storage = .scale(value)
+        case let .appear(effect):
+            var value = HiddenConfiguration()
+            value.layered = effect.isLayered ?? true
+            if let isUp = effect.isUp {
+                value.flags = isUp ? .down : .up
+            }
+            value.isHidden = true
+            storage = .hidden(value)
+        case let .disappear(effect):
+            var value = HiddenConfiguration()
+            value.layered = effect.isLayered ?? true
+            if let isUp = effect.isUp {
+                value.flags = isUp ? .up : .down
+            }
+            value.isHidden = true
+            storage = .hidden(value)
+        case let .wiggle(effect):
+            storage = .wiggle(WiggleConfiguration(
+                effect,
+                isContinuous: options.repeat == nil || options.prefersContinuous,
+                trigger: nil
+            ))
+        case let .rotate(effect):
+            storage = .rotate(RotateConfiguration(
+                effect,
+                isContinuous: options.repeat == nil || options.prefersContinuous,
+                trigger: nil
+            ))
+        case let .breathe(effect):
+            storage = .breathe(BreatheConfiguration(effect, trigger: nil))
+        default:
+            return nil
+        }
+        self.init(storage, options: Options(options))
     }
 
     fileprivate init?(
@@ -415,29 +464,217 @@ extension _SymbolEffect {
         options: SymbolEffectOptions,
         trigger: _SymbolEffect.Trigger
     ) {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        let storage: Storage
+        switch config.effect {
+        case let .pulse(effect):
+            var value = PulseConfiguration()
+            value.layered = effect.isLayered ?? true
+            value.trigger = trigger
+            storage = .pulse(value)
+        case let .bounce(effect):
+            storage = .bounce(BounceConfiguration(
+                effect,
+                isContinuous: options.repeat != nil && options.prefersContinuous,
+                trigger: trigger
+            ))
+        case let .variableColor(effect):
+            storage = .variableColor(VariableColorConfiguration(effect, trigger: trigger))
+        case let .wiggle(effect):
+            storage = .wiggle(WiggleConfiguration(
+                effect,
+                isContinuous: options.repeat != nil && options.prefersContinuous,
+                trigger: trigger
+            ))
+        case let .rotate(effect):
+            storage = .rotate(RotateConfiguration(
+                effect,
+                isContinuous: options.repeat != nil && options.prefersContinuous,
+                trigger: trigger
+            ))
+        case let .breathe(effect):
+            storage = .breathe(BreatheConfiguration(effect, trigger: trigger))
+        default:
+            return nil
+        }
+        self.init(storage, options: Options(options))
     }
 }
+
+// MARK: - _SymbolEffect.Options + Symbols
 
 extension _SymbolEffect.Options {
     fileprivate init(_ options: SymbolEffectOptions) {
-        _openSwiftUIUnimplementedWarning()
         self.init()
+        switch options.repeat {
+        case let .count(count):
+            repeatCount = Float(count)
+        case .indefinite:
+            repeatCount = .infinity
+        default:
+            break
+        }
+        repeatDelay = options.repeatDelay.map { Float($0) }
+        speed = Float(options.speed)
     }
 }
+
+// MARK: - _SymbolEffect.HiddenConfiguration + Symbols
 
 extension _SymbolEffect.HiddenConfiguration {
     fileprivate init?(_ config: SymbolEffectConfiguration, hidden: Bool) {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        self.init()
+        switch config.effect {
+        case let .appear(effect):
+            layered = effect.isLayered ?? true
+            if let isUp = effect.isUp {
+                flags = isUp ? .down : .up
+            }
+        case let .disappear(effect):
+            layered = effect.isLayered ?? true
+            if let isUp = effect.isUp {
+                flags = isUp ? .up : .down
+            }
+        case .automatic:
+            break
+        default:
+            return nil
+        }
+        isHidden = hidden
     }
 }
 
+// MARK: - _SymbolEffect.ReplaceConfiguration + Symbols
+
 extension _SymbolEffect.ReplaceConfiguration {
     fileprivate init?(_ config: SymbolEffectConfiguration, options: SymbolEffectOptions) {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        switch config.effect {
+        case let .replace(effect):
+            self.init(
+                effect,
+                options: options,
+                allowMagic: effect.style == nil && isLinkedOnOrAfter(.v6)
+            )
+        case .automatic:
+            self.init()
+            speed = Float(options.speed)
+        case let .magicReplace(effect):
+            self.init(effect.fallback, options: options, allowMagic: true)
+        default:
+            return nil
+        }
+    }
+}
+
+// MARK: - _SymbolEffect.BounceConfiguration + Symbols
+
+extension _SymbolEffect.BounceConfiguration {
+    fileprivate init(_ effect: BounceSymbolEffect, isContinuous: Bool, trigger: _SymbolEffect.Trigger?) {
+        self.init()
+        layered = effect.isLayered ?? true
+        if isContinuous {
+            flags.insert(.continuous)
+        }
+        if let isUp = effect.isUp {
+            flags.insert(isUp ? .up : .down)
+        }
+        self.trigger = trigger
+    }
+}
+
+// MARK: - _SymbolEffect.VariableColorConfiguration + Symbols
+
+extension _SymbolEffect.VariableColorConfiguration {
+    fileprivate init(_ effect: VariableColorSymbolEffect, trigger: _SymbolEffect.Trigger?) {
+        self.init()
+        if effect.isReversing == true {
+            flags.insert(.reversing)
+        }
+        if effect.isIterative == true {
+            flags.insert(.iterative)
+        }
+        if effect.hasReveal == true {
+            flags.insert(.hideInactiveLayers)
+        }
+        self.trigger = trigger
+    }
+}
+
+// MARK: - _SymbolEffect.WiggleConfiguration + Symbols
+
+extension _SymbolEffect.WiggleConfiguration {
+    fileprivate init(_ effect: WiggleSymbolEffect, isContinuous: Bool, trigger: _SymbolEffect.Trigger?) {
+        self.init()
+        layered = effect.isLayered ?? true
+        if isContinuous {
+            flags.insert(.continuous)
+        }
+        switch effect.style {
+        case let .rotational(forward):
+            flags.insert(.rotational)
+            flags.insert(forward ? .forward : .backward)
+        case let .linear(degrees):
+            angle = .degrees(degrees)
+        case let .localized(forward):
+            flags.insert(.localized)
+            flags.insert(forward ? .forward : .backward)
+            appliesRTL = true
+        default:
+            break
+        }
+        self.trigger = trigger
+    }
+}
+
+// MARK: - _SymbolEffect.RotateConfiguration + Symbols
+
+extension _SymbolEffect.RotateConfiguration {
+    fileprivate init(_ effect: RotateSymbolEffect, isContinuous: Bool, trigger: _SymbolEffect.Trigger?) {
+        self.init()
+        layered = effect.isLayered ?? true
+        if isContinuous {
+            flags.insert(.continuous)
+        }
+        if let isClockwise = effect.isClockwise {
+            flags.insert(isClockwise ? .clockwise : .counterClockwise)
+        }
+        self.trigger = trigger
+    }
+}
+
+// MARK: - _SymbolEffect.BreatheConfiguration + Symbols
+
+extension _SymbolEffect.BreatheConfiguration {
+    fileprivate init(_ effect: BreatheSymbolEffect, trigger: _SymbolEffect.Trigger?) {
+        self.init()
+        layered = effect.isLayered ?? true
+        if case .scale = effect.style {
+            flags.insert(.onlyScale)
+        }
+        self.trigger = trigger
+    }
+}
+
+// MARK: - _SymbolEffect.ReplaceConfiguration + ReplaceSymbolEffect
+
+extension _SymbolEffect.ReplaceConfiguration {
+    fileprivate init(_ effect: ReplaceSymbolEffect, options: SymbolEffectOptions, allowMagic: Bool) {
+        self.init()
+        layered = effect.isLayered ?? true
+        speed = Float(options.speed)
+        switch effect.style {
+        case .downUp:
+            flags.insert(.down)
+        case .upUp:
+            flags.insert(.up)
+        case .offUp:
+            flags.insert(.offUp)
+        default:
+            break
+        }
+        if !allowMagic {
+            flags.insert(.noSlashes)
+            flags.insert(.noBadges)
+        }
     }
 }
 #endif

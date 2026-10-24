@@ -155,6 +155,7 @@ let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatfo
 let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform)
 let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform)
 let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform)
+let linkSymbols = envBoolValue("LINK_SYMBOLS", default: buildForDarwinPlatform)
 let linkFeatureFlags = envBoolValue("LINK_FEATUREFLAGS", default: buildForDarwinPlatform)
 let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform)
 let linkGestures = envBoolValue("LINK_GESTURES", default: buildForDarwinPlatform && releaseVersion >= 2025)
@@ -266,6 +267,12 @@ if linkCoreSVG {
 if linkSFSymbols {
     sharedSwiftSettings.append(
         .define("OPENSWIFTUI_LINK_SFSYMBOLS", .when(platforms: [.iOS, .macOS, .visionOS]))
+    )
+}
+
+if linkSymbols {
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_SYMBOLS", .when(platforms: [.iOS, .macOS, .visionOS]))
     )
 }
 
@@ -427,6 +434,16 @@ extension Target {
         dependencies.append(
             .product(
                 name: "SFSymbols",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .macOS, .visionOS])
+            )
+        )
+    }
+
+    func addSymbolsSettings() {
+        dependencies.append(
+            .product(
+                name: "Symbols",
                 package: "DarwinPrivateFrameworks",
                 condition: .when(platforms: [.iOS, .macOS, .visionOS])
             )
@@ -953,6 +970,11 @@ if linkSFSymbols {
     openSwiftUICoreTarget.addSFSymbolsSettings()
 }
 
+if linkSymbols {
+    openSwiftUITarget.addSymbolsSettings()
+    openSwiftUITestTarget.addSymbolsSettings()
+}
+
 if linkFeatureFlags {
     openSwiftUICoreTarget.addFeatureFlagsSettings()
     openSwiftUITarget.addFeatureFlagsSettings()
@@ -970,7 +992,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkFeatureFlags || linkBacklightServices || linkGestures {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkBacklightServices || linkGestures {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -982,7 +1004,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkFeatureFlags || linkGestures {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkGestures {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
