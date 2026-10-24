@@ -7,10 +7,7 @@ import Testing
 @testable import TestingHost
 
 @MainActor
-@Suite(
-    .snapshots(record: .never, diffTool: diffTool),
-    .disabled("#817")
-)
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct NamedImageUITests {
     @Test("Test named image of logo with resizable")
     func decorativeLogo() {
