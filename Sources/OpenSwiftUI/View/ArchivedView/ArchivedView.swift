@@ -241,7 +241,7 @@ extension _ArchivedViewStates.DeploymentVersion {
 extension ViewDecoders {
     static func registerStandardArchiveDecoders() {
         registerStandard {
-            // TODO: ArchivableLinkModifier
+            ArchivableLinkModifier.registerDecoder()
             // TODO: TimelineProgressView<ArchivableLinearProgressView.Base>.ArchivableTimelineProgressView
             // TODO: TimelineProgressView<CircularPercentageGaugeRing>.ArchivableTimelineProgressView
             HandGestureShortcutInteractiveControl.HandGestureShortcutPreferenceWriter.registerDecoder()
