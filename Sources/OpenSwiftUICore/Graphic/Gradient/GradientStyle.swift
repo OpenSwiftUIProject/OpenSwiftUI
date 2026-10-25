@@ -1210,4 +1210,69 @@ extension AngularGradient._Paint: ProtobufMessage {
     }
 }
 
-// TODO: ConicGradient
+// MARK: - ConicGradient
+
+package struct ConicGradient {
+    package var gradient: ResolvedGradient
+    package var center: CGPoint
+    package var angle: Angle
+
+    package init(gradient: ResolvedGradient, center: CGPoint, angle: Angle) {
+        self.gradient = gradient
+        self.center = center
+        self.angle = angle
+    }
+
+    package init(angular: AngularGradient._Paint, bounds: CGRect) {
+        // Keep the signed size instead of standardizing the bounds.
+        self.init(
+            gradient: angular.gradient,
+            center: CGPoint(
+                x: angular.center.x * bounds.size.width + bounds.origin.x,
+                y: angular.center.y * bounds.size.height + bounds.origin.y
+            ),
+            startAngle: angular.startAngle,
+            endAngle: angular.endAngle
+        )
+    }
+
+    package init(
+        gradient: ResolvedGradient,
+        center: CGPoint,
+        startAngle: Angle,
+        endAngle: Angle
+    ) {
+        let reversed = endAngle.radians < startAngle.radians
+        let lower = reversed ? endAngle.radians : startAngle.radians
+        let upper = reversed ? startAngle.radians : endAngle.radians
+        let distance = upper - lower
+        // An unordered difference takes the same branch as a negative one.
+        let span = distance >= 0 ? distance : 0
+        let fullTurn = 2 * Double.pi
+        let angle: Double
+        let startLocation: Double
+        let endLocation: Double
+        if span > fullTurn {
+            angle = upper - fullTurn
+            startLocation = span / -fullTurn + 1
+            endLocation = 1
+        } else {
+            let gap = (fullTurn - span) * 0.5
+            angle = lower - gap
+            startLocation = gap / fullTurn
+            endLocation = (span + gap) / fullTurn
+        }
+
+        var gradient = gradient
+        if reversed || abs(startLocation) > 1e-6 || abs(endLocation - 1) > 1e-6 {
+            let scale = endLocation - startLocation
+            for index in gradient.stops.indices {
+                let location = Double(gradient.stops[index].location)
+                // Reverse locations without reversing the stop array or its curves.
+                let position = reversed ? 1 - location : location
+                gradient.stops[index].location = CGFloat(startLocation + scale * position)
+            }
+        }
+        self.init(gradient: gradient, center: center, angle: .radians(angle))
+    }
+}
