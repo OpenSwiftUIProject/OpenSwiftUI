@@ -265,6 +265,7 @@ package struct _ShapeStyle_RenderedShape {
         styles: ShapeStyle.Pack,
         layers: inout ShapeStyle.RenderedLayers
     ) {
+        #if canImport(Darwin)
         func level(for style: ORBSymbolStyle) -> Int? {
             switch style {
             case .primary: 0
@@ -416,6 +417,9 @@ package struct _ShapeStyle_RenderedShape {
                 layers.endLayer(shape: &self)
             }
         }
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     private mutating func renderUnstyledImage(
