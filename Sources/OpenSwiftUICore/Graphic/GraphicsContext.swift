@@ -13,6 +13,8 @@ package enum PathDrawingStyle {
     case stroke(StrokeStyle)
 }
 
+// MARK: - GraphicsContext [WIP]
+
 /// An immediate mode drawing destination, and its current state.
 ///
 /// Use a context to execute 2D drawing primitives. For example, you can draw
@@ -479,16 +481,227 @@ public struct GraphicsContext {
         public static var inverse: ClipOptions { Self(rawValue: 1 << 0) }
     }
 
-    // FIXME
-    public struct Shading: Sendable {}
+    // TODO
 
-    // FIXME
+    // MARK: - GraphicsContext.Shading [WIP]
+
+    public struct Shading: Sendable {
+        package enum Storage: Sendable {
+            case backdrop(Color.Resolved)
+            case color(Color)
+            case sRGBColor(ORBColor)
+            case shader(Shader, CGRect)
+            case foreground
+            case style(AnyShapeStyle)
+            case gradient(EitherGradient, geometry: GradientGeometry, options: GradientOptions)
+            // case meshGradient(MeshGradient)
+            case tiledImage(Image, origin: CGPoint = .zero, sourceRect: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1), scale: CGFloat = 1)
+            case levels([Shading])
+            indirect case resolved(ResolvedShading)
+        }
+
+        package var storage: Storage
+
+        package init(storage: Storage) {
+            self.storage = storage
+        }
+
+        // TODO
+
+        public static func linearGradient(
+            _ gradient: Gradient,
+            startPoint: CGPoint,
+            endPoint: CGPoint,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .gradient(gradient),
+                geometry: .axial(startPoint, endPoint),
+                options: options
+            ))
+        }
+
+        public static func radialGradient(
+            _ gradient: Gradient,
+            center: CGPoint,
+            startRadius: CGFloat,
+            endRadius: CGFloat,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .gradient(gradient),
+                geometry: .radial(center, startRadius, endRadius),
+                options: options
+            ))
+        }
+
+        public static func conicGradient(
+            _ gradient: Gradient,
+            center: CGPoint,
+            angle: Angle = .zero,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .gradient(gradient),
+                geometry: .conic(center, angle),
+                options: options
+            ))
+        }
+
+        package static func angularGradient(
+            _ gradient: Gradient,
+            center: CGPoint,
+            startAngle: Angle,
+            endAngle: Angle,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .gradient(gradient),
+                geometry: .angular(center, startAngle, endAngle),
+                options: options
+            ))
+        }
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        public static func linearGradient(
+            _ gradient: AnyGradient,
+            startPoint: CGPoint,
+            endPoint: CGPoint,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .anyGradient(gradient),
+                geometry: .axial(startPoint, endPoint),
+                options: options
+            ))
+        }
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        public static func radialGradient(
+            _ gradient: AnyGradient,
+            center: CGPoint,
+            startRadius: CGFloat,
+            endRadius: CGFloat,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .anyGradient(gradient),
+                geometry: .radial(center, startRadius, endRadius),
+                options: options
+            ))
+        }
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        public static func radialGradient(
+            _ gradient: AnyGradient,
+            startCenter: CGPoint,
+            startRadius: CGFloat,
+            endCenter: CGPoint,
+            endRadius: CGFloat,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .anyGradient(gradient),
+                geometry: .radial2(startCenter, startRadius, endCenter, endRadius),
+                options: options
+            ))
+        }
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        public static func conicGradient(
+            _ gradient: AnyGradient,
+            center: CGPoint,
+            angle: Angle = .zero,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .anyGradient(gradient),
+                geometry: .conic(center, angle),
+                options: options
+            ))
+        }
+
+        package static func angularGradient(
+            _ gradient: AnyGradient,
+            center: CGPoint,
+            startAngle: Angle,
+            endAngle: Angle,
+            options: GradientOptions = GradientOptions()
+        ) -> Shading {
+            Shading(storage: .gradient(
+                .anyGradient(gradient),
+                geometry: .angular(center, startAngle, endAngle),
+                options: options
+            ))
+        }
+
+        public static func tiledImage(
+            _ image: Image,
+            origin: CGPoint = .zero,
+            sourceRect: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1),
+            scale: CGFloat = 1
+        ) -> Shading {
+            Shading(storage: .tiledImage(
+                image,
+                origin: origin,
+                sourceRect: sourceRect,
+                scale: scale
+            ))
+        }
+    }
+
+    // MARK: - GraphicsContext.GradientGeometry
+
+    package enum GradientGeometry {
+        case axial(CGPoint, CGPoint)
+        case radial(CGPoint, CGFloat, CGFloat)
+        case radial2(CGPoint, CGFloat, CGPoint, CGFloat)
+        case elliptical(CGRect, CGFloat, CGFloat)
+        case conic(CGPoint, Angle)
+        case angular(CGPoint, Angle, Angle)
+    }
+
+    // MARK: - GraphicsContext.ResolvedShading
+
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
         case color(Color.Resolved)
         case sRGBColor(ORBColor)
+        case shader(Shader.ResolvedShader, CGRect)
         case style(_ShapeStyle_Pack.Style)
+        case gradient(ResolvedGradient, GradientGeometry, _: GradientOptions = .init())
+        // case meshGradient(MeshGradient._Paint, CGRect)
+        case tiledImage(GraphicsImage, origin: CGPoint = .zero, sourceRect: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1), scale: CGFloat = 1)
         case levels([GraphicsContext.ResolvedShading])
+    }
+
+    // MARK: - GraphicsContext.GradientOptions
+
+    /// Options that control how a gradient extends and interpolates colors.
+    @frozen
+    public struct GradientOptions: OptionSet {
+        public let rawValue: UInt32
+
+        @inlinable
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        /// Repeats the gradient beyond its nominal range.
+        @inlinable
+        public static var `repeat`: GradientOptions { Self(rawValue: 1 << 0) }
+
+        /// Mirrors alternating repetitions of the gradient.
+        @inlinable
+        public static var mirror: GradientOptions { Self(rawValue: 1 << 1) }
+
+        /// Interpolates gradient colors in linear color space.
+        @inlinable
+        public static var linearColor: GradientOptions { Self(rawValue: 1 << 2) }
     }
 }
 
