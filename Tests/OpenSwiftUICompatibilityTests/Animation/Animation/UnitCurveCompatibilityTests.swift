@@ -2,8 +2,8 @@
 //  UnitCurveCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
-import Testing
 import Numerics
+import Testing
 
 // MARK: - UnitCurveTests
 
@@ -150,7 +150,22 @@ struct UnitCurveCompatibilityTests {
         #expect(curve.value(at: 0.0).isApproximatelyEqual(to: 0.0))
         #expect(curve.value(at: 1.0).isApproximatelyEqual(to: 1.0))
         #expect(curve.value(at: 0.5).isApproximatelyEqual(to: 0.5))
+        #expect(curve.value(at: 0.15625).isApproximatelyEqual(to: 0.71875, absoluteTolerance: 0.00001))
+        #expect(curve.value(at: 0.84375).isApproximatelyEqual(to: 0.28125, absoluteTolerance: 0.00001))
         #expect(curve.velocity(at: 0.5).isApproximatelyEqual(to: -1.0))
+    }
+
+    @Test(arguments: [
+        (-1.0, -0.625),
+        (2.0, 1.625),
+    ])
+    func bezierValuePreservesUnclampedY(controlY: Double, expected: Double) {
+        let curve = UnitCurve.bezier(
+            startControlPoint: UnitPoint(x: 0.25, y: controlY),
+            endControlPoint: UnitPoint(x: 0.75, y: controlY)
+        )
+
+        #expect(curve.value(at: 0.5) == expected)
     }
 
     // MARK: - Value Function

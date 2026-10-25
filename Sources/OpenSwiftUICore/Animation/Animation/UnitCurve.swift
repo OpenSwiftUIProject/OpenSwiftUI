@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (solveX needs verification)
+//  Status: Complete
 //  ID: 54864F491103B6AE5CAC10D2D922245F (SwiftUICore)
 
 package import Foundation
@@ -80,11 +80,11 @@ public struct UnitCurve {
             let solver = CubicSolver(
                 startControlPoint: UnitPoint(
                     x: startControlPoint.x.clamp(min: 0.0, max: 1.0),
-                    y: startControlPoint.y.clamp(min: 0.0, max: 1.0)
+                    y: startControlPoint.y
                 ),
                 endControlPoint: UnitPoint(
                     x: endControlPoint.x.clamp(min: 0.0, max: 1.0),
-                    y: endControlPoint.y.clamp(min: 0.0, max: 1.0)
+                    y: endControlPoint.y
                 )
             )
             return solver.value(at: clampValue)
@@ -292,80 +292,69 @@ extension UnitCurve {
             return round((y / x) * pow(2, 20)) * pow(2, -20)
         }
 
-        // TODO: Implemented by Copilot. Verify this via unit test later
         fileprivate func solveX(_ time: Double, epsilon: Double) -> Double {
-            // Helper function to evaluate cubic polynomial: ax*t³ + bx*t² + cx*t
             func evaluateX(_ t: Double) -> Double {
-                return ((ax * t + bx) * t + cx) * t
+                return (cx + t * (bx + ax * t)) * t
             }
 
-            // Helper function to evaluate derivative: 3*ax*t² + 2*bx*t + cx
             func evaluateDerivativeX(_ t: Double) -> Double {
-                return (3.0 * ax * t + 2.0 * bx) * t + cx
+                return cx + ((bx + bx) + (ax * 3.0) * t) * t
             }
 
-            // Initial guess using direct evaluation
-            let initialGuess = evaluateX(time)
-            let initialError = abs(initialGuess - time)
-
-            // If initial guess is close enough, return it
-            if initialError < epsilon {
+            let initialValue = evaluateX(time)
+            let initialError = initialValue - time
+            if abs(initialError) < epsilon {
                 return time
             }
 
-            let derivative = evaluateDerivativeX(time)
-
-            // Try Newton's method if derivative is large enough
-            if abs(derivative) >= epsilon {
-                var t = time - (initialGuess - time) / derivative
-
-                // Perform up to 7 Newton iterations
-                for _ in 0..<7 {
-                    let value = evaluateX(t)
-                    let error = abs(value - time)
-
-                    if error < epsilon {
-                        return t
-                    }
-
-                    let deriv = evaluateDerivativeX(t)
-                    if abs(deriv) < epsilon {
-                        break // Derivative too small, fall back to bisection
-                    }
-
-                    t = t - (value - time) / deriv
-                }
-            }
-
-            // Fall back to bisection method if Newton's method fails or isn't applicable
-            if time < 0.0 || time > 1.0 {
-                return time // Outside valid range
-            }
-
-            var low = 0.0
-            var high = 1.0
             var t = time
-            var iterationCount = 0
-
-            while low < high && iterationCount >= 0 {
-                let value = evaluateX(t)
-                let error = abs(value - time)
-
-                if error < epsilon {
+            var value = initialValue
+            for _ in 0..<7 {
+                let derivative = evaluateDerivativeX(t)
+                // Only an ordered comparison triggers fallback. NaN continues.
+                if abs(derivative) < epsilon {
+                    break
+                }
+                t = t - (value - time) / derivative
+                value = evaluateX(t)
+                if abs(value - time) < epsilon {
                     return t
                 }
+            }
 
-                let diff = value - time
-                if diff < 0.0 {
+            if time < 0.0 {
+                return 0.0
+            }
+            if time > 1.0 {
+                return 1.0
+            }
+
+            // Restart bisection with the original input and signed residual.
+            var low = 0.0
+            var high = 1.0
+            t = time
+            var error = initialError
+            var remainingIterations = 1023
+
+            while true {
+                if error < 0.0 {
                     low = t
                 } else {
                     high = t
                 }
-
                 t = low + (high - low) * 0.5
-                iterationCount += 1
+                // Return this next midpoint when the bracket or limit ends,
+                // before another evaluation. An unordered bracket also ends.
+                guard low < high, remainingIterations != 0 else {
+                    return t
+                }
+                value = evaluateX(t)
+                error = value - time
+                remainingIterations -= 1
+                if abs(error) < epsilon {
+                    return t
+                }
             }
-            return t
         }
     }
 }
