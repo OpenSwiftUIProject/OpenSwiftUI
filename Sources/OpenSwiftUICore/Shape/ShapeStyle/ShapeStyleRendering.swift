@@ -265,17 +265,157 @@ package struct _ShapeStyle_RenderedShape {
         styles: ShapeStyle.Pack,
         layers: inout ShapeStyle.RenderedLayers
     ) {
-        // TODO: RBSymbolAnimator/RBSymbolUpdate
-        // We use a plain implementation for now
-        _openSwiftUIUnimplementedWarning()
-        let style = styles[name, 0]
-        layers.beginLayer(
-            id: .styled(name, 0),
-            style: style,
-            shape: &self
+        func level(for style: ORBSymbolStyle) -> Int? {
+            switch style {
+            case .primary: 0
+            case .secondary: 1
+            case .tertiary: 2
+            case .quaternary: 3
+            case .quinary: 4
+            default: nil
+            }
+        }
+
+        let slice = styles[name]
+        var flags: ORBSymbolUpdateFlags
+        switch orientation {
+        case .up: flags = []
+        case .upMirrored: flags = [.flipX]
+        case .down: flags = [.flipX, .flipY]
+        case .downMirrored: flags = [.flipY]
+        case .left: flags = [.swapAxes]
+        case .leftMirrored: flags = [.swapAxes, .flipX]
+        case .right: flags = [.swapAxes, .flipX, .flipY]
+        case .rightMirrored: flags = [.swapAxes, .flipY]
+        }
+        flags.insert(.mergeLayers)
+        if !glyph.preservesVectorRepresentation {
+            flags.insert(.applyVerticalOffset)
+        }
+        var position = frame.origin
+        var size = frame.size
+        let update = glyph.animator.beginUpdate(
+            with: .unspecified,
+            position: &position,
+            size: &size,
+            flags: flags
         )
-        render(style: style)
-        layers.endLayer(shape: &self)
+        defer { glyph.animator.end(update) }
+        let nextTime = update.nextTime
+        var imageScale = 1.0
+        var imageOpacity: Float = 1.0
+        if !glyph.preservesVectorRepresentation,
+           !slice.isEmpty,
+           let image = update.templateImage(scale: &imageScale, opacity: &imageOpacity) {
+            shape = .image(GraphicsImage(
+                contents: .cgImage(image),
+                scale: imageScale,
+                unrotatedPixelSize: CGSize(width: image.width, height: image.height),
+                orientation: orientation,
+                isTemplate: true
+            ))
+            let style = slice[0].applyingOpacity(imageOpacity)
+            layers.beginLayer(id: .styled(name, 0), style: style, shape: &self)
+            render(style: style)
+            layers.endLayer(shape: &self)
+            return
+        }
+
+        let groupCount = update.groupCount
+        // Style-mask bit 12 disables the single-layer path. Its meaning is not known.
+        let isSingleLayer = update.styleMask & (1 << 12) == 0
+            && groupCount == 1 && update.groupSize(group: 0) == 1
+        if !isSingleLayer, slice.allColors {
+            let list = ORBDisplayList()
+            update.draw(in: list.state) { symbolStyle, colorName in
+                let color: Color.Resolved?
+                if let level = level(for: symbolStyle), !slice.isEmpty {
+                    color = slice[min(level, slice.count - 1)].color
+                } else if symbolStyle == .namedColor {
+                    color = colorName.flatMap { styles[$0] }
+                } else {
+                    color = nil
+                }
+                guard let color else { return .null }
+                return ORBColor(red: color.red, green: color.green, blue: color.blue, alpha: color.opacity)
+            }
+            layers.beginLayer(id: .unstyled, style: nil, shape: &self)
+            item = makeDrawingItem(
+                from: list.moveContents(),
+                offset: CGSize(item.frame.origin),
+                flags: []
+            )
+            if nextTime.isFinite {
+                layerNeedes.insert(.drawingGroup)
+            }
+            layers.endLayer(shape: &self)
+            return
+        }
+
+        var drawingList: ORBDisplayList?
+        for group in 0 ..< groupCount {
+            for index in 0 ..< update.groupSize(group: group) {
+                let layer = ORBSymbolUpdateLayer(update: update, group: group, index: index)
+                let opacity = layer.drawingOpacity
+                guard opacity > 0 else { continue }
+                let style: ShapeStyle.Pack.Style
+                let id: ShapeStyle.LayerID
+                if let level = level(for: layer.style), !slice.isEmpty {
+                    style = slice[min(level, slice.count - 1)].applyingOpacity(opacity)
+                    id = .styled(name, UInt16(level))
+                } else if layer.style == .namedColor, let colorName = layer.colorName {
+                    let color: Color.Resolved
+                    if let resolved = styles[colorName] {
+                        color = resolved
+                    } else if let proposed = layer.defaultColor {
+                        color = Color.Resolved(failableCGColor: proposed) ?? .clear
+                    } else {
+                        continue
+                    }
+                    style = ShapeStyle.Pack.Style(.color(color)).applyingOpacity(opacity)
+                    id = .named(colorName)
+                } else {
+                    continue
+                }
+                layers.beginLayer(id: id, style: style, shape: &self)
+                var transform = CGAffineTransform()
+                let path = glyph.preservesVectorRepresentation
+                    ? ORBPath.null
+                    : layer.path(transform: &transform, flags: [.includeClips])
+                if !path.isNull {
+                    // Layer paths belong to the update; the shape takes an owned copy.
+                    shape = .path(
+                        Path(box: Path.PathBox(takingPath: path.copy(transform: &transform))),
+                        FillStyle()
+                    )
+                } else {
+                    let list: ORBDisplayList
+                    if let drawingList {
+                        list = drawingList
+                    } else {
+                        list = ORBDisplayList()
+                        drawingList = list
+                    }
+                    layer.draw(
+                        in: list.state,
+                        color: .white,
+                        opacity: 1,
+                        blendMode: .init(rawValue: 0),
+                        flags: [.includeClips]
+                    )
+                    shape = .alphaMask(makeDrawingItem(
+                        from: list.moveContents(),
+                        offset: .zero,
+                        flags: [.alphaOnly]
+                    ))
+                    if nextTime.isFinite {
+                        layerNeedes.insert(.drawingGroup)
+                    }
+                }
+                render(style: style)
+                layers.endLayer(shape: &self)
+            }
+        }
     }
 
     private mutating func renderUnstyledImage(
