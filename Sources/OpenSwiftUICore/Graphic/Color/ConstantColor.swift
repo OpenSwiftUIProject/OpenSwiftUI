@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
-//  Status: Blocked by ResolvedGradient
+//  Status: Complete
 //  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore)
 
 import Foundation
@@ -158,37 +158,39 @@ extension Color.Resolved: CustomStringConvertible {
 
 // MARK: - Color.Resolved + Animatable
 
-extension Color.Resolved : Animatable {
+extension Color.Resolved: Animatable {
     package static var legacyInterpolation: Bool = !isLinkedOnOrAfter(.v6)
 
     public var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {
+            let color: ResolvedGradient.ColorSpace.InterpolatableColor
             if Self.legacyInterpolation {
-                // ResolvedGradient.Color.Space.convertIn(self)
-                _openSwiftUIUnimplementedFailure()
+                color = .init(r: linearRed, g: linearGreen, b: linearBlue, a: opacity)
             } else {
-                return AnimatablePair(
-                    linearRed.scaled(by: .unitScale),
+                color = ResolvedGradient.ColorSpace.perceptual.convertIn(self)
+            }
+            return AnimatablePair(
+                color.r.scaled(by: .unitScale),
+                AnimatablePair(
+                    color.g.scaled(by: .unitScale),
                     AnimatablePair(
-                        linearGreen.scaled(by: .unitScale),
-                        AnimatablePair(
-                            linearBlue.scaled(by: .unitScale),
-                            opacity.scaled(by: .unitScale)
-                        )
+                        color.b.scaled(by: .unitScale),
+                        color.a.scaled(by: .unitScale)
                     )
                 )
-            }
+            )
         }
-
         set {
+            let color = ResolvedGradient.ColorSpace.InterpolatableColor(
+                r: newValue.first.scaled(by: .inverseUnitScale),
+                g: newValue.second.first.scaled(by: .inverseUnitScale),
+                b: newValue.second.second.first.scaled(by: .inverseUnitScale),
+                a: newValue.second.second.second.scaled(by: .inverseUnitScale)
+            )
             if Self.legacyInterpolation {
-                // ResolvedGradient.Color.Space.convertOut(self)
-                _openSwiftUIUnimplementedFailure()
+                self = .init(linearRed: color.r, linearGreen: color.g, linearBlue: color.b, opacity: color.a)
             } else {
-                linearRed = newValue.first.scaled(by: .inverseUnitScale)
-                linearGreen = newValue.second.first.scaled(by: .inverseUnitScale)
-                linearBlue = newValue.second.second.first.scaled(by: .inverseUnitScale)
-                opacity = newValue.second.second.second.scaled(by: .inverseUnitScale)
+                self = ResolvedGradient.ColorSpace.perceptual.convertOut(color)
             }
         }
     }

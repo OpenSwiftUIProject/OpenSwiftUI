@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
-//  Status: Blocked by Graident
+//  Status: Complete
 
 // MARK: - ShapeStyle
 
@@ -191,7 +191,23 @@ extension ShapeStyle {
         }
     }
 
-    // package func resolveGradient(in environment: EnvironmentValues, level: Int = 0) -> ResolvedGradient?
+    package func resolveGradient(in environment: EnvironmentValues, level: Int = 0) -> ResolvedGradient? {
+        let name = ShapeStyle.Name.foreground
+        var shape = _ShapeStyle_Shape(
+            operation: .resolveStyle(name: name, levels: level ..< level + 1),
+            environment: environment
+        )
+        _apply(to: &shape)
+        let style = shape.stylePack[name, level]
+        guard case let .paint(paint) = style.fill,
+              var gradient = paint.resolvedGradient else {
+            return nil
+        }
+        for index in gradient.stops.indices {
+            gradient.stops[index].color.opacity = style.opacity * gradient.stops[index].color.opacity
+        }
+        return gradient
+    }
 
     package func copyStyle(name: Name = .foreground, in env: EnvironmentValues, foregroundStyle: AnyShapeStyle? = nil) -> AnyShapeStyle {
         var shape = _ShapeStyle_Shape(operation: .copyStyle(name: name), environment: env, foregroundStyle: foregroundStyle)

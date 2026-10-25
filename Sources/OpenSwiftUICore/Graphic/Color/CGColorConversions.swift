@@ -3,9 +3,10 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
-//  Status: Blocked by ResolvedGradient
+//  Status: Complete
 //  ID: A45C110C8134A7DB30776EFC6CE1E8A6 (SwiftUICore)
 
+import Foundation
 public import OpenCoreGraphicsShims
 
 // MARK: - CGColor + Color
@@ -96,8 +97,18 @@ extension Color.Resolved {
     }
 }
 
-//extension ResolvedGradient {
-//  package var cgGradient: CGGradient? {
-//    get
-//  }
-//}
+// MARK: - ResolvedGradient + CGGradient
+
+#if canImport(CoreGraphics)
+
+extension ResolvedGradient {
+    package var cgGradient: CGGradient? {
+        CGGradient(
+            colorsSpace: Color.Resolved.srgbExtended,
+            colors: stops.map { $0.color.cgColor } as CFArray,
+            locations: stops.map(\.location)
+        )
+    }
+}
+
+#endif
