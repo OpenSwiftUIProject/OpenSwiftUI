@@ -2,9 +2,9 @@
 //  Slider.swift
 //  OpenSwiftUI
 //
-//  Audited for 3.5.2
-//  Status: Blocked by Accessibility
-//  ID: F045F16106E380A820CC0B639278A953
+//  Audited for 6.5.4
+//  Status: Complete
+//  ID: F045F16106E380A820CC0B639278A953 (SwiftUI)
 
 @_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
 
@@ -40,7 +40,7 @@
 ///
 /// ![An unlabeled slider, with its thumb about one third of the way from the
 /// minimum extreme. Below, a blue label displays the value
-/// 33.045977.](SwiftUI-Slider-simple.png)
+/// 33.045977.](OpenSwiftUI-Slider-simple.png)
 ///
 /// You can also use a `step` parameter to provide incremental steps along the
 /// path of the slider. For example, if you have a slider with a range of `0` to
@@ -72,42 +72,91 @@
 /// ![A slider with labels show minimum and maximum values of 0 and 100,
 /// respectively, with its thumb most of the way to the maximum extreme. Below,
 /// a blue label displays the value
-/// 85.000000.](SwiftUI-Slider-withStepAndLabels.png)
+/// 85.000000.](OpenSwiftUI-Slider-withStepAndLabels.png)
 ///
 /// The slider also uses the `step` to increase or decrease the value when a
 /// VoiceOver user adjusts the slider with voice commands.
-@available(tvOS, unavailable)
+@available(OpenSwiftUI_v1_0, *)
+@available(tvOS, unavailable) // @_spi_available(tvOS, introduced: 18.0)
 public struct Slider<Label, ValueLabel>: View where Label: View, ValueLabel: View {
-    public var body: some View {
-        style.body(configuration: .init(self))
-            .viewAlias(SliderStyleLabel.self) {
-                label.accessibilityConfiguration(AccessibilityLabelModifier())
-            }
-            .viewAlias(SliderMinimumValueLabel.self) {
-                _minimumValueLabel.accessibilityConfiguration(AccessibilityLabelModifier())
-            }
-            .viewAlias(SliderMaximumValueLabel.self) {
-                _maximumValueLabel.accessibilityConfiguration(AccessibilityLabelModifier())
-            }
-        // TODO: Accessibility
-    }
-
     @Binding var value: Double
+
     var onEditingChanged: (Bool) -> Void
+
     let skipDistance: Double
+
     let discreteValueCount: Int
+
+    let marks: [SliderMark<Double>]?
+
     var _minimumValueLabel: ValueLabel
+
     var _maximumValueLabel: ValueLabel
+
     var hasCustomMinMaxValueLabels: Bool
+
     var label: Label
+
     var accessibilityValue: AccessibilityBoundedNumber?
 
-    @Environment(\.sliderStyle)
-    var style: AnySliderStyle
+    @_spi(Private)
+    @available(OpenSwiftUI_v6_0, *)
+    nonisolated public init(
+        _ configuration: SliderStyleConfiguration
+    ) where Label == SliderStyleConfiguration.Label, ValueLabel == SliderStyleConfiguration.ValueLabel {
+        _value = configuration.$value
+        onEditingChanged = configuration.onEditingChanged
+        skipDistance = configuration.skipDistance
+        discreteValueCount = configuration.discreteValueCount
+        marks = configuration.marks
+        _minimumValueLabel = SliderStyleConfiguration.ValueLabel(
+            minimumValueLabel: configuration.minimumValueLabel,
+            maximumValueLabel: configuration.maximumValueLabel,
+            showMinimum: true
+        )
+        _maximumValueLabel = SliderStyleConfiguration.ValueLabel(
+            minimumValueLabel: configuration.minimumValueLabel,
+            maximumValueLabel: configuration.maximumValueLabel,
+            showMinimum: false
+        )
+        hasCustomMinMaxValueLabels = configuration.hasCustomMinMaxValueLabels
+        label = configuration.label
+        accessibilityValue = nil
+    }
+
+    public var body: some View {
+        let configuration = SliderStyleConfiguration(
+            label: .init(),
+            minimumValueLabel: .init(),
+            maximumValueLabel: .init(),
+            value: $value,
+            onEditingChanged: onEditingChanged,
+            skipDistance: skipDistance,
+            discreteValueCount: discreteValueCount,
+            marks: marks,
+            hasCustomMinMaxValueLabels: hasCustomMinMaxValueLabels,
+            accessibilityValue: accessibilityValue
+        )
+        AccessibilitySliderModifier(configuration, value: accessibilityValue)
+            .body(content: ResolvedSliderStyle(configuration: configuration))
+            .viewAlias(SliderStyleConfiguration.Label.self) {
+                AccessibilityLabelModifier().body(content: label)
+            }
+            .viewAlias(SliderStyleConfiguration.MinimumValueLabel.self) {
+                AccessibilityLabelModifier().body(content: _minimumValueLabel)
+            }
+            .viewAlias(SliderStyleConfiguration.MaximumValueLabel.self) {
+                AccessibilityLabelModifier().body(content: _maximumValueLabel)
+            }
+    }
 }
+
+@available(*, unavailable)
+extension Slider: Sendable {}
 
 // MARK: - Creating a slider with labels
 
+@available(OpenSwiftUI_v1_0, *)
 @available(tvOS, unavailable)
 extension Slider {
     /// Creates a slider to select a value from a given range, which displays
@@ -131,7 +180,7 @@ extension Slider {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @_alwaysEmitIntoClient
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         @ViewBuilder label: () -> Label,
@@ -154,7 +203,7 @@ extension Slider {
     ///
     /// - Parameters:
     ///   - value: The selected value within `bounds`.
-    ///   - bounds: The range of the valid values. Defaults to `0...1`.
+    ///   - bounds: The range of the valid values.
     ///   - step: The distance between each valid value.
     ///   - label: A `View` that describes the purpose of the instance. Not all
     ///     slider styles show the label, but even in those cases, OpenSwiftUI
@@ -171,7 +220,7 @@ extension Slider {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @_alwaysEmitIntoClient
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
         step: V.Stride = 1,
@@ -192,6 +241,7 @@ extension Slider {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 @available(tvOS, unavailable)
 extension Slider where ValueLabel == EmptyView {
     /// Creates a slider to select a value from a given range, which displays
@@ -213,7 +263,7 @@ extension Slider where ValueLabel == EmptyView {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @_alwaysEmitIntoClient
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         @ViewBuilder label: () -> Label,
@@ -232,7 +282,7 @@ extension Slider where ValueLabel == EmptyView {
     ///
     /// - Parameters:
     ///   - value: The selected value within `bounds`.
-    ///   - bounds: The range of the valid values. Defaults to `0...1`.
+    ///   - bounds: The range of the valid values.
     ///   - step: The distance between each valid value.
     ///   - label: A `View` that describes the purpose of the instance. Not all
     ///     slider styles show the label, but even in those cases, OpenSwiftUI
@@ -247,7 +297,7 @@ extension Slider where ValueLabel == EmptyView {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @_alwaysEmitIntoClient
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
         step: V.Stride = 1,
@@ -266,6 +316,7 @@ extension Slider where ValueLabel == EmptyView {
 
 // MARK: - Creating a slider
 
+@available(OpenSwiftUI_v1_0, *)
 @available(tvOS, unavailable)
 extension Slider where Label == EmptyView, ValueLabel == EmptyView {
     /// Creates a slider to select a value from a given range.
@@ -281,7 +332,7 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         onEditingChanged: @escaping (Bool) -> Void = { _ in }
@@ -294,7 +345,8 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
             minimumValueLabel: EmptyView(),
             maximumValueLabel: EmptyView(),
             customMinMaxValueLabels: false,
-            label: EmptyView()
+            label: EmptyView(),
+            marks: nil
         )
     }
 
@@ -303,7 +355,7 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
     ///
     /// - Parameters:
     ///   - value: The selected value within `bounds`.
-    ///   - bounds: The range of the valid values. Defaults to `0...1`.
+    ///   - bounds: The range of the valid values.
     ///   - step: The distance between each valid value.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///
@@ -313,7 +365,7 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
         step: V.Stride = 1,
@@ -327,13 +379,15 @@ extension Slider where Label == EmptyView, ValueLabel == EmptyView {
             minimumValueLabel: EmptyView(),
             maximumValueLabel: EmptyView(),
             customMinMaxValueLabels: false,
-            label: EmptyView()
+            label: EmptyView(),
+            marks: nil
         )
     }
 }
 
 // MARK: - Deprecated initializers
 
+@available(OpenSwiftUI_v1_0, *)
 @available(tvOS, unavailable)
 extension Slider {
     /// Creates a slider to select a value from a given range, which displays
@@ -357,7 +411,7 @@ extension Slider {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @available(*, deprecated, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
@@ -373,7 +427,8 @@ extension Slider {
             minimumValueLabel: minimumValueLabel,
             maximumValueLabel: maximumValueLabel,
             customMinMaxValueLabels: true,
-            label: label()
+            label: label(),
+            marks: nil
         )
     }
 
@@ -382,7 +437,7 @@ extension Slider {
     ///
     /// - Parameters:
     ///   - value: The selected value within `bounds`.
-    ///   - bounds: The range of the valid values. Defaults to `0...1`.
+    ///   - bounds: The range of the valid values.
     ///   - step: The distance between each valid value.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - minimumValueLabel: A view that describes `bounds.lowerBound`.
@@ -399,7 +454,7 @@ extension Slider {
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
     @available(*, deprecated, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
         step: V.Stride = 1,
@@ -416,11 +471,13 @@ extension Slider {
             minimumValueLabel: minimumValueLabel,
             maximumValueLabel: maximumValueLabel,
             customMinMaxValueLabels: true,
-            label: label()
+            label: label(),
+            marks: nil
         )
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 @available(tvOS, unavailable)
 extension Slider where ValueLabel == EmptyView {
     /// Creates a slider to select a value from a given range, which displays
@@ -443,7 +500,7 @@ extension Slider where ValueLabel == EmptyView {
     /// along the slider's track.
     @available(*, deprecated, renamed: "Slider(value:in:label:onEditingChanged:)")
     @_disfavoredOverload
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         onEditingChanged: @escaping (Bool) -> Void = { _ in },
@@ -457,7 +514,8 @@ extension Slider where ValueLabel == EmptyView {
             minimumValueLabel: EmptyView(),
             maximumValueLabel: EmptyView(),
             customMinMaxValueLabels: false,
-            label: label()
+            label: label(),
+            marks: nil
         )
     }
 
@@ -466,7 +524,7 @@ extension Slider where ValueLabel == EmptyView {
     ///
     /// - Parameters:
     ///   - value: The selected value within `bounds`.
-    ///   - bounds: The range of the valid values. Defaults to `0...1`.
+    ///   - bounds: The range of the valid values.
     ///   - step: The distance between each valid value.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - label: A `View` that describes the purpose of the instance. Not all
@@ -482,7 +540,7 @@ extension Slider where ValueLabel == EmptyView {
     /// along the slider's track.
     @available(*, deprecated, renamed: "Slider(value:in:step:label:onEditingChanged:)")
     @_disfavoredOverload
-    public init<V>(
+    nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
         step: V.Stride = 1,
@@ -497,43 +555,26 @@ extension Slider where ValueLabel == EmptyView {
             minimumValueLabel: EmptyView(),
             maximumValueLabel: EmptyView(),
             customMinMaxValueLabels: false,
-            label: label()
+            label: label(),
+            marks: nil
         )
     }
 }
 
-// MARK: Internal
-
-struct SliderStyleLabel: ViewAlias {}
-struct SliderStyleValueLabel: ViewAlias {}
-struct SliderMinimumValueLabel: ViewAlias {}
-struct SliderMaximumValueLabel: ViewAlias {}
+// MARK: - Slider + Internal Initializers
 
 extension Slider {
-    init(_ slider: Slider<some View, some View>) where Label == SliderStyleLabel, ValueLabel == SliderStyleValueLabel {
-        _value = slider.$value
-        onEditingChanged = slider.onEditingChanged
-        skipDistance = slider.skipDistance
-        discreteValueCount = slider.discreteValueCount
-        _minimumValueLabel = SliderStyleValueLabel()
-        _maximumValueLabel = SliderStyleValueLabel()
-        hasCustomMinMaxValueLabels = slider.hasCustomMinMaxValueLabels
-        label = SliderStyleLabel()
-        accessibilityValue = slider.accessibilityValue
-    }
-}
-
-extension Slider {
-    init<Value>(
-        value: Binding<Value>,
-        in bounds: ClosedRange<Value>,
-        step: Value.Stride?,
+    nonisolated init<V>(
+        value: Binding<V>,
+        in bounds: ClosedRange<V>,
+        step: V.Stride?,
         onEditingChanged: @escaping (Bool) -> Void,
         minimumValueLabel: ValueLabel,
         maximumValueLabel: ValueLabel,
         customMinMaxValueLabels: Bool,
-        label: Label
-    ) where Value: BinaryFloatingPoint, Value.Stride: BinaryFloatingPoint {
+        label: Label,
+        marks: [SliderMark<V>]?
+    ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
         let normalizing = Normalizing(
             min: bounds.lowerBound,
             max: bounds.upperBound,
@@ -551,38 +592,55 @@ extension Slider {
                 in: bounds,
                 by: step
             ),
-            label: label
+            label: label,
+            marks: marks.map { $0.map { $0.normalized(in: bounds) } }
         )
     }
 
-    init<Value: BinaryFloatingPoint>(
-        value: Binding<Value>,
-        skipDistance: Value?,
+    nonisolated init<V>(
+        value: Binding<V>,
+        skipDistance: V?,
         onEditingChanged: @escaping (Bool) -> Void,
         minimumValueLabel: ValueLabel,
         maximumValueLabel: ValueLabel,
         customMinMaxValueLabels: Bool,
         accessibilityValue: AccessibilityBoundedNumber?,
-        label: Label
-    ) {
+        label: Label,
+        marks: [SliderMark<V>]?
+    ) where V: BinaryFloatingPoint {
         _value = value.projecting(Clamping())
         self.onEditingChanged = onEditingChanged
         self.skipDistance = skipDistance.map { Double($0) } ?? 0.1
-        discreteValueCount = if let skipDistance {
-            Int(1.0 / Double(skipDistance)) + 1
-        } else {
-            0
-        }
+        discreteValueCount = {
+            guard let skipDistance else {
+                return 0
+            }
+            return Int((1.0 / Double(skipDistance)).rounded()) + 1
+        }()
         _minimumValueLabel = minimumValueLabel
         _maximumValueLabel = maximumValueLabel
         hasCustomMinMaxValueLabels = customMinMaxValueLabels
         self.label = label
-        let accessibilitySliderValue = accessibilityValue.map { AccessibilitySliderValue($0) }
-        self.accessibilityValue = accessibilitySliderValue?.base
+        self.accessibilityValue = accessibilityValue
+        if let marks {
+            var uniqueMarks: [SliderMark<Double>] = []
+            var previousMark: SliderMark<Double>?
+            for mark in marks.map({ SliderMark<Double>($0) }).sorted() {
+                if let previousMark, previousMark.value == mark.value {
+                    Log.runtimeIssues("Multiple marks specified for value %f", [mark.value])
+                    continue
+                }
+                uniqueMarks.append(mark)
+                previousMark = mark
+            }
+            self.marks = uniqueMarks
+        } else {
+            self.marks = nil
+        }
     }
 }
 
-// MARK: Private
+// MARK: - Projections
 
 private struct Clamping<Value>: Projection where Value: BinaryFloatingPoint {
     func get(base: Value) -> Double {
@@ -608,9 +666,7 @@ private struct Normalizing<Value>: Projection where Value: Strideable, Value: Ha
 
         if let stride {
             let result = (min.distance(to: max) / stride).rounded(.down)
-            guard result > 0 else {
-                preconditionFailure("max stride must be positive")
-            }
+            precondition(result > 0, "max stride must be positive")
             length = stride * result
             maxStrides = result
         } else {

@@ -101,6 +101,13 @@ extension EnvironmentValues {
 public struct ButtonRepeatTiming: Sendable {
     var entries: [TimingEntry]
 
+    #if os(macOS)
+    static let macOSStepper = ButtonRepeatTiming(entries: [
+        TimingEntry(step: 0, nextInterval: 0.5),
+        TimingEntry(step: 1, nextInterval: 0.1),
+    ])
+    #endif
+
     struct TimingEntry: Sendable {
         var step: Int
         var nextInterval: Double

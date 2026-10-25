@@ -81,6 +81,10 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 @property (nullable, strong) NSFont *font;
 @end
 
+@interface NSSliderCell (OpenSwiftUI_SPI)
+- (NSInteger)closestTickMarkIndexToValue:(double)value;
+@end
+
 @interface NSMenu (OpenSwiftUI_SPI)
 + (void)_setAlwaysCallDelegateBeforeSidebandUpdaters_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setAlwaysCallDelegateBeforeSidebandUpdaters(_:));
 + (void)_setAlwaysInstallWindowTabItems_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setAlwaysInstallWindowTabItems(_:));

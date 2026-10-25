@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 0D3243EDC3DD4D641848661DCC354D4B (SwiftUI)
 
+@_spi(Private)
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 import OpenSwiftUICore
@@ -149,13 +150,92 @@ struct AccessibilityLabelModifier<Content: View>: AccessibilityConfigurationModi
 }
 
 // TODO: AccessibilityStepperModifier
-// TODO: AccessibilityAdjustableModifier
-// TODO: AccessibilityAdjustableModifier.Configuration
+
+// MARK: - AccessibilityAdjustableModifier
+
+struct AccessibilityAdjustableModifier<Content, Value>: AccessibilityConfigurationModifier where Content: View, Value: AccessibilityValue, Value: Codable {
+    struct Configuration {
+        var value: Value?
+
+        var continuous: Bool
+
+        var onIncrement: (() -> Void)?
+
+        var onDecrement: (() -> Void)?
+
+        var onSet: (AccessibilityNumber) -> Void
+
+        var onEditingChanged: (Bool) -> Void
+    }
+
+    var configuration: Configuration
+
+    func body(content: Content) -> some View {
+        var view = content.accessibilityAction(
+            AccessibilityAdjustableAction(continuous: configuration.continuous)
+        ) { direction -> AccessibilityActionResult in
+            configuration.onEditingChanged(true)
+            switch direction {
+            case .increment: configuration.onIncrement?()
+            case .decrement: configuration.onDecrement?()
+            }
+            configuration.onEditingChanged(false)
+            return .success
+        }
+        if let value = configuration.value {
+            view = view
+                .accessibilityValue(AccessibilityValueStorage(value))
+                .accessibilitySetValueAction { number in
+                    configuration.onEditingChanged(true)
+                    configuration.onSet(number)
+                    configuration.onEditingChanged(false)
+                }
+        }
+        return view
+    }
+}
+
 // TODO: AccessibilityNavigationLinkButtonModifier
 // TODO: AccessibilityNavigationLinkButtonModifier.Representable
 // TODO: AccessibilityLinkModifier
 // TODO: AccessibilityLinkModifier.Configuration
-// TODO: AccessibilitySliderModifier
+
+// MARK: - AccessibilitySliderModifier
+
+struct AccessibilitySliderModifier<Content>: AccessibilityConfigurationModifier where Content: View {
+    var base: AccessibilityAdjustableModifier<Content, AccessibilitySliderValue>
+
+    init(_ configuration: SliderStyleConfiguration, value: AccessibilityBoundedNumber?) {
+        base = AccessibilityAdjustableModifier(configuration: .init(
+            value: value.map { AccessibilitySliderValue($0) },
+            continuous: true,
+            onIncrement: {
+                configuration.value = (configuration.value + configuration.skipDistance).clamped(to: 0 ... 1)
+            },
+            onDecrement: {
+                configuration.value = (configuration.value - configuration.skipDistance).clamped(to: 0 ... 1)
+            },
+            onSet: { number in
+                guard let value,
+                      let minValue = value.minValue?.doubleValue,
+                      let maxValue = value.maxValue?.doubleValue else {
+                    return
+                }
+                var newValue = number.value.doubleValue
+                if let step = value.step {
+                    newValue.round(.toNearestOrAwayFromZero, toMultipleOf: step.doubleValue)
+                }
+                configuration.value = (newValue - minValue) / (maxValue - minValue)
+            },
+            onEditingChanged: configuration.onEditingChanged
+        ))
+    }
+
+    func body(content: Content) -> some View {
+        base.body(content: content)
+    }
+}
+
 // TODO: AccessibilityGroupBoxLabelModifier
 // TODO: AccessibilityGroupBoxContentModifier
 // TODO: AccessibilityDisclosureModifier
@@ -291,6 +371,40 @@ extension ToggleStyleConfiguration {
 // TODO: AccessibilityButtonModifier
 // TODO: AccessibilityButtonModifier.Representable
 // TODO: AccessibilityBadgedViewNeedsValue
+
+#if os(macOS)
+// MARK: - AccessibilitySliderMarkModifier
+
+struct AccessibilitySliderMarkModifier<Content, Value>: AccessibilityConfigurationModifier where Content: View, Value: BinaryFloatingPoint {
+    struct Configuration {
+        var marks: [SliderMark<Value>]?
+        var bounds: ClosedRange<Value>
+    }
+
+    var configuration: Configuration
+
+    func body(content: Content) -> some View {
+        content.accessibility(AccessibilityProperties.CustomContentListKey.self, resolvedCustomContentList ?? [])
+    }
+
+    private var resolvedCustomContentList: [AccessibilityCustomContentEntry]? {
+        configuration.marks?.reversed().compactMap { mark in
+            guard let label = mark.label else {
+                return nil
+            }
+            return AccessibilityCustomContentEntry(
+                AccessibilityCustomContentKey(label),
+                value: AccessibilitySliderValue(
+                    value: mark.value,
+                    minValue: configuration.bounds.lowerBound,
+                    maxValue: configuration.bounds.upperBound
+                )
+            )
+        }
+    }
+}
+#endif
+
 // TODO: AccessibilityNavigationLinkButtonModifier.Configuration
 // TODO: AccessibilityBadgedViewProvidesOwnValue
 // TODO: AccessibilityGaugeModifier
@@ -328,28 +442,6 @@ struct AccessibilitySelectableTextModifier<Content: View>: AccessibilityConfigur
 // TODO: AccessibilityBadgedViewModifier.Badge
 // TODO: AccessibilityBadgedViewModifier
 // TODO: AccessibilityBadgedViewModifier.Configuration
-
-// MARK: - AccessibilityButtonShapeModifier [WIP]
-
-struct AccessibilityButtonShapeModifier<Content: View>: AccessibilityConfigurationModifier {
-    func body(content: Content) -> some View {
-        content.modifier(Child())
-    }
-
-    private struct Child: ViewModifier {
-//        @Environment(\.accessibilityShowButtonShapes)
-//        private var accessibilityShowButtonShapes: Bool
-
-        func body(content: Child.Content) -> some View {
-//            if accessibilityShowButtonShapes {
-                content
-                // .buttonStyle(BorderedButtonStyle())
-//            } else {
-//                content
-//            }
-        }
-    }
-}
 
 // MARK: - View + AccessibilityConfiguration
 
