@@ -13,6 +13,7 @@
 
 #import <AppKit/AppKit.h>
 #import "NSButton_Private.h"
+#import "NSTextField_Private.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 

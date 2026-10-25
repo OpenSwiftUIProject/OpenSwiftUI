@@ -7,6 +7,7 @@
 //  ID: 0D3243EDC3DD4D641848661DCC354D4B (SwiftUI)
 
 @_spi(ForOpenSwiftUIOnly)
+@_spi(Private)
 import OpenSwiftUICore
 
 // MARK: - AccessibilityConfigurationModifier
@@ -304,6 +305,24 @@ extension ToggleStyleConfiguration {
 // TODO: AccessibilityImageModifier
 // TODO: AccessibilityStaticTextModifier.Configuration
 // TODO: AccessibilityStaticTextModifier
+
+// MARK: - AccessibilitySelectableTextModifier [TBA]
+
+struct AccessibilitySelectableTextModifier<Content: View>: AccessibilityConfigurationModifier {
+    struct Configuration {
+        var label: Text
+        var layoutProperties: TextLayoutProperties
+    }
+
+    var configuration: Configuration
+
+    func body(content: Content) -> some View {
+        content
+            .accessibility(AccessibilityProperties.LabelKey.self, .init(texts: [configuration.label]))
+            .update(AccessibilityProperties.TextLayoutPropertiesKey.self, replacing: .custom(configuration.layoutProperties))
+    }
+}
+
 // TODO: AccessibilityDisclosureModifier.List.Configuration
 // TODO: AccessibilityGaugeModifier.Configuration
 // TODO: AccessibilityBadgedViewModifier.Badge

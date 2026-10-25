@@ -136,6 +136,22 @@ struct InteractionTestHost {
         #endif
     }
 
+    #if os(macOS)
+    /// The active AppKit field editor's selected string, or `nil` when there is no selection.
+    var selectedText: String? {
+        guard let editor = view.window?.firstResponder as? NSTextView else {
+            return nil
+        }
+        let range = editor.selectedRange()
+        let text = editor.string as NSString
+        guard range.location != NSNotFound, range.length > 0,
+              NSMaxRange(range) <= text.length else {
+            return nil
+        }
+        return text.substring(with: range)
+    }
+    #endif
+
     private func screenshot() async throws -> PlatformImage {
         // Capture the existing view without moving it out of Hammer's window.
         #if os(macOS)
