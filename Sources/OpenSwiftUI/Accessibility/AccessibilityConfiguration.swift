@@ -197,8 +197,36 @@ struct AccessibilityAdjustableModifier<Content, Value>: AccessibilityConfigurati
 
 // TODO: AccessibilityNavigationLinkButtonModifier
 // TODO: AccessibilityNavigationLinkButtonModifier.Representable
-// TODO: AccessibilityLinkModifier
-// TODO: AccessibilityLinkModifier.Configuration
+
+// MARK: - AccessibilityLinkModifier
+
+struct AccessibilityLinkModifier<Content: View>: AccessibilityConfigurationModifier {
+    struct Configuration {
+        var destination: LinkDestination
+        var isArchive: Bool
+    }
+
+    var configuration: Configuration
+
+    init(_ destination: LinkDestination, isArchive: Bool) {
+        configuration = Configuration(destination: destination, isArchive: isArchive)
+    }
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if configuration.isArchive {
+            content
+                .accessibilityIgnoreViewResponders()
+                .accessibilityCombinedElement(options: .includeHiddenChild, ignoredTraits: [.isImage, .isStaticText])
+                .accessibilityAddTraits(.isButton)
+                .accessibilityRemoveTraits(.isLink)
+        } else {
+            content
+                .accessibility(AccessibilityProperties.LinkDestinationKey.self, configuration.destination.configuration)
+                .accessibilityAddTraits(.isLink)
+        }
+    }
+}
 
 // MARK: - AccessibilitySliderModifier
 

@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by CatalogAppearance)
+//  Status: Complete
 //  ID: 1A9A53F98573644BA5D4D23074F52071 (SwiftUICore)
 
 #if os(macOS)
@@ -100,15 +100,51 @@ extension EnvironmentValues {
     package func appearance(allowsVibrantBlending: Bool?) -> any _ResolvedAppearance {
         let allowsVibrantBlending = allowsVibrantBlending ?? self.allowsVibrantBlending
         #if OPENSWIFTUI_LINK_COREUI
-        _openSwiftUIUnimplementedWarning()
-        // TODO: CatalogAppearance
-        return CatalogAppearance(
-            renderer: unsafeBitCast(NSObject(), to: OpaquePointer.self),
-            catalog: .init(),
-            name: "",
-            bundle: .main,
-            defaultBlendMode: .multiply
-        )
+        if isInTouchBar {
+            return CatalogAppearance.touchBar
+        }
+        var appearances = [CatalogAppearance.base]
+        func append(_ appearance: CatalogAppearance?, graphite: CatalogAppearance?) {
+            if let appearance {
+                appearances.append(appearance)
+            }
+            if systemAccentValue == .graphite, let graphite {
+                appearances.append(graphite)
+            }
+        }
+        switch colorScheme {
+        case .light:
+            append(.light, graphite: .lightGraphite)
+            if colorSchemeContrast == .increased {
+                append(.axLight, graphite: .axLightGraphite)
+            }
+            if backgroundMaterial != nil {
+                append(.fauxVibrantLight, graphite: .fauxVibrantLightGraphite)
+                if allowsVibrantBlending {
+                    append(.vibrantLight, graphite: .vibrantLightGraphite)
+                }
+                if colorSchemeContrast == .increased {
+                    append(.axLight, graphite: .axLightGraphite)
+                    append(.axVibrantLight, graphite: .axVibrantLightGraphite)
+                }
+            }
+        case .dark:
+            append(.dark, graphite: .darkGraphite)
+            if colorSchemeContrast == .increased {
+                append(.axDark, graphite: .axDarkGraphite)
+            }
+            if backgroundMaterial != nil {
+                append(.fauxVibrantDark, graphite: .fauxVibrantDarkGraphite)
+                if allowsVibrantBlending {
+                    append(.vibrantDark, graphite: .vibrantDarkGraphite)
+                }
+                if colorSchemeContrast == .increased {
+                    append(.axDark, graphite: .axDarkGraphite)
+                    append(.axVibrantDark, graphite: .axVibrantDarkGraphite)
+                }
+            }
+        }
+        return _ResolvedCompositeAppearance(appearances)
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif

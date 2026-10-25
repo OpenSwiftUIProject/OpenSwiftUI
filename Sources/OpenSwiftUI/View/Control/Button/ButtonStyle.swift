@@ -169,7 +169,15 @@ extension ButtonStyleModifier {
     }
 }
 
-// TODO: ArchivableLinkModifier
+// MARK: - ArchivableLinkModifier
+
+struct ArchivableLinkModifier: _ArchivableViewModifier {
+    var configuration: LinkDestination.Configuration
+
+    func body(content: Content) -> some View {
+        content.modifier(LinkButtonModifierBody(destination: LinkDestination(configuration: configuration)))
+    }
+}
 
 // MARK: - WrappedButtonStyle
 
@@ -193,7 +201,23 @@ extension WrappedButtonStyle: AnyDefaultStyle where Style: AnyDefaultStyle {
 
 // TODO: ArchivableButtonAppIntentModifier
 
-// TODO: LinkButtonModifierBody
+// MARK: - LinkButtonModifierBody
+
+private struct LinkButtonModifierBody: ViewModifier {
+    let destination: LinkDestination
+
+    func body(content: Content) -> some View {
+        ButtonBehavior(action: destination.open) { isPressed in
+            StaticIf(Semantics.ArchivedLinkIsButton.self) {
+                content.temporalState(isPressed)
+            } else: {
+                content
+                    .modifier(OpacityButtonHighlightModifier(highlighted: isPressed))
+                    .contentShape(Rectangle())
+            }
+        }
+    }
+}
 
 // MARK: - ResolvedButtonStyleBody
 
