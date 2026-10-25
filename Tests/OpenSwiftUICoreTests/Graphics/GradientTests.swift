@@ -156,7 +156,7 @@ struct GradientTests {
     }
 
     @Test
-    func shapeStyleUsesTheFirstColorForTextAndFallback() {
+    func shapeStyleUsesTheFirstColorOnlyForFallback() {
         let red = Color(rgba(1, 0, 0))
         let gradient = Gradient(colors: [red, Color(rgba(0, 0, 1))])
         var fallback = _ShapeStyle_Shape(operation: .fallbackColor(level: 0))
@@ -169,15 +169,14 @@ struct GradientTests {
 
         var text = _ShapeStyle_Shape(operation: .prepareText(level: 0))
         gradient._apply(to: &text)
-        guard case let .preparedText(.foregroundColor(textColor)) = text.result else {
-            Issue.record("Expected a text color")
+        guard case .preparedText(.foregroundKeyColor) = text.result else {
+            Issue.record("Expected the foreground key color")
             return
         }
-        #expect(textColor == red)
     }
 
     @Test
-    func emptyShapeStyleHasNoFallbackAndIsNotMultiLevel() {
+    func emptyShapeStyleHasNoFallbackAndPreservesMultiLevelResult() {
         let gradient = Gradient(colors: [])
         var shape = _ShapeStyle_Shape(operation: .fallbackColor(level: 0))
         gradient._apply(to: &shape)
@@ -186,12 +185,13 @@ struct GradientTests {
             return
         }
         shape.operation = .multiLevel
+        shape.result = .bool(true)
         gradient._apply(to: &shape)
         guard case let .bool(value) = shape.result else {
-            Issue.record("Expected a multi-level result")
+            Issue.record("Expected the existing multi-level result")
             return
         }
-        #expect(value == false)
+        #expect(value == true)
     }
 }
 
@@ -538,14 +538,20 @@ struct ResolvedGradientColorSpaceTests {
         expectColor(value, rgba(expected, expected, expected), tolerance: 0.00001)
     }
 
-    @Test(arguments: [Float.zero, -Float.zero])
-    func deviceZeroRetainsTheTransferFunctionsNegativeSign(value: Float) {
+    @Test(arguments: [
+        (Float.zero, .plus), (-Float.zero, .minus),
+    ] as [(Float, FloatingPointSign)])
+    func deviceConversionPreservesTheSignOfZero(value: Float, expectedSign: FloatingPointSign) {
         let converted = ResolvedGradient.ColorSpace.device.convertIn(rgba(value, value, value))
         #expect(converted.r == 0)
-        #expect(converted.r.sign == .minus)
+        #expect(converted.r.sign == expectedSign)
+        #expect(converted.g.sign == expectedSign)
+        #expect(converted.b.sign == expectedSign)
         let result = ResolvedGradient.ColorSpace.device.convertOut(.init(r: value, g: value, b: value, a: 1))
         #expect(result.linearRed == 0)
-        #expect(result.linearRed.sign == .minus)
+        #expect(result.linearRed.sign == expectedSign)
+        #expect(result.linearGreen.sign == expectedSign)
+        #expect(result.linearBlue.sign == expectedSign)
     }
 
     @Test
