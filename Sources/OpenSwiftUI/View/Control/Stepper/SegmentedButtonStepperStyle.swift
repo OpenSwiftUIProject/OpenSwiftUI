@@ -10,6 +10,37 @@
 import OpenSwiftUICore
 import UIKit
 
+// MARK: - Coordinator
+
+private class Coordinator: PlatformViewCoordinator {
+    var configuration: StepperStyleConfiguration
+
+    init(configuration: StepperStyleConfiguration) {
+        self.configuration = configuration
+        super.init()
+    }
+
+    @objc
+    func valueChanged(_ stepper: UIStepper) {
+        if stepper.value > 0, let onIncrement = configuration.onIncrement {
+            Update.dispatchImmediately(reason: nil) { onIncrement() }
+        } else if stepper.value < 0, let onDecrement = configuration.onDecrement {
+            Update.dispatchImmediately(reason: nil) { onDecrement() }
+        }
+        stepper.value = 0
+    }
+
+    @objc
+    func editingBegan(_ stepper: UIStepper) {
+        Update.dispatchImmediately(reason: nil) { configuration.onEditingChanged(true) }
+    }
+
+    @objc
+    func editingEnded(_ stepper: UIStepper) {
+        Update.dispatchImmediately(reason: nil) { configuration.onEditingChanged(false) }
+    }
+}
+
 // MARK: - SegmentedButtonStepperStyle
 
 struct SegmentedButtonStepperStyle: StepperStyle {
@@ -48,37 +79,6 @@ private struct UIKitStepper: UIViewRepresentable {
 
     func makeCoordinator() -> Coordinator {
         Coordinator(configuration: configuration)
-    }
-}
-
-// MARK: - Coordinator
-
-private class Coordinator: PlatformViewCoordinator {
-    var configuration: StepperStyleConfiguration
-
-    init(configuration: StepperStyleConfiguration) {
-        self.configuration = configuration
-        super.init()
-    }
-
-    @objc
-    func valueChanged(_ stepper: UIStepper) {
-        if stepper.value > 0, let onIncrement = configuration.onIncrement {
-            Update.dispatchImmediately(reason: nil) { onIncrement() }
-        } else if stepper.value < 0, let onDecrement = configuration.onDecrement {
-            Update.dispatchImmediately(reason: nil) { onDecrement() }
-        }
-        stepper.value = 0
-    }
-
-    @objc
-    func editingBegan(_ stepper: UIStepper) {
-        Update.dispatchImmediately(reason: nil) { configuration.onEditingChanged(true) }
-    }
-
-    @objc
-    func editingEnded(_ stepper: UIStepper) {
-        Update.dispatchImmediately(reason: nil) { configuration.onEditingChanged(false) }
     }
 }
 #endif
