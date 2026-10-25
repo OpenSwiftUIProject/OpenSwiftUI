@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 public import Foundation
 import OpenSwiftUICore
@@ -69,7 +69,7 @@ struct ArchivableCircularProgressView: View {
                 }
                 .font(
                     .system(
-                        size: centerFont * proxy.size.height / size,
+                        size: centerFont * (proxy.size.height / size),
                         weight: .semibold,
                         design: .rounded
                     )
@@ -116,8 +116,8 @@ struct ArchivableLinearProgressView: View {
         var tint: Color?
 
         var body: some View {
-            LinearCapsuleGauge(value: fractionCompleted)
-            // TODO
+            LinearCapsuleGauge(value: fractionCompleted, height: 4)
+                .tint(tint)
         }
     }
 }
@@ -153,7 +153,7 @@ struct ResolvedCircularPlaybackProgressView: View {
 
         init(fractionCompleted: Double, tint: Color?) {
             self.fractionCompleted = fractionCompleted
-            self.tint = tint ?? .accentColor
+            self.tint = tint ?? .white
         }
 
         var body: some View {
@@ -176,20 +176,6 @@ struct CircularPercentageGaugeRing: TimelineProgressViewBase {
         self.fractionCompleted = fractionCompleted
         self.tint = AnyShapeStyle(tint ?? .primary)
     }
-
-    var body: some View {
-        EmptyView()
-    }
-}
-
-// MARK: - LinearCapsuleGauge [TODO]
-
-struct LinearCapsuleGauge: View {
-    var value: Double
-    // @ScaledMetric var height: CGFloat
-    // @Environment(\.) var gaugeTintOverride: (Color, Color)?
-    // @Environment(\.) var controlTint: AnyShapeStyle?
-    // @Environment(\.) var direction: LayoutDirection?
 
     var body: some View {
         EmptyView()
