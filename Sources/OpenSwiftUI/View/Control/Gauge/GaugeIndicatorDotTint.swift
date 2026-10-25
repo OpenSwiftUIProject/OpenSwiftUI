@@ -7,6 +7,8 @@
 
 import OpenSwiftUICore
 
+// MARK: - View + gaugeIndicatorDotTint
+
 extension View {
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)

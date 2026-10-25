@@ -8,6 +8,8 @@
 
 import OpenSwiftUICore
 
+// MARK: - View + allowsGaugeResizing
+
 extension View {
     @_spi(Private)
     @available(OpenSwiftUI_v4_0, *)
