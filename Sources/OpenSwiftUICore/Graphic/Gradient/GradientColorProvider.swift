@@ -42,8 +42,13 @@ private struct GradientColorProvider: ColorProvider {
 
     func resolve(in environment: EnvironmentValues) -> Color.Resolved {
         let gradient = base.resolve(in: environment)
-        if let color = gradient.constantColor {
-            return color
+        switch gradient.stops.count {
+        case 0:
+            return .clear
+        case 1:
+            return gradient.stops[0].color
+        default:
+            break
         }
         for index in 1 ..< gradient.stops.count {
             let upper = gradient.stops[index]
