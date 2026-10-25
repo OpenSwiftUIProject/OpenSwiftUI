@@ -57,15 +57,23 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
         Update.begin()
         defer { Update.end() }
         // FIXME
-        let items = AppGraph.shared?.rootSceneList?.items ?? []
-        let view = items[0].value.view
-        let hostingVC = NSHostingController(rootView: view.frame(width: 500, height: 300).rootEnvironment())
+        let items = graph.rootSceneList?.items ?? []
+        let item = items[0]
+        let sizingOptions: NSHostingSizingOptions = _SemanticFeature_v4.isEnabled ? .minSize : .standardBounds
+        let maximumFrameLength: CGFloat? = sizingOptions.contains(.maxSize) ? nil : .infinity
+        let hostingVC = NSHostingController(
+            rootView: item.value.view
+                .rootEnvironment()
+                .frame(maxWidth: maximumFrameLength, maxHeight: maximumFrameLength)
+        )
+        hostingVC.sizingOptions = sizingOptions
+        hostingVC.host.frame.size = item.defaultSize ?? WindowSizeConstants.defaultProposedSize.fixingUnspecifiedDimensions()
         /* OpenSwiftUI Addition Begin */
         if let rendererConfiguration = graph.rendererConfiguration {
             hostingVC._rendererConfiguration = rendererConfiguration
         }
         /* OpenSwiftUI Addition End */
-        let windowVC = WindowController(hostingVC)
+        let windowVC = WindowController(hostingVC, item: item)
         windowVC.showWindow(nil)
         self.windowVC = windowVC
     }
