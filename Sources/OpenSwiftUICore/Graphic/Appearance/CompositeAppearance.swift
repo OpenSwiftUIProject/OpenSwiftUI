@@ -3,10 +3,26 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 4AC443F5048123F20C2A54F77682C1C8 (SwiftUICore)
 
 #if os(macOS)
+
+package struct CompositeAppearanceProvider: AppearanceProvider {
+    private var appearanceStack: [Appearance]
+
+    package init(_ appearances: Appearance...) {
+        self.init(appearances)
+    }
+
+    package init(_ appearances: [Appearance]) {
+        appearanceStack = appearances
+    }
+
+    package func resolve(in environment: EnvironmentValues) -> any _ResolvedAppearance {
+        _ResolvedCompositeAppearance(appearanceStack.map { $0.resolve(in: environment) })
+    }
+}
 
 package struct _ResolvedCompositeAppearance: _ResolvedAppearance {
     package var appearanceStack: [any _ResolvedAppearance]

@@ -9,6 +9,53 @@ import Testing
 @Suite(.tags(.aigc))
 struct CompositeAppearanceTests {
     #if os(macOS)
+    @Test(arguments: [
+        (ColorScheme.light, [Int?]([10, 20, nil])),
+        (ColorScheme.dark, [Int?]([11, 21, nil])),
+    ])
+    func providerResolvesNestedAppearancesInEnvironment(
+        _ colorScheme: ColorScheme,
+        expectedValues: [Int?]
+    ) throws {
+        let first = Appearance(provider: SchemeProvider(lightValue: 10, darkValue: 11))
+        let second = Appearance(provider: SchemeProvider(lightValue: 20, darkValue: 21))
+        let missing = Appearance(provider: SchemeProvider(lightValue: nil, darkValue: nil))
+        let provider = CompositeAppearanceProvider(
+            first,
+            Appearance(provider: CompositeAppearanceProvider([second, missing]))
+        )
+        var environment = EnvironmentValues()
+        environment.colorScheme = colorScheme
+        let resolved = try #require(provider.resolve(in: environment) as? _ResolvedCompositeAppearance)
+        #expect(resolved.appearanceStack.map { $0.asset(for: Key()) } == expectedValues)
+        #expect(resolved.asset(for: Key()) == expectedValues[1])
+    }
+
+    @Test
+    func emptyProviderResolvesToEmptyAppearance() throws {
+        let provider = CompositeAppearanceProvider()
+        let resolved = try #require(provider.resolve(in: EnvironmentValues()) as? _ResolvedCompositeAppearance)
+        #expect(resolved.appearanceStack.isEmpty)
+        #expect(!resolved.containsAsset(for: Key()))
+        #expect(resolved.asset(for: Key()) == nil)
+    }
+
+    @Test
+    func providerEqualityAndHashPreserveUnresolvedStack() {
+        let first = Appearance(provider: SchemeProvider(lightValue: 10, darkValue: 11))
+        let second = Appearance(provider: SchemeProvider(lightValue: 20, darkValue: 21))
+        let array = CompositeAppearanceProvider([first, second])
+        let variadic = CompositeAppearanceProvider(first, second)
+        let nested = CompositeAppearanceProvider(Appearance(provider: variadic))
+        #expect(array == variadic)
+        #expect(Set([array, variadic]).count == 1)
+        #expect(array != CompositeAppearanceProvider(second, first))
+        #expect(array != CompositeAppearanceProvider(first))
+        #expect(array != nested)
+        let environment = EnvironmentValues()
+        #expect(array.resolve(in: environment).isEqual(to: nested.resolve(in: environment)))
+    }
+
     @Test
     func nestedOverridesFallBackToLastContainingAppearance() {
         let appearance = _ResolvedCompositeAppearance([
@@ -70,6 +117,16 @@ struct CompositeAppearanceTests {
 
     private struct Key: AppearanceAssetKey {
         typealias AssetType = Int
+    }
+
+    private struct SchemeProvider: AppearanceProvider {
+        var lightValue: Int?
+        var darkValue: Int?
+
+        func resolve(in environment: EnvironmentValues) -> any _ResolvedAppearance {
+            let value = environment.colorScheme == .light ? lightValue : darkValue
+            return StubAppearance(value: value, isPresent: value != nil)
+        }
     }
 
     private struct StubAppearance: _ResolvedAppearance, Hashable {
