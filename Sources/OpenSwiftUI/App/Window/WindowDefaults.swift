@@ -245,10 +245,8 @@ enum WindowSizeConstants {
 
 // MARK: - WindowDefaultsPropertyModifier
 
-@available(iOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@available(visionOS, unavailable)
 private struct WindowDefaultsPropertyModifier: PrimitiveSceneModifier {
     enum Property {
         case position(UnitPoint)
