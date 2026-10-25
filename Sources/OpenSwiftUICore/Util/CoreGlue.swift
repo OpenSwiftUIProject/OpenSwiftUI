@@ -11,6 +11,7 @@ public import CoreText
 #endif
 @_spiOnly
 public import OpenAttributeGraphShims
+public import OpenCoreGraphicsShims
 import OpenSwiftUI_SPI
 
 // MARK: - CoreGlue
@@ -263,12 +264,12 @@ open class CoreGlue2: NSObject {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    #if canImport(CoreText)
+    #if canImport(ObjectiveC)
     @objc(makeSummarySymbolHostIsOn:font:foregroundColor:)
+    #endif
     open func makeSummarySymbolHost(isOn: Bool, font: CTFont, foregroundColor: CGColor) -> AnyObject {
         _openSwiftUIBaseClassAbstractMethod()
     }
-    #endif
 
     #if canImport(Darwin)
     override dynamic public init() {
