@@ -135,6 +135,10 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     private var eventsPendingReset: Set<EventID> = []
 
+    weak var delegate: NSHostingViewDelegate?
+
+    // TODO: rootViewDelegate: NSHostingViewRootDelegate?.
+
     private var hitTestEventMonitor: Any?
 
     private var geometryChangeRegistrationPhase: HostingViewGeometryRegistrationPhase = .unregistered
@@ -489,7 +493,8 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     open override func viewDidMoveToWindow() {
         Update.begin()
-        // TODO: delegate handling
+        // TODO: Create a root delegate when no delegate is set and this is the window's content view.
+        delegate?.hostingView(self, didMoveTo: window)
         if window != nil {
             invalidateProperties(.transform)
         } else {
@@ -1264,8 +1269,10 @@ extension NSHostingView: ViewRendererHost {
         if let environmentOverride {
             environment.plist.override(with: environmentOverride.plist)
         }
+        delegate?.hostingView(self, willUpdate: &environment)
         focusBridge.updateEnvironment(&environment)
         viewGraph.setEnvironment(environment)
+        delegate?.hostingView(self, didUpdate: environment)
     }
 
     package func updateTransform() {
@@ -1309,8 +1316,10 @@ extension NSHostingView: ViewRendererHost {
 
     @_spi(ForOpenSwiftUIOnly)
     public func preferencesDidChange() {
-        focusBridge.preferencesDidChange(viewGraph.preferenceValues())
+        let preferences = viewGraph.preferenceValues()
+        focusBridge.preferencesDidChange(preferences)
         // TODO: Notify the remaining preference bridges.
+        delegate?.hostingView(self, didChangePreferences: preferences)
     }
 
     package func `as`<T>(_ type: T.Type) -> T? {
@@ -1512,6 +1521,16 @@ extension NSHostingView: ViewGraphRenderDelegate {
         // TODO
         return body()
     }
+}
+
+// MARK: - NSHostingViewDelegate [TBA]
+
+protocol NSHostingViewDelegate: AnyObject {
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didMoveTo window: NSWindow?) where V: View
+    func hostingView<V>(_ hostingView: NSHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didUpdate environment: EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View
+    // TODO: Platform items, constraints, sizing, update requests, required bridges, inputs, and window layout.
 }
 
 #endif

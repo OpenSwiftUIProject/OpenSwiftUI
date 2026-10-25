@@ -54,6 +54,18 @@ extension SceneList {
         // TODO
         #endif
 
+        var title: Text? {
+            switch value {
+            case let .windowGroup(configuration):
+                configuration.title
+            case .settings:
+                nil
+            case .singleWindow:
+                // TODO: Implement SingleWindowConfiguration.title
+                nil
+            }
+        }
+
         // MARK: - SceneList.Item.Summary
 
         struct Summary: Identifiable {

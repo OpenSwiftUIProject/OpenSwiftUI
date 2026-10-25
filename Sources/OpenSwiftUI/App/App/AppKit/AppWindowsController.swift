@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Empty
+//  Status: WIP
 //  ID: 72F61A03E62F0A97E0761B990CF02152 (SwiftUI)
 
 #if os(macOS)
@@ -16,6 +16,9 @@ final class WindowController<Content>: NSWindowController where Content: View {
         self.hostingVC = hostingVC
         self.item = item
         super.init(window: nil)
+        barAppearanceBridge.defaultTitle = item.title ?? Text(currentAppName())
+        barAppearanceBridge.lastEnvironment = item.environment
+        hostingVC.host.delegate = self
     }
 
     @available(*, unavailable)
@@ -28,6 +31,8 @@ final class WindowController<Content>: NSWindowController where Content: View {
     let hostingVC: NSHostingController<Content>
 
     let item: SceneList.Item
+
+    let barAppearanceBridge = BarAppearanceBridge()
 
     override func loadWindow() {
         window = NSWindow(contentViewController: hostingVC)
@@ -57,6 +62,40 @@ final class WindowController<Content>: NSWindowController where Content: View {
             x: visibleFrame.minX + (visibleFrame.width - frame.width) * position.x,
             y: visibleFrame.maxY - frame.height - (visibleFrame.height - frame.height) * position.y
         ))
+    }
+}
+
+// MARK: - WindowController + NSHostingViewDelegate [TBA]
+
+extension WindowController: NSHostingViewDelegate {
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didMoveTo window: NSWindow?) where V: View {
+        guard let window else { return }
+        Update.ensure {
+            barAppearanceBridge.addPreferences(to: hostingView.viewGraph)
+            barAppearanceBridge.platformStorage.defaultWindowTitleVisibility = window.titleVisibility == .hidden ? .hidden : .visible
+            barAppearanceBridge.platformStorage.windowTitleBarIsTransparentByDefault = window.titlebarAppearsTransparent
+        }
+        // TODO: Configure the remaining window bridges.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View {
+        barAppearanceBridge.update(environment: &environment)
+        // TODO: Apply bar configurations with the current window context.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didUpdate environment: EnvironmentValues) where V: View {
+        // TODO: Handle deferred window dismissal.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View {
+        let updates = barAppearanceBridge.preferencesDidChange(
+            preferences,
+            updateContext: .init(target: hostingVC.view)
+        )
+        if updates.rawValue & 0x1 != 0 {
+            hostingView.invalidateProperties(.environment)
+        }
+        // TODO: Update the remaining window bridges.
     }
 }
 
