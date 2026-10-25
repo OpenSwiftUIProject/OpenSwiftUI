@@ -12,8 +12,9 @@ import OpenAttributeGraphShims
 
 // FIXME
 final class WindowController<Content>: NSWindowController where Content: View {
-    init(_ hostingVC: NSHostingController<Content>) {
+    init(_ hostingVC: NSHostingController<Content>, item: SceneList.Item) {
         self.hostingVC = hostingVC
+        self.item = item
         super.init(window: nil)
     }
 
@@ -26,10 +27,41 @@ final class WindowController<Content>: NSWindowController where Content: View {
 
     let hostingVC: NSHostingController<Content>
 
+    let item: SceneList.Item
+
     override func loadWindow() {
         window = NSWindow(contentViewController: hostingVC)
-        window?.center()
     }
+
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        sizeAndPlaceWindow()
+    }
+
+    private func sizeAndPlaceWindow() {
+        guard let window else {
+            return
+        }
+        let proposal = item.defaultSize.map { _ProposedSize($0) } ?? WindowSizeConstants.defaultProposedSize
+        window.setContentSize(hostingVC.host.sizeThatFits(proposal))
+        placeWindow(window)
+    }
+
+    private func placeWindow(_ window: NSWindow) {
+        guard let visibleFrame = NSScreen.main?.visibleFrame else {
+            return
+        }
+        let position = item.defaultPosition ?? .center
+        let frame = window.frame
+        window.setFrameOrigin(CGPoint(
+            x: visibleFrame.minX + (visibleFrame.width - frame.width) * position.x,
+            y: visibleFrame.maxY - frame.height - (visibleFrame.height - frame.height) * position.y
+        ))
+    }
+}
+
+enum WindowSizeConstants {
+    static let defaultProposedSize = _ProposedSize(width: 900, height: 450)
 }
 
 // MARK: - RootEnvironmentModifier [FIXME]
