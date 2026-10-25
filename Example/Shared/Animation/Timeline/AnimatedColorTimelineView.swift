@@ -11,57 +11,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if OPENSWIFTUI
-// FIXME: Missing LinearGradient and Material.
-// We use a simplified version for OpenSwiftUI now.
-struct AnimatedColorTimelineView: View {
-    var body: some View {
-        TimelineView(.animation) { context in
-            let time = context.date.timeIntervalSince1970
-
-            ZStack {
-                // Animated background color
-                Color(
-                    hue: (sin(time * 0.5) + 1) / 2,
-                    saturation: 0.8,
-                    brightness: 0.9
-                )
-                .ignoresSafeArea()
-
-                VStack(spacing: 30) {
-                    Text("Animated Colors")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-
-                    // Pulsing circle that changes color
-                    Circle()
-                        .fill(
-                            Color(
-                                hue: (cos(time * 2) + 1) / 2,
-                                saturation: 1.0,
-                                brightness: 1.0
-                            )
-                        )
-                        .frame(
-                            width: 100 + sin(time * 3) * 20,
-                            height: 100 + sin(time * 3) * 20
-                        )
-
-                    // Display current color values
-                    let currentHue = (sin(time * 0.5) + 1) / 2
-                    Text("Background Hue: \(currentHue, specifier: "%.2f")")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.black.opacity(0.3))
-                        .cornerRadius(10)
-                }
-            }
-        }
-    }
-}
-#else
 struct AnimatedColorTimelineView: View {
     var body: some View {
         TimelineView(.animation) { timeline in
@@ -121,11 +70,14 @@ struct AnimatedColorTimelineView: View {
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
+                        #if OPENSWIFTUI // FIXME: Material is not supported.
+                        .background(Color.black.opacity(0.3))
+                        #else
                         .background(.ultraThinMaterial)
+                        #endif
                         .cornerRadius(10)
                 }
             }
         }
     }
 }
-#endif
