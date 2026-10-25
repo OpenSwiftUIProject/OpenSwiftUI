@@ -186,23 +186,25 @@ package struct _ShapeStyle_RenderedShape {
         opacity = opacity * style.opacity
         switch style.fill {
         case let .color(resolved):
-            var resolved  = resolved
+            var resolved = resolved
             if style.effects.isEmpty {
-                resolved.opacity =  opacity * resolved.opacity
+                resolved.opacity = opacity * resolved.opacity
                 opacity = 1.0
             }
             render(color: resolved)
+        case let .paint(paint):
+            render(paint: paint)
         default:
             _openSwiftUIUnimplementedFailure()
         }
-        // FIXME
+        // FIXME: Composite shadow layers with their opacity and blend mode.
         for effect in style.effects {
             guard case let .shadow(shadow) = effect.kind else {
                 continue
             }
+            _openSwiftUIUnimplementedWarning()
             addEffect(.filter(.shadow(shadow)))
         }
-        _openSwiftUIUnimplementedWarning()
     }
 
     private mutating func render(color: Color.Resolved) {
@@ -254,7 +256,35 @@ package struct _ShapeStyle_RenderedShape {
     }
 
     private mutating func render(paint: AnyResolvedPaint) {
-        _openSwiftUIUnimplementedFailure()
+        if case let .path(path, fillStyle) = shape {
+            item.value = .content(DisplayList.Content(
+                .shape(path, paint, fillStyle),
+                seed: contentSeed
+            ))
+            if let data = interpolatorData {
+                addEffect(.interpolatorLayer(data.group, serial: data.serial))
+                interpolatorData = nil
+            }
+        } else {
+            render(color: .white)
+            let frame = CGRect(origin: .zero, size: item.size)
+            let mask = DisplayList.Item(
+                item.value,
+                frame: frame,
+                identity: .none,
+                version: item.version
+            )
+            let fill = DisplayList.Item(
+                .content(DisplayList.Content(
+                    .shape(Path(frame), paint, FillStyle()),
+                    seed: contentSeed
+                )),
+                frame: frame,
+                identity: .none,
+                version: item.version
+            )
+            item.value = .effect(.mask(DisplayList(mask)), DisplayList(fill))
+        }
     }
 
     private mutating func renderVectorGlyph(
