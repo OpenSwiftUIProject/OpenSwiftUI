@@ -9,6 +9,8 @@
 #if os(macOS)
 import AppKit
 import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
 
 // FIXME
 final class WindowController<Content>: NSWindowController where Content: View {
@@ -40,6 +42,11 @@ final class WindowController<Content>: NSWindowController where Content: View {
 
     override func windowDidLoad() {
         super.windowDidLoad()
+        // The first preference update can occur before the host has a window.
+        Update.ensure {
+            let host = hostingVC.host
+            updateBarAppearanceBridge(preferences: host.viewGraph.preferenceValues(), host: host)
+        }
         sizeAndPlaceWindow()
     }
 
@@ -88,14 +95,18 @@ extension WindowController: NSHostingViewDelegate {
     }
 
     func hostingView<V>(_ hostingView: NSHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View {
+        updateBarAppearanceBridge(preferences: preferences, host: hostingView)
+        // TODO: Update the remaining window bridges.
+    }
+
+    private func updateBarAppearanceBridge<V>(preferences: PreferenceValues, host: NSHostingView<V>) where V: View {
         let updates = barAppearanceBridge.preferencesDidChange(
             preferences,
             updateContext: .init(target: hostingVC.view)
         )
         if updates.rawValue & 0x1 != 0 {
-            hostingView.invalidateProperties(.environment)
+            host.invalidateProperties(.environment)
         }
-        // TODO: Update the remaining window bridges.
     }
 }
 
