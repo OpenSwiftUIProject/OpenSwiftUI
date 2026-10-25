@@ -3,6 +3,7 @@
 //  OpenSwiftUITests
 
 @_spi(Private) @testable import OpenSwiftUI
+import OpenSwiftUITestsSupport
 import Testing
 
 struct SliderTests {
@@ -30,7 +31,7 @@ struct SliderTests {
         #expect(slider.marks == nil)
     }
 
-    @Test
+    @Test(containsRuntimeIssue("Multiple marks specified for value %f"))
     func marksAreNormalizedSortedAndUnique() {
         let slider = Slider<EmptyView, EmptyView>(
             value: .constant(1.0),

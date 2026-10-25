@@ -12,6 +12,17 @@ import OpenSwiftUICore
 
 protocol PlatformSliderCoordinator: PlatformViewCoordinator {}
 
+// MARK: - PlatformSliderStyle
+
+#if !canImport(Darwin)
+struct PlatformSliderStyle: SliderStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        _openSwiftUIPlatformUnimplementedWarning()
+        return EmptyView()
+    }
+}
+#endif
+
 // MARK: - PlatformSliderStyle + SymbolEffectState
 
 extension PlatformSliderStyle {
