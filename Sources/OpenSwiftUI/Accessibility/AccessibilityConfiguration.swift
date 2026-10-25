@@ -488,7 +488,38 @@ struct AccessibilitySliderMarkModifier<Content, Value>: AccessibilityConfigurati
 
 // TODO: AccessibilityNavigationLinkButtonModifier.Configuration
 // TODO: AccessibilityBadgedViewProvidesOwnValue
-// TODO: AccessibilityGaugeModifier
+
+// MARK: - AccessibilityGaugeModifier
+
+struct AccessibilityGaugeModifier<Content: View>: AccessibilityConfigurationModifier {
+    var configuration: Configuration
+
+    init(_ value: Double) {
+        configuration = Configuration(value: value)
+    }
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityIgnoreViewResponders()
+            .accessibilityCombinedElement(options: [], ignoredTraits: [.isImage, .isStaticText])
+            .update(
+                AccessibilityProperties.ValueKey.self,
+                combining: AccessibilityValueStorage(
+                    AccessibilityBoundedNumber(
+                        value: AccessibilityNumber(floatingPoint: configuration.value),
+                        minValue: 0,
+                        maxValue: 1
+                    ),
+                    description: nil
+                )
+            )
+    }
+
+    struct Configuration {
+        var value: Double
+    }
+}
+
 // TODO: AccessibilitySidebarListModifier
 // TODO: AccessibilityButtonModifier.Configuration
 // TODO: AccessibilityDisclosureModifier.Configuration
@@ -519,7 +550,6 @@ struct AccessibilitySelectableTextModifier<Content: View>: AccessibilityConfigur
 }
 
 // TODO: AccessibilityDisclosureModifier.List.Configuration
-// TODO: AccessibilityGaugeModifier.Configuration
 // TODO: AccessibilityBadgedViewModifier.Badge
 // TODO: AccessibilityBadgedViewModifier
 // TODO: AccessibilityBadgedViewModifier.Configuration
