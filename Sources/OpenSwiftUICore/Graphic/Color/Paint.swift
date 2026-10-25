@@ -7,6 +7,15 @@
 
 package import Foundation
 
+// MARK: - Paint
+
+package protocol Paint: ShapeStyle where ResolvedPaintType: ResolvedPaint {
+    associatedtype ResolvedPaintType
+
+    func resolvePaint(in environment: EnvironmentValues) -> ResolvedPaintType
+    func fallbackColor(in environment: EnvironmentValues) -> Color?
+}
+
 // MARK: - ResolvedPaint
 
 package protocol ResolvedPaint: Equatable, Animatable, ProtobufEncodableMessage {
