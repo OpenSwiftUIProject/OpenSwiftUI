@@ -6,10 +6,22 @@
 //  Status: WIP
 //  ID: 302179F1EB9AE99B83C6A183C0B4143E (?)
 
-#if os(macOS)
 @_spi(ForOpenSwiftUIOnly)
-import OpenSwiftUICore
+public import OpenSwiftUICore
 
+// MARK: - View + allowsWindowActivationEvents [TBA]
+
+@available(OpenSwiftUI_v6_0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension View {
+    nonisolated public func allowsWindowActivationEvents(_ value: Bool? = true) -> some View {
+        _openSwiftUIUnimplementedWarning()
+        return self
+    }
+}
+
+#if os(macOS)
 // TODO: AllowsWindowActivationEventsResponder
 class AllowsWindowActivationEventsResponder: DefaultLayoutViewResponder {
     var value: Bool?
