@@ -138,20 +138,21 @@ public struct AutomaticLabeledContentStyle: LabeledContentStyle {
 extension AutomaticLabeledContentStyle: Sendable {}
 
 #if os(macOS)
-// TODO
+// MARK: - HStackLabeledContentStyle
+
 struct HStackLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack {
             configuration.label
                 .staticIf(_SemanticFeature_v4.self) { label in
-                    VStack(alignment: .leading){
+                    VStack(alignment: .leading) {
                         LabelGroup { label }
                     }
                 }
-            Spacer()
-            HStack {
-                configuration.content
-            }.layoutPriority(-1)
+                .staticIf(_SemanticFeature_v3.self) { label in
+                    label.layoutPriority(1)
+                }
+            configuration.content
         }
         .spacing(Spacing())
     }
