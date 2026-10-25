@@ -7,9 +7,7 @@
 //  ID: 3A792CB70CFCF892676D7ADF8BCA260F (SwiftUICore)
 
 import Foundation
-#if canImport(Darwin)
-public import CoreGraphics
-#endif
+public import OpenCoreGraphicsShims
 
 // MARK: - Color
 
@@ -99,7 +97,6 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
         provider.resolve(in: environment)
     }
     
-    #if canImport(Darwin)
     /// A Core Graphics representation of the color, if available.
     ///
     /// You can get a
@@ -113,10 +110,9 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     /// color, this property is `nil`. To evaluate all types of colors, use the
     /// `resolve(in:)` method.
     @available(*, deprecated, renamed: "resolve(in:)")
-    public var cgColor: CoreGraphics.CGColor? {
+    public var cgColor: CGColor? {
         provider.staticColor
     }
-    #endif
     
     /// Hashes the essential components of the color by feeding them into the
     /// given hash function.
@@ -157,9 +153,7 @@ package protocol ColorProvider: Hashable {
 
     func apply(color: Color, to shape: inout _ShapeStyle_Shape)
 
-    #if canImport(Darwin)
     var staticColor: CGColor? { get }
-    #endif
 
     var kitColor: AnyObject? { get }
 
@@ -169,9 +163,7 @@ package protocol ColorProvider: Hashable {
 }
 
 extension ColorProvider {
-    #if canImport(Darwin)
     package var staticColor: CGColor? { nil }
-    #endif
 
     package var kitColor: AnyObject? { nil }
 
@@ -217,9 +209,7 @@ package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
 
     package func resolve(in environment: EnvironmentValues) -> Color.Resolved { _openSwiftUIBaseClassAbstractMethod() }
     package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { _openSwiftUIBaseClassAbstractMethod() }
-    #if canImport(Darwin)
     package var staticColor: CGColor? { _openSwiftUIBaseClassAbstractMethod() }
-    #endif
     package var kitColor: AnyObject? { _openSwiftUIBaseClassAbstractMethod() }
     package func hash(into hasher: inout Hasher) { _openSwiftUIBaseClassAbstractMethod() }
     package var description: String { _openSwiftUIBaseClassAbstractMethod() }
@@ -256,11 +246,9 @@ private final class ColorBox<P>: AnyColorBox, @unchecked Sendable where P: Color
         base.apply(color: color, to: &shape)
     }
     
-    #if canImport(Darwin)
     override var staticColor: CGColor? {
         base.staticColor
     }
-    #endif
     
     override var kitColor: AnyObject? {
         base.kitColor
