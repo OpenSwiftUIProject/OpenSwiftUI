@@ -13,6 +13,11 @@ This project is in active development and contains multiple Swift packages with 
 
 ## Verification Scope
 
+- For Apple-platform implementation and validation, default to iOS, macOS,
+  and visionOS. Include watchOS or tvOS only when explicitly requested.
+- Preserve public API availability annotations, but do not add watchOS- or
+  tvOS-specific implementation branches or compilation guards by default.
+  This scope does not change Linux or Windows support.
 - After changing `Package.swift`, delete `Package.resolved` and run
   `swift package resolve` in the same checkout to regenerate the lockfile and
   its `originHash`. Use the normal remote dependency configuration, review the
