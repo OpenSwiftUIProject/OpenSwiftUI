@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: DC3B6BB33515D28F933944098F93ADC2 (SwiftUI)
 
-import Foundation
+public import Foundation
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
