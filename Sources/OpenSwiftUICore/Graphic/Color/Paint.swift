@@ -9,7 +9,7 @@ package import Foundation
 
 // MARK: - Paint
 
-package protocol Paint: ShapeStyle where ResolvedPaintType: ResolvedPaint {
+protocol Paint: ShapeStyle where ResolvedPaintType: ResolvedPaint {
     associatedtype ResolvedPaintType
 
     func resolvePaint(in environment: EnvironmentValues) -> ResolvedPaintType
