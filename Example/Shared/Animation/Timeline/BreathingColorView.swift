@@ -45,3 +45,7 @@ struct BreathingColorView: View {
         }
     }
 }
+
+#Preview {
+    BreathingColorView()
+}

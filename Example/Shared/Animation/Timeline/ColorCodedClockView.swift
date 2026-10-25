@@ -5,6 +5,7 @@
 //  Created by Kyle on 2025/9/15.
 //
 
+import Foundation
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
@@ -183,4 +184,8 @@ struct ProgressBar: View {
             .frame(height: 8)
         }
     }
+}
+
+#Preview {
+    ColorCodedClockView()
 }

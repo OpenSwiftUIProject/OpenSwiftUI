@@ -81,3 +81,7 @@ struct AnimatedColorTimelineView: View {
         }
     }
 }
+
+#Preview {
+    AnimatedColorTimelineView()
+}
