@@ -149,7 +149,39 @@ struct AccessibilityLabelModifier<Content: View>: AccessibilityConfigurationModi
     }
 }
 
-// TODO: AccessibilityStepperModifier
+// MARK: - AccessibilityStepperModifier
+
+struct AccessibilityStepperModifier<Content>: AccessibilityConfigurationModifier where Content: View {
+    var base: AccessibilityAdjustableModifier<Content, AccessibilityStepperValue>
+
+    init(_ configuration: StepperStyleConfiguration, value: AccessibilityBoundedNumber?) {
+        base = AccessibilityAdjustableModifier(configuration: .init(
+            value: value.map { AccessibilityStepperValue($0) },
+            continuous: false,
+            onIncrement: configuration.onIncrement,
+            onDecrement: configuration.onDecrement,
+            onSet: { number in
+                guard let value else {
+                    return
+                }
+                let delta = number.value.doubleValue - value.value.doubleValue
+                let count = Int(abs((delta / (value.step?.doubleValue ?? 1)).rounded()))
+                for _ in 0 ..< count {
+                    if delta > 0 {
+                        configuration.onIncrement?()
+                    } else {
+                        configuration.onDecrement?()
+                    }
+                }
+            },
+            onEditingChanged: configuration.onEditingChanged
+        ))
+    }
+
+    func body(content: Content) -> some View {
+        base.body(content: content)
+    }
+}
 
 // MARK: - AccessibilityAdjustableModifier
 
