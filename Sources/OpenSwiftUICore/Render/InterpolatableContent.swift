@@ -182,11 +182,41 @@ private struct InterpolatedDisplayList<Content>: StatefulRule, AsyncAttribute wh
             _openSwiftUIUnimplementedWarning()
         }
         // FIXME
-        let result: [DisplayList.Item] = list?.items.map {
-            var item = $0
-            item.frame.origin = .init(position - containerPosition)
-            return item
-        } ?? []
-        value = DisplayList(result)
+        let offset = animatedPosition - containerPosition
+        let contentOrigin: CGPoint
+        let contentOffset: CGSize
+        if animatesSize {
+            contentOrigin = CGPoint(offset)
+            contentOffset = .zero
+        } else {
+            let position = position.roundedToNearestOrUp(toMultipleOf: pixelLength)
+            contentOrigin = CGPoint(position - containerPosition)
+            contentOffset = contentOrigin - CGPoint(offset)
+        }
+        var result = list ?? DisplayList()
+        if defersRender {
+            let effect = DisplayList.Effect.interpolatorRoot(
+                group,
+                contentOrigin: contentOrigin,
+                contentOffset: contentOffset
+            )
+            let item = DisplayList.Item(
+                .effect(effect, result),
+                frame: .zero,
+                identity: .none,
+                version: version
+            )
+            result = DisplayList(item)
+        } else {
+            _ = group.rewriteDisplayList(
+                &result,
+                time: $time,
+                contentOrigin: contentOrigin,
+                contentOffset: contentOffset,
+                version: version
+            )
+        }
+        result.translate(by: offset, version: version)
+        value = result
     }
 }

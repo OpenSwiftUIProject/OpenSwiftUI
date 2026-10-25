@@ -1095,7 +1095,7 @@ extension DisplayList {
             contentOffset: CGSize,
             version: DisplayList.Version
         ) -> Bool {
-            _openSwiftUIEmptyStub()
+            _openSwiftUIUnimplementedWarning()
             return false
         }
     }
