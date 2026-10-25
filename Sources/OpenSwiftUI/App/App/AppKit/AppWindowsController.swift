@@ -3,12 +3,14 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Empty
+//  Status: WIP
 //  ID: 72F61A03E62F0A97E0761B990CF02152 (SwiftUI)
 
 #if os(macOS)
 import AppKit
 import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
 
 // FIXME
 final class WindowController<Content>: NSWindowController where Content: View {
@@ -16,6 +18,9 @@ final class WindowController<Content>: NSWindowController where Content: View {
         self.hostingVC = hostingVC
         self.item = item
         super.init(window: nil)
+        barAppearanceBridge.defaultTitle = item.title ?? Text(currentAppName())
+        barAppearanceBridge.lastEnvironment = item.environment
+        hostingVC.host.delegate = self
     }
 
     @available(*, unavailable)
@@ -29,12 +34,19 @@ final class WindowController<Content>: NSWindowController where Content: View {
 
     let item: SceneList.Item
 
+    let barAppearanceBridge = BarAppearanceBridge()
+
     override func loadWindow() {
         window = NSWindow(contentViewController: hostingVC)
     }
 
     override func windowDidLoad() {
         super.windowDidLoad()
+        // The first preference update can occur before the host has a window.
+        Update.ensure {
+            let host = hostingVC.host
+            updateBarAppearanceBridge(preferences: host.viewGraph.preferenceValues(), host: host)
+        }
         sizeAndPlaceWindow()
     }
 
@@ -60,8 +72,42 @@ final class WindowController<Content>: NSWindowController where Content: View {
     }
 }
 
-enum WindowSizeConstants {
-    static let defaultProposedSize = _ProposedSize(width: 900, height: 450)
+// MARK: - WindowController + NSHostingViewDelegate [TBA]
+
+extension WindowController: NSHostingViewDelegate {
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didMoveTo window: NSWindow?) where V: View {
+        guard let window else { return }
+        Update.ensure {
+            barAppearanceBridge.addPreferences(to: hostingView.viewGraph)
+            barAppearanceBridge.platformStorage.defaultWindowTitleVisibility = window.titleVisibility == .hidden ? .hidden : .visible
+            barAppearanceBridge.platformStorage.windowTitleBarIsTransparentByDefault = window.titlebarAppearsTransparent
+        }
+        // TODO: Configure the remaining window bridges.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View {
+        barAppearanceBridge.update(environment: &environment)
+        // TODO: Apply bar configurations with the current window context.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didUpdate environment: EnvironmentValues) where V: View {
+        // TODO: Handle deferred window dismissal.
+    }
+
+    func hostingView<V>(_ hostingView: NSHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View {
+        updateBarAppearanceBridge(preferences: preferences, host: hostingView)
+        // TODO: Update the remaining window bridges.
+    }
+
+    private func updateBarAppearanceBridge<V>(preferences: PreferenceValues, host: NSHostingView<V>) where V: View {
+        let updates = barAppearanceBridge.preferencesDidChange(
+            preferences,
+            updateContext: .init(target: hostingVC.view)
+        )
+        if updates.rawValue & 0x1 != 0 {
+            host.invalidateProperties(.environment)
+        }
+    }
 }
 
 // MARK: - RootEnvironmentModifier [FIXME]

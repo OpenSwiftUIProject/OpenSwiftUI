@@ -49,7 +49,22 @@ extension SceneList {
         #elseif os(macOS)
         // TODO: macOS specific properties
         var keyboardShortcut: KeyboardShortcut?
+        // TODO
+        var cascadeBehavior: WindowCascadeBehavior.Role = .automatic
+        // TODO
         #endif
+
+        var title: Text? {
+            switch value {
+            case let .windowGroup(configuration):
+                configuration.title
+            case .settings:
+                nil
+            case .singleWindow:
+                // TODO: Implement SingleWindowConfiguration.title
+                nil
+            }
+        }
 
         // MARK: - SceneList.Item.Summary
 
