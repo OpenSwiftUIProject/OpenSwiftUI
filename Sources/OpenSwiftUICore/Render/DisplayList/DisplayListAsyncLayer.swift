@@ -94,11 +94,7 @@ extension DisplayList.ViewUpdater {
         static let keyPath = "backgroundColor"
 
         static func boxValue(_ value: Color.Resolved) -> NSObject {
-            #if canImport(Darwin)
             unsafeDowncast(value.cgColor, to: NSObject.self)
-            #else
-            _openSwiftUIPlatformUnimplementedFailure()
-            #endif
         }
     }
 
@@ -190,14 +186,10 @@ extension DisplayList.ViewUpdater {
         static let keyPath = "contentsMultiplyColor"
 
         static func boxValue(_ value: Color.Resolved?) -> NSObject {
-            #if canImport(Darwin)
             guard let value else {
                 return NSNull()
             }
             return unsafeDowncast(value.cgColor, to: NSObject.self)
-            #else
-            _openSwiftUIPlatformUnimplementedFailure()
-            #endif
         }
     }
 

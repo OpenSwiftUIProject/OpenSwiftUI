@@ -367,11 +367,7 @@ extension DisplayList.ViewUpdater {
         static let keyPath = "shadowColor"
 
         static func boxValue(_ value: Color.Resolved) -> NSObject {
-            #if canImport(Darwin)
             unsafeDowncast(value.cgColor, to: NSObject.self)
-            #else
-            _openSwiftUIPlatformUnimplementedFailure()
-            #endif
         }
     }
 }

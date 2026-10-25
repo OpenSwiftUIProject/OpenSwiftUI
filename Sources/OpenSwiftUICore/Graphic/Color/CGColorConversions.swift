@@ -6,9 +6,7 @@
 //  Status: Blocked by ResolvedGradient
 //  ID: A45C110C8134A7DB30776EFC6CE1E8A6 (SwiftUICore)
 
-#if canImport(Darwin)
-
-public import CoreGraphics
+public import OpenCoreGraphicsShims
 
 // MARK: - CGColor + Color
 
@@ -103,5 +101,3 @@ extension Color.Resolved {
 //    get
 //  }
 //}
-
-#endif
