@@ -201,7 +201,7 @@ package struct ResolvedVectorGlyph: Equatable {
         #endif
         animator.variableValue = variableValue
         animator.flipsRightToLeft = flipsRightToLeft
-        animator.renderingMode = context.effectiveSymbolRenderingMode?.rbRenderingMode ?? 255
+        animator.renderingMode = context.effectiveSymbolRenderingMode?.rbRenderingMode ?? .unspecified
         let direction = context.environment.layoutDirection
         let version = animator.version
         let options = context.options
@@ -237,9 +237,9 @@ package struct ResolvedVectorGlyph: Equatable {
     }
 
     package var resolvedRenderingMode: SymbolRenderingMode.Storage? {
-        #if OPENSWIFTUI_LINK_COREUI && OPENSWIFTUI_RENDERBOX
+        #if OPENSWIFTUI_LINK_COREUI
         let rbMode = animator.renderingMode
-        guard rbMode == 0 else {
+        guard rbMode == .preferred else {
             return SymbolRenderingMode(rbRenderingMode: rbMode)?.storage
         }
         guard let glyph = animator.glyph else {

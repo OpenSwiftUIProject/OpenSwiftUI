@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: FE3FF33C1D9A704A22DF5519034B23F2 (SwiftUICore)
 
+package import OpenRenderBoxShims
+
 // MARK: - SymbolRenderingMode
 
 /// A symbol rendering mode.
@@ -101,29 +103,29 @@ public struct SymbolRenderingMode: Sendable {
 // MARK: - SymbolRenderingMode + RB Rendering Mode
 
 extension SymbolRenderingMode {
-    package var rbRenderingMode: UInt32 {
+    package var rbRenderingMode: ORBSymbolRenderingMode {
         switch storage {
-        case .monochrome: 1
-        case .multicolor: 2
-        case .hierarchical: 3
-        case .palette: 4
-        case .preferred: 0
-        case .hierarchicalUnlessSlashed: 128
-        case .hierarchicalSlashBadge: 129
-        case .paletteSlashBadge: 130
+        case .monochrome: .monochrome
+        case .multicolor: .multicolor
+        case .hierarchical: .hierarchical
+        case .palette: .palette
+        case .preferred: .preferred
+        case .hierarchicalUnlessSlashed: .hierarchicalUnlessSlashed
+        case .hierarchicalSlashBadge: .hierarchicalSlashBadge
+        case .paletteSlashBadge: .paletteSlashBadge
         }
     }
 
-    package init?(rbRenderingMode mode: UInt32) {
+    package init?(rbRenderingMode mode: ORBSymbolRenderingMode) {
         switch mode {
-        case 0: self = .preferred
-        case 1: self = .monochrome
-        case 2: self = .multicolor
-        case 3: self = .hierarchical
-        case 4: self = .palette
-        case 128: self = .hierarchicalUnlessSlashed
-        case 129: self = .hierarchicalSlashBadge
-        case 130: self = .paletteSlashBadge
+        case .preferred: self = .preferred
+        case .monochrome: self = .monochrome
+        case .multicolor: self = .multicolor
+        case .hierarchical: self = .hierarchical
+        case .palette: self = .palette
+        case .hierarchicalUnlessSlashed: self = .hierarchicalUnlessSlashed
+        case .hierarchicalSlashBadge: self = .hierarchicalSlashBadge
+        case .paletteSlashBadge: self = .paletteSlashBadge
         default: return nil
         }
     }

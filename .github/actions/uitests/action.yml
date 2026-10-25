@@ -179,6 +179,13 @@ runs:
         test_arguments=(-workspace Example.xcworkspace)
         if [[ "${{ inputs.test-suite }}" == "InteractionTests" ]]; then
           test_arguments+=(-parallel-testing-enabled NO)
+        elif [[ "${{ inputs.platform }}" == "macos" &&
+                "$UITEST_ONLY_TESTING" =~ ^[^/]+/[^/]+$ ]]; then
+          # FIXME:
+          # Xcode 26.6 can dispatch a macOS suite filter twice. Affected recording
+          # runs can terminate with SIGTRAP and leave xcresult without Info.plist.
+          # Swift Testing's .serialized trait does not prevent duplicate dispatch.
+          test_arguments+=(-parallel-testing-enabled NO)
         fi
         if [[ -n "$UITEST_ONLY_TESTING" ]]; then
           test_arguments+=("-only-testing:$UITEST_ONLY_TESTING")
