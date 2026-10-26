@@ -7,6 +7,7 @@
 //  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore)
 
 import Foundation
+import OpenCoreGraphicsShims
 import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved
@@ -93,11 +94,9 @@ private struct ResolvedColorProvider: ColorProvider {
         color
     }
     
-    #if canImport(Darwin)
     var staticColor: CGColor? {
         color.cgColor
     }
-    #endif
     
     var colorDescription: String {
         let linearRed = color.linearRed
@@ -281,9 +280,7 @@ extension Color.Resolved {
 
 extension Color {
     struct DisplayP3: ColorProvider {
-        #if canImport(Darwin)
         private static let p3ColorSpace = CGColorSpace(name: CGColorSpace.displayP3)!
-        #endif
         
         let red: CGFloat
         let green: CGFloat
@@ -294,12 +291,10 @@ extension Color {
             Color.Resolved(displayP3Red: Float(red), green: Float(green), blue: Float(blue), opacity: opacity)
         }
         
-        #if canImport(Darwin)
         var staticColor: CGColor? {
             var components: [CGFloat] = [red, green, blue, CGFloat(opacity)]
             return CGColor(colorSpace: Self.p3ColorSpace, components: &components)
         }
-        #endif
     }
 }
 

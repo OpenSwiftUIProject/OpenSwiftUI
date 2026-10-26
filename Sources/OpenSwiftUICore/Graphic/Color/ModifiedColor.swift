@@ -6,10 +6,8 @@
 //  ID: B495DF025D9B78431A787E266E7D8FB1 (SwiftUI)
 //  ID: F28C5F7FF836E967BAC87540A3CB4F65 (SwiftUICore)
 
-#if canImport(Darwin)
-import CoreGraphics
 import Foundation
-#endif
+import OpenCoreGraphicsShims
 import OpenSwiftUI_SPI
 
 @available(OpenSwiftUI_v1_0, *)
@@ -25,14 +23,12 @@ extension Color {
             base.provider.resolve(in: environment).multiplyingOpacity(by: Float(opacity))
         }
 
-        #if canImport(Darwin)
         var staticColor: CGColor? {
             guard let baseStaticColor = base.provider.staticColor else {
                 return nil
             }
             return baseStaticColor.copy(alpha: opacity * baseStaticColor.alpha)!
         }
-        #endif
 
         var description: String {
             "\(Int(opacity * 100 + 0.5))% \(base)"
@@ -157,14 +153,12 @@ extension Color {
             return resolved
         }
 
-        #if canImport(Darwin)
         var staticColor: CGColor? {
             guard let baseStaticColor = base.provider.staticColor else {
                 return nil
             }
             return baseStaticColor.copy(alpha: CGFloat(opacity))!
         }
-        #endif
     }
 
     public func _settingOpacity(_ opacity: Double) -> Color {

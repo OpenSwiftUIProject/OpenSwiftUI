@@ -6,9 +6,6 @@
 //  Status: Complete
 
 import Foundation
-#if canImport(Darwin)
-import CoreGraphics
-#endif
 
 extension Color {
     /// A profile that specifies how to interpret a color value for display.
