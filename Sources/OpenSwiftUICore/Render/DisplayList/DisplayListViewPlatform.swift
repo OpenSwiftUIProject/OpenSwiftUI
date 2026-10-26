@@ -1212,13 +1212,10 @@ extension DisplayList.ViewUpdater.Platform {
                     state: .init(kind: .image)
                 )
             case let .shape(path, paint, _):
-                var visitor = ShapeLayerHelper.Visitor(
-                    shapeType: ShapeType(path),
-                    mayClip: !state.pointee.hasDODEffects,
-                    requiredType: nil
+                let layerType = ShapeLayerHelper.layerType(
+                    path, paint, mayClip: !state.pointee.hasDODEffects
                 )
-                paint.visit(&visitor)
-                let view = definition.makeLayerView(type: visitor.requiredType!, kind: .shape)
+                let view = definition.makeLayerView(type: layerType, kind: .shape)
                 return DisplayList.ViewUpdater.ViewInfo(
                     view: view,
                     layer: viewLayer(view),

@@ -161,6 +161,29 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
         }
     }
 
+    static func layerType(
+        _ path: Path,
+        _ paint: AnyResolvedPaint,
+        mayClip: Bool
+    ) -> CALayer.Type {
+        struct Visitor: ResolvedPaintVisitor {
+            var shapeType: ShapeType
+            var mayClip: Bool
+            var requiredType: CALayer.Type?
+
+            mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
+                requiredType = contentLayerType(
+                    shapeType,
+                    PaintType(paint),
+                    mayClip: mayClip
+                )
+            }
+        }
+        var visitor = Visitor(shapeType: ShapeType(path), mayClip: mayClip)
+        paint.visit(&visitor)
+        return visitor.requiredType!
+    }
+
     static func updateAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         old: UnsafeMutablePointer<ShapeLayerHelper>,
