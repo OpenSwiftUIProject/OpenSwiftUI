@@ -18,6 +18,14 @@ function validateVersion(version) {
   return version;
 }
 
+async function validateSourceVersion(version, directory = path.resolve(__dirname, "../..")) {
+  validateVersion(version);
+  const sourceVersion = validateVersion((await fs.readFile(path.join(directory, "VERSION.txt"), "utf8")).trim());
+  if (sourceVersion !== version) {
+    throw new Error(`Update VERSION.txt to ${version} before releasing (found ${sourceVersion}).`);
+  }
+}
+
 function validateSHA(sha) {
   if (typeof sha !== "string" || sha.length !== 40 || !/^[0-9a-f]+$/.test(sha)) {
     throw new Error("A full commit SHA is required.");
@@ -201,7 +209,7 @@ async function renderBinaryPackage(source, binary, observation, manifest) {
 }
 
 module.exports = {
-  frameworks, requiredChecks, validateVersion, validateSHA, validateReleaseRef, assertChecks,
+  frameworks, requiredChecks, validateVersion, validateSourceVersion, validateSHA, validateReleaseRef, assertChecks,
   getTagSHA, ensureTag, writeManifest, verifyManifest, prepareRelease, publishRelease, renderBinaryPackage,
 };
 

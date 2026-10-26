@@ -3,6 +3,7 @@
 import PackageDescription
 
 #if TUIST
+import Foundation
 import ProjectDescriptionHelpers
 
 public struct PackageContextEnvironmentProvider: EnvironmentProvider {
@@ -75,10 +76,16 @@ let openSwiftUIPackageConfigurations: [Configuration] = [
     .debug(name: "OpenSwiftUIDebug", settings: openSwiftUIPackageDebugSettings),
     .release(name: "OpenSwiftUIRelease", settings: openSwiftUIPackageReleaseSettings),
 ]
+let openSwiftUIModuleVersion = try String(
+    contentsOfFile: "\(Context.packageDirectory)/../../VERSION.txt",
+    encoding: .utf8
+).trimmingCharacters(in: .whitespacesAndNewlines)
 let openSwiftUITargetSettings: SettingsDictionary = [
+    "SWIFT_USER_MODULE_VERSION": .string(openSwiftUIModuleVersion),
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
 ]
 let openSwiftUICoreTargetSettings: SettingsDictionary = [
+    "SWIFT_USER_MODULE_VERSION": .string(openSwiftUIModuleVersion),
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
     "OTHER_LDFLAGS": "$(inherited) -ObjC",
 ]

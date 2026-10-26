@@ -92,6 +92,14 @@ jobs:
                 .addTable([['Requested by', context.actor]])
                 .addCodeBlock(skipReason, 'text').write();
             }
+      - name: Verify source version
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ steps.prepare.outputs.version }}
+        with:
+          script: |
+            const { validateSourceVersion } = require('./Scripts/CI/release.js');
+            await validateSourceVersion(process.env.VERSION);
 
   checks:
     if: ${{ !inputs.skip_checks }}

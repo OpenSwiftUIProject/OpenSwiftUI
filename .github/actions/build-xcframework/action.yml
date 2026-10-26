@@ -76,6 +76,9 @@ runs:
     - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh --compute OpenSwiftUI
       shell: bash
+    - name: Verify module versions
+      run: python3 Scripts/CI/check_binary_version.py build
+      shell: bash
     - name: Clean up UIKit header overlay
       if: always()
       shell: bash

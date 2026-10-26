@@ -1057,7 +1057,12 @@ if let configuredAGBackend = envStringValue("AG_BACKEND_NAME") {
 }
 let openSwiftUIBuildRendererBackend = envStringValue("RENDERER_BACKEND_NAME") ?? (swiftUIRenderCondition ? "SwiftUI" : "OpenSwiftUI")
 let openSwiftUIBuildLibraryType = configuredLibraryType ?? "automatic"
+let openSwiftUIModuleVersion = try String(
+    contentsOfFile: "\(Context.packageDirectory)/VERSION.txt",
+    encoding: .utf8
+).trimmingCharacters(in: .whitespacesAndNewlines)
 let openSwiftUITargetSettings: SettingsDictionary = [
+    "SWIFT_USER_MODULE_VERSION": .string(openSwiftUIModuleVersion),
     "INFOPLIST_FILE": .string("Configurations/OpenSwiftUI-Info.plist"),
     "OPENSWIFTUI_BUILD_AG_BACKEND": .string(openSwiftUIBuildAGBackend),
     "OPENSWIFTUI_BUILD_RENDERER_BACKEND": .string(openSwiftUIBuildRendererBackend),
@@ -1065,6 +1070,7 @@ let openSwiftUITargetSettings: SettingsDictionary = [
     "OPENSWIFTUI_BUILD_USES_LOCAL_DEPENDENCIES": .string(useLocalDeps ? "YES" : "NO"),
 ]
 let openSwiftUICoreTargetSettings: SettingsDictionary = [
+    "SWIFT_USER_MODULE_VERSION": .string(openSwiftUIModuleVersion),
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
     "OTHER_LDFLAGS": "$(inherited) -ObjC",
 ]

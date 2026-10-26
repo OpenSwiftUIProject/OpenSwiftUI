@@ -55,6 +55,10 @@ tuist_mise() {
         return 1
     fi
 
+    if [[ "$*" == "exec -- tuist clean manifests" && "${TEST_CLEAN_SHOULD_FAIL:-false}" == "true" ]]; then
+        return 1
+    fi
+
     if [[ "$*" == "exec -- tuist auth login" && "${TEST_AUTH_SHOULD_FAIL:-false}" == "true" ]]; then
         return 1
     fi
@@ -69,6 +73,7 @@ test_ci_setup_does_not_start_cache() (
     tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
 
     assert_contains "$TEST_COMMAND_LOG" "install"
+    assert_contains "$TEST_COMMAND_LOG" "exec -- tuist clean manifests"
     assert_contains "$TEST_COMMAND_LOG" "tuist auth login"
     assert_not_contains "$TEST_COMMAND_LOG" "tuist setup cache"
 )
@@ -146,8 +151,29 @@ test_mise_install_failure_remains_fatal() (
         return 1
     fi
 
+    assert_not_contains "$TEST_COMMAND_LOG" "tuist clean"
     assert_not_contains "$TEST_COMMAND_LOG" "tuist auth login"
     assert_not_contains "$TEST_COMMAND_LOG" "tuist setup cache"
+)
+
+test_manifest_cleanup_failure_remains_fatal() (
+    local temporary_directory
+    temporary_directory="$(mktemp -d)"
+    trap 'rm -rf "$temporary_directory"' EXIT
+    configure_test_environment "$temporary_directory"
+    TEST_CLEAN_SHOULD_FAIL=true
+
+    set +e
+    tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
+    local status=$?
+    set -e
+
+    if [[ $status -eq 0 ]]; then
+        echo "Expected manifest cleanup failure to remain fatal." >&2
+        return 1
+    fi
+
+    assert_not_contains "$TEST_COMMAND_LOG" "tuist auth login"
 )
 
 run_test() {
@@ -174,3 +200,4 @@ run_test test_ci_setup_does_not_start_cache
 run_test test_build_keeps_local_cache_locally_and_in_ci
 run_test test_authentication_failure_remains_fatal
 run_test test_mise_install_failure_remains_fatal
+run_test test_manifest_cleanup_failure_remains_fatal

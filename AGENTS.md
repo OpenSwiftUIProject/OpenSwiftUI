@@ -130,6 +130,19 @@ the cases span several suites, so one comment covers the whole change. See
 [Docs/CI/UITest.md](Docs/CI/UITest.md) for the command grammar and
 configuration aliases.
 
+## Release Version Lifecycle
+
+- `VERSION.txt` contains the next release planned for the current branch.
+- After tagging a release from `main` and cutting its `release/<major>.<minor>`
+  branch, bump `main` to the next minor with patch zero, for example
+  `0.25.0` to `0.26.0`.
+- On a maintenance branch, bump to the next patch after pushing the release
+  tag, for example `release/0.25` from `0.25.1` to `0.25.2`. A new maintenance
+  branch cut from `0.25.0` starts development at `0.25.1`.
+- Use a separate version-bump commit. Keep the release tag and its version
+  unchanged. Follow [the release guide](Docs/Release.md#next-release-version)
+  and clear the Tuist manifest cache before local project generation.
+
 ## Dependencies Setup
 
 The project requires cloning additional repositories in the same parent directory:

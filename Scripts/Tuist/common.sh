@@ -42,6 +42,8 @@ tuist_ci_setup() (
     cd "$TUIST_REPOSITORY_ROOT"
     tuist_trust_mise_configuration
     tuist_mise install
+    # VERSION.txt is not part of Tuist's manifest cache key.
+    tuist_mise exec -- tuist clean manifests
     tuist_mise exec -- tuist auth login
 )
 

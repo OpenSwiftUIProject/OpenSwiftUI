@@ -75,6 +75,21 @@ test("release requests use main or the matching maintenance branch", () => {
   }
 });
 
+test("releases require a matching valid version in the source checkout", async t => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "openswiftui-source-version-"));
+  t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  const file = path.join(directory, "VERSION.txt");
+  await fs.writeFile(file, `${version}\n`);
+  await release.validateSourceVersion(version, directory);
+  await assert.rejects(release.validateSourceVersion("0.21.0", directory), /VERSION.txt.*0.21.0/);
+  for (const value of ["", "0.20.0-dev", "0.20.0\n0.21.0"]) {
+    await fs.writeFile(file, value);
+    await assert.rejects(release.validateSourceVersion(version, directory), /stable version/);
+  }
+  await fs.unlink(file);
+  await assert.rejects(release.validateSourceVersion(version, directory), /VERSION.txt/);
+});
+
 test("every required check must succeed on the candidate SHA", () => {
   const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
     result: "success", outputs: { "verified-sha": sha },
