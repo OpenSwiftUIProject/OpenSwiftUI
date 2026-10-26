@@ -15,7 +15,7 @@ import UIKit
 // MARK: - UIPress + KeyEventProvider
 
 extension UIPress: KeyEventProvider {
-    func resolve(phase: EventPhase) -> KeyEvent? {
+    package func resolve(phase: EventPhase) -> KeyEvent? {
         guard let key else {
             return nil
         }

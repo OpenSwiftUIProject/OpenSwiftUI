@@ -1,0 +1,8 @@
+module COpenSwiftUI {
+    umbrella "."
+    exclude header "Public/OpenSwiftUI.h"
+    exclude header "Public/OpenSwiftUI_Metal.h"
+    export *
+}
+
+extern module OpenSwiftUI "Public/module.modulemap"

@@ -571,6 +571,12 @@ build_framework() {
         ln -s Versions/Current/Modules "$framework/Modules"
     fi
 
+    case "$scheme" in
+        OpenSwiftUI|OpenSwiftUICore)
+            node "$SCRIPT_DIR/install_framework_headers.js" "$scheme" "$framework"
+            ;;
+    esac
+
     flatten_framework_resource_bundles "$scheme" "$framework"
     node "$SCRIPT_DIR/normalize_swiftinterface.js" "$modules_path"
     strip_release_metadata "$modules_path"

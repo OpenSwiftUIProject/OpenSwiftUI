@@ -13,7 +13,7 @@ import OpenSwiftUICore
 // MARK: - NSEvent + KeyEventProvider
 
 extension NSEvent: KeyEventProvider {
-    func resolve(phase: EventPhase) -> KeyEvent? {
+    package func resolve(phase: EventPhase) -> KeyEvent? {
         KeyEvent(
             phase: isARepeat ? .active : phase,
             timestamp: Time(seconds: timestamp),

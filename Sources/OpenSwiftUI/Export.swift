@@ -16,6 +16,14 @@ package typealias UniqueID = OpenSwiftUICore.UniqueID
 @_exported import CoreGraphics
 #endif
 
+#if canImport(CoreTransferable)
+@_exported import CoreTransferable
+#endif
+
+#if canImport(DeveloperToolsSupport)
+@_exported import DeveloperToolsSupport
+#endif
+
 #if canImport(OpenCombine)
 public import OpenCombine
 public typealias Published = OpenCombine.Published
