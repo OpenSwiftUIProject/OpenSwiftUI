@@ -7,10 +7,7 @@ import Testing
 @testable import TestingHost
 
 @MainActor
-@Suite(
-    .disabled("GradientLayer is not implemented."),
-    .snapshots(record: .never, diffTool: diffTool)
-)
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct GradientUITests {
     @Test(arguments: GradientExample.Kind.allCases)
     func concreteStyles(kind: GradientExample.Kind) {
