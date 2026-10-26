@@ -118,8 +118,19 @@ extern bool swift_dynamicCast(void *dest, void *src,
                   const void *targetType,
                   uint64_t flags);
 
+enum {
+    DynamicCastUnconditional = 0x1,
+    DynamicCastDestroyOnFailure = 0x4,
+};
+
 static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, const void *targetType, uint64_t flags) {
-    bool result = swift_dynamicCast(dest, src, srcType, targetType, flags);
+    bool hasColorFallback = targetType == &$s7SwiftUI5ColorV8ResolvedVN;
+    // A failed first attempt must not destroy the source or trap before the
+    // fallback. The final attempt applies the caller's original flags.
+    uint64_t firstFlags = hasColorFallback
+        ? flags & ~(uint64_t)(DynamicCastUnconditional | DynamicCastDestroyOnFailure)
+        : flags;
+    bool result = swift_dynamicCast(dest, src, srcType, targetType, firstFlags);
     if (result) {
         return result;
     }
@@ -134,7 +145,7 @@ static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, con
     }
     // If dynamicCast check failed and the target is SwiftUI's Color.Resolved
     // retry with OpenSwiftUI's Color.Resolved
-    if (targetType == &$s7SwiftUI5ColorV8ResolvedVN) {
+    if (hasColorFallback) {
         result = swift_dynamicCast(dest, src, srcType, _OpenSwiftUI_ColorResolvedNTD(), flags);
         if (result) {
             CFStringRef description = _interpose_type_description(srcType);
