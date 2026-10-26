@@ -19,6 +19,7 @@ Example for iOS Simulator, macOS, and visionOS Simulator against their textual
 interfaces. No simulator boots.
 
 PROJECT_BUILD_DIR sets the build directory (default: ../build).
+VERSION.txt in the source checkout sets the expected Swift module version.
 OPENSWIFTUI_BINARY_PACKAGE_PATH selects the consumer checkout
 (default: ../OpenSwiftUI-spm; cloned with gh if absent).
 --skip-build verifies existing XCFrameworks without rebuilding them.
@@ -55,12 +56,16 @@ for framework in OpenSwiftUI OpenSwiftUICore OpenAttributeGraphShims \
     fi
 done
 
+verification_root="$(mktemp -d "$BUILD_ROOT/interface-check.XXXXXX")"
+python3 "$SOURCE_ROOT/Scripts/CI/check_binary_version.py" \
+    "$BUILD_ROOT" \
+    --check-imports "$verification_root/versions"
+
 if [[ ! -e "$PACKAGE_ROOT" ]]; then
     gh repo clone OpenSwiftUIProject/OpenSwiftUI-spm "$PACKAGE_ROOT"
 fi
 PACKAGE_ROOT="$(cd "$PACKAGE_ROOT" && pwd -P)"
 export OPENSWIFTUI_LOCAL_XCFRAMEWORKS_PATH="$BUILD_ROOT"
-verification_root="$(mktemp -d "$BUILD_ROOT/interface-check.XXXXXX")"
 echo "Binary package: $PACKAGE_ROOT"
 echo "Local XCFrameworks: $OPENSWIFTUI_LOCAL_XCFRAMEWORKS_PATH"
 echo "Verification results: $verification_root"

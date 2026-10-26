@@ -1,11 +1,12 @@
 const assert = require("node:assert/strict");
 const { execFileSync } = require("node:child_process");
+const { readFileSync } = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 const release = require("../release.js");
 
-const names = ["release_checks", "release_create", "release_publish", "release_notes", "documentation"];
+const names = ["release_checks", "release_create", "release_build", "binary_interface", "release_publish", "release_notes", "documentation"];
 const workflows = Object.fromEntries(names.map(name => [name, JSON.parse(execFileSync("ruby", [
   "-ryaml", "-rjson", "-e", 'doc = YAML.load_file(ARGV[0]); puts JSON.generate(doc)',
   path.join(__dirname, "../../../.github/workflows", `${name}.yml`),
@@ -13,6 +14,21 @@ const workflows = Object.fromEntries(names.map(name => [name, JSON.parse(execFil
 const sha = "a".repeat(40);
 const otherSHA = "b".repeat(40);
 const repo = { owner: "OpenSwiftUIProject", repo: "OpenSwiftUI" };
+
+test("binary builds use the source version and verify interfaces before signing", () => {
+  assert.equal(workflows.release_create.jobs.checks.with.version, undefined);
+  assert.equal(workflows.release_checks.jobs["binary-interface"].with.version, undefined);
+  assert.equal(workflows.binary_interface.jobs.verify.env.OPENSWIFTUI_MODULE_VERSION, undefined);
+  const action = JSON.parse(execFileSync("ruby", ["-ryaml", "-rjson", "-e", "puts JSON.generate(YAML.load_file(ARGV[0]))",
+    path.join(__dirname, "../../../.github/actions/build-xcframework/action.yml")], { encoding: "utf8" }));
+  const producer = workflows.release_build.jobs.build.steps.find(step => step.uses === "./.github/actions/build-xcframework");
+  assert.equal(producer.with["tag-name"], "${{ inputs.version }}");
+  const build = action.runs.steps.find(step => step.name === "Build XCFrameworks");
+  const verify = action.runs.steps.find(step => step.name === "Verify module versions");
+  assert.equal(build.env?.OPENSWIFTUI_MODULE_VERSION, undefined);
+  assert.equal(verify.run, "python3 Scripts/CI/check_binary_version.py build");
+  assert.ok(action.runs.steps.indexOf(verify) < action.runs.steps.findIndex(step => step.name === "Code sign XCFrameworks"));
+});
 
 async function script(step, env, context = {}, github = {}, observations = {}) {
   const outputs = {};
@@ -29,6 +45,21 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
   });
   return outputs;
 }
+
+test("release preparation and builds reject a version that differs from the checkout", async () => {
+  const version = readFileSync(path.join(__dirname, "../../../VERSION.txt"), "utf8").trim();
+  const steps = [
+    workflows.release_create.jobs.prepare.steps.find(step => step.name === "Verify source version"),
+    workflows.release_build.jobs.build.steps.find(step => step.name === "Validate release build inputs"),
+  ];
+  const env = { VERSION: version, EXPECTED_SHA: sha, CHECKOUT_SHA: sha, SIGNING_CERTIFICATE: "certificate", SIGNING_PASSWORD: "password" };
+  for (const step of steps) {
+    assert.ok(step);
+    await script(step, env);
+    const mismatch = `${Number(version.split(".")[0]) + 1}.0.0`;
+    await assert.rejects(script(step, { ...env, VERSION: mismatch }), /Update VERSION.txt/);
+  }
+});
 
 test("pre-release covers every check family at one SHA and all optional configurations", () => {
   const { jobs } = workflows.release_checks;

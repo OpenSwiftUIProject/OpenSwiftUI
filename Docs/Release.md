@@ -120,6 +120,12 @@ the release publication workflow continues to verify existing references.
 
 ## Publish a Release
 
+The root `VERSION.txt` contains the next release planned for the current branch.
+Before `0.25.0` is published, for example, `main` contains `0.25.0`. OpenSwiftUI
+and OpenSwiftUICore use this file for their Swift module versions. Release
+preparation and the release build reject a tag or requested version that differs
+from the file in the selected commit.
+
 To publish an exact reviewed commit, create and push its version tag:
 
 ```shell
@@ -157,6 +163,28 @@ A successful run includes the checked tag, signed assets, release notes,
 matching binary package tag, and documentation deployment. Also inspect the
 binary repository's Example CI, which is triggered by its own push and is
 outside this workflow, and the published documentation selector.
+
+## Next Release Version
+
+After creating the release tag and cutting the maintenance branch, advance
+`VERSION.txt` in separate development commits. The release tag keeps the version
+that it publishes.
+
+| Branch | Completed action | Next value in `VERSION.txt` |
+| --- | --- | --- |
+| `main` | Tag `0.25.0` and cut `release/0.25` from the release commit | `0.26.0` |
+| `release/0.25` | Start maintenance after `0.25.0` | `0.25.1` |
+| `release/0.25` | Push the `0.25.1` tag | `0.25.2` |
+
+For normal releases from `main`, increment the minor component and reset the
+patch component to zero. On `release/<major>.<minor>`, increment only the patch
+component. Complete the branch cut before advancing `main`, so maintenance
+starts from the released source.
+
+Keep the version bump separate from the tagged commit. Release jobs use the
+pinned release commit, so a later branch bump does not change its binaries or
+version checks. Clear the Tuist manifest cache before generating a local project
+after the bump, as described below.
 
 ## Release Titles and Notes
 
@@ -207,6 +235,33 @@ macOS, and visionOS Simulator (arm64). It does not boot a simulator.
 The consumer prefers textual interfaces, even with the same compiler as the
 producer, and uses fresh DerivedData to avoid cached modules hiding errors.
 
+The root and Example Tuist manifests read `VERSION.txt` from the source checkout
+and set `SWIFT_USER_MODULE_VERSION` on OpenSwiftUI and OpenSwiftUICore. Local
+and release builds use the same file; no version environment variable or Git tag
+lookup is needed. Keep a numeric `major.minor.patch` value in the file, without
+a `v` prefix or prerelease suffix. Tuist's manifest cache does not track reads
+of `VERSION.txt`. After updating the file, clear that cache and regenerate:
+
+```shell
+mise exec -- tuist clean manifests
+mise exec -- tuist generate --no-open
+```
+
+For Example, run `Example/setup.sh --compute` after the clean command instead.
+CI jobs that use `tuist_ci_setup` clear the manifest cache before generation,
+including binary builds and interface checks. Other cache categories are kept.
+Dependency targets retain their own version settings. Plain SwiftPM source
+builds do not set this Xcode setting.
+
+The check reads the same file, requires its version in every public interface, and
+compiles `canImport` checks for each published platform and architecture. The
+expected version must match, and the next patch version must not match. The
+final packaging build also verifies interface metadata before signing.
+Consumers can check a minimum binary release with
+`#if canImport(OpenSwiftUI, _version: 0.25.0)` or the corresponding
+OpenSwiftUICore condition. Older binaries without module version metadata warn
+and ignore the version condition; they do not reliably select the false branch.
+
 Before packaging and final signing, the build normalizes duplicate platform
 introductions in all public, private, and package Swift interfaces. For each
 platform, it keeps the highest version in a short-form `@available` attribute.
@@ -256,7 +311,9 @@ retain those artifacts as described under retry instructions below.
 
 Keep fixes for a supported series on `release/<major>.<minor>`. Create that
 branch from an exact reviewed commit, or from the series' last published tag,
-and ensure it contains the release workflows. Use the same entry:
+and ensure it contains the release workflows. Set `VERSION.txt` to the next
+patch release on that branch. After pushing its release tag, advance the file
+to the following patch in a separate commit. Use the same entry:
 
 ```shell
 gh workflow run release_create.yml \

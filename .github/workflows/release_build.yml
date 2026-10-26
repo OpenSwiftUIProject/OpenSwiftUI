@@ -53,8 +53,8 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
         with:
           script: |
-            const { validateVersion, validateSHA } = require('./Scripts/CI/release.js');
-            validateVersion(process.env.VERSION);
+            const { validateSourceVersion, validateSHA } = require('./Scripts/CI/release.js');
+            await validateSourceVersion(process.env.VERSION);
             validateSHA(process.env.EXPECTED_SHA);
             if (process.env.CHECKOUT_SHA !== process.env.EXPECTED_SHA) throw new Error('Release checkout SHA mismatch.');
             if (!process.env.SIGNING_CERTIFICATE || !process.env.SIGNING_PASSWORD) throw new Error('Release signing secrets are required.');

@@ -55,6 +55,9 @@ Options:
   --keep-derived-data     Reuse DerivedData from a previous build.
   --framework <name>      Build one framework. May be passed multiple times.
   --help                  Show this help.
+
+The Swift module version for OpenSwiftUI and OpenSwiftUICore comes from
+VERSION.txt in the source checkout.
 USAGE
 }
 

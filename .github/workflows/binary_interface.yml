@@ -61,3 +61,5 @@ jobs:
             ${{ runner.temp }}/binary-interface/interface-check.*/setup.log
             ${{ runner.temp }}/binary-interface/interface-check.*/*/build.log
             ${{ runner.temp }}/binary-interface/interface-check.*/*/Example.xcresult
+            ${{ runner.temp }}/binary-interface/interface-check.*/versions/*.log
+            ${{ runner.temp }}/binary-interface/interface-check.*/versions/VersionCheck.swift
