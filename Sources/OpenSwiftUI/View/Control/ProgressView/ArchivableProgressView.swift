@@ -165,19 +165,3 @@ struct ResolvedCircularPlaybackProgressView: View {
         }
     }
 }
-
-// MARK: - CircularPercentageGaugeRing [TODO]
-
-struct CircularPercentageGaugeRing: TimelineProgressViewBase {
-    var fractionCompleted: Double
-    var tint: AnyShapeStyle
-
-    init(fractionCompleted: Double, tint: Color?) {
-        self.fractionCompleted = fractionCompleted
-        self.tint = AnyShapeStyle(tint ?? .primary)
-    }
-
-    var body: some View {
-        EmptyView()
-    }
-}
