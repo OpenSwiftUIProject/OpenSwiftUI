@@ -111,6 +111,33 @@ const void *_OpenSwiftUI_ColorResolvedNTD(void) {
     return &$s11OpenSwiftUI5ColorV8ResolvedVN;
 }
 
+// MARK: - Resolved Paint Metadata
+
+extern const void $s7SwiftUI14LinearGradientV6_PaintVN;
+extern const void $s11OpenSwiftUI14LinearGradientV6_PaintVN;
+extern const void $s7SwiftUI14RadialGradientV6_PaintVN;
+extern const void $s11OpenSwiftUI14RadialGradientV6_PaintVN;
+extern const void $s7SwiftUI18EllipticalGradientV6_PaintVN;
+extern const void $s11OpenSwiftUI18EllipticalGradientV6_PaintVN;
+extern const void $s7SwiftUI15AngularGradientV6_PaintVN;
+extern const void $s11OpenSwiftUI15AngularGradientV6_PaintVN;
+
+static const void *_interpose_resolved_paint_type(const void *targetType) {
+    // These payloads, including gradient stops, must match the system layout.
+    if (targetType == &$s7SwiftUI5ColorV8ResolvedVN) {
+        return _OpenSwiftUI_ColorResolvedNTD();
+    } else if (targetType == &$s7SwiftUI14LinearGradientV6_PaintVN) {
+        return &$s11OpenSwiftUI14LinearGradientV6_PaintVN;
+    } else if (targetType == &$s7SwiftUI14RadialGradientV6_PaintVN) {
+        return &$s11OpenSwiftUI14RadialGradientV6_PaintVN;
+    } else if (targetType == &$s7SwiftUI18EllipticalGradientV6_PaintVN) {
+        return &$s11OpenSwiftUI18EllipticalGradientV6_PaintVN;
+    } else if (targetType == &$s7SwiftUI15AngularGradientV6_PaintVN) {
+        return &$s11OpenSwiftUI15AngularGradientV6_PaintVN;
+    }
+    return NULL;
+}
+
 // MARK: - swift_dynamicCast
 
 extern bool swift_dynamicCast(void *dest, void *src,
@@ -124,10 +151,10 @@ enum {
 };
 
 static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, const void *targetType, uint64_t flags) {
-    bool hasColorFallback = targetType == &$s7SwiftUI5ColorV8ResolvedVN;
+    const void *fallbackType = _interpose_resolved_paint_type(targetType);
     // A failed first attempt must not destroy the source or trap before the
     // fallback. The final attempt applies the caller's original flags.
-    uint64_t firstFlags = hasColorFallback
+    uint64_t firstFlags = fallbackType != NULL
         ? flags & ~(uint64_t)(DynamicCastUnconditional | DynamicCastDestroyOnFailure)
         : flags;
     bool result = swift_dynamicCast(dest, src, srcType, targetType, firstFlags);
@@ -143,10 +170,9 @@ static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, con
          CFStringHasPrefix(srcDescription, CFSTR("OpenSwiftUICore.")))) {
         os_log_info(interpose_log(), "swift_dynamicCast failed for target: %{public}@ src: %{public}@", targetDescription, srcDescription);
     }
-    // If dynamicCast check failed and the target is SwiftUI's Color.Resolved
-    // retry with OpenSwiftUI's Color.Resolved
-    if (hasColorFallback) {
-        result = swift_dynamicCast(dest, src, srcType, _OpenSwiftUI_ColorResolvedNTD(), flags);
+    // Retry supported resolved paints with the matching OpenSwiftUI metadata.
+    if (fallbackType != NULL) {
+        result = swift_dynamicCast(dest, src, srcType, fallbackType, flags);
         if (result) {
             CFStringRef description = _interpose_type_description(srcType);
             os_log_info(interpose_log(), "swift_dynamicCast succeeded for %{public}@", description);
@@ -208,7 +234,7 @@ __attribute__((used)) static const interpose_t interposers[]
     // Interpose kdebug_is_enabled to always return true to perform Signpost testing with Instruments
     { (const void *)my_kdebug_is_enabled, (const void *)kdebug_is_enabled },
 #if OPENSWIFTUI_SWIFTUI_RENDERER
-    // Interpose swift_dynamicCast to handle casts to SwiftUI's internal Color.Resolved type to fix SwiftUI.ShapeLayerHelper visit check for Shape.fill API
+    // Bridge resolved color and gradient paints used by SwiftUI's renderer.
     { (const void *)my_swift_dynamicCast, (const void *)swift_dynamicCast },
     // Interpose swift_conformsToProtocol2 to redirect SwiftUI.PlatformDrawable conformance checks to OpenSwiftUI.PlatformDrawable for Text's CGDrawingView
     { (const void *)my_swift_conformsToProtocol2, (const void *)swift_conformsToProtocol2 },
