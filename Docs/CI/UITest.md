@@ -6,7 +6,7 @@ UI and interaction tests share command parsing in `.github/workflows/prepare_sna
 
 UI tests run only through manual dispatch or a trusted PR comment. Pushes and pull request updates do not run them automatically. See [Optional CI workflows](README.md) for the other optional checks.
 
-The workflow uses the same Example setup entry point as local development. Non-Compute configurations run `Example/setup.sh`, and Compute configurations run `Example/setup.sh --compute`.
+The workflow generates each phase's Example project in a separate step and runs `tuist clean` before setup to clear cached configuration. SwiftUI recording runs `Example/setup.sh`. OpenSwiftUI verification runs `Example/setup.sh` for non-Compute configurations and `Example/setup.sh --compute` for Compute configurations.
 
 Each iOS recording or verification invocation creates a new simulator with the
 requested device type and OS version. The action passes its UDID to Xcode without
@@ -32,9 +32,9 @@ Requests without a platform or configuration selection run the default matrix on
 
 ## Reference Recording
 
-An `update` request records SwiftUI reference images once per selected platform. The `Record SwiftUI references on iOS` and `Record SwiftUI references on macOS` jobs run `SUI_UITests` with the default SwiftUI renderer and AttributeGraph setup, because reference images do not depend on the renderer or attribute graph configuration. Each platform's configuration matrix waits for its record job and then runs `OSUI_UITests` only. The recording job has no commit status of its own; if recording fails, each configuration status reports the failure and its tests do not run.
+An `update` request records SwiftUI reference images once per selected platform. The `Record SwiftUI references on iOS` and `Record SwiftUI references on macOS` jobs run `SUI_UITests` with Apple SwiftUI and AttributeGraph, because reference images do not depend on the OpenSwiftUI renderer or attribute graph configuration. Recording sets `OPENSWIFTUI_SWIFTUI_RENDERER=0` during project generation and execution to exclude OpenSwiftUI's renderer interposers. Each platform's configuration matrix waits for its record job and then runs `OSUI_UITests` only. The recording job has no commit status of its own; if recording fails, each configuration status reports the failure and its tests do not run.
 
-Without `update`, the configuration jobs reuse existing references and record only when the platform reference directory is empty.
+Without `update`, the configuration jobs reuse existing references and record only when the platform reference directory is empty. When a job records and verifies, the shared action regenerates the project with the selected OpenSwiftUI renderer setting before verification. These recording boundaries also apply to interaction tests.
 
 ## Manual Dispatch
 

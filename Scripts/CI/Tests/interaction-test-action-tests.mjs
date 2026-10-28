@@ -202,8 +202,25 @@ for (const references of [true, false]) {
     const result = await runTests(t, {}, { suite: 'UITests', references, compute: false });
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), references ? ['OSUI_UITests'] : ['SUI_UITests', 'OSUI_UITests']);
+    assert.deepEqual(result.generations.map(generation => generation.swiftUIRenderer), references ? ['1'] : ['0', '1']);
     for (const args of result.commands) assert.deepEqual(args.slice(0, 3), ['exec', '--', 'tuist']);
   });
+}
+
+for (const suite of ['UITests', 'InteractionTests']) {
+  for (const swiftUIRenderer of [0, 1]) {
+    test(`${suite}: recording disables interposers and verification keeps renderer ${swiftUIRenderer}`, async t => {
+      const result = await runTests(t, {}, { suite, update: true, swiftUIRenderer });
+      assert.equal(result.status, 0, result.stdout + result.stderr);
+      assert.deepEqual(result.generations.map(generation => generation.swiftUIRenderer), ['0', String(swiftUIRenderer)]);
+      assert.deepEqual(result.generations.map(generation => generation.miseEnvironment), ['', 'compute']);
+      for (const [prefix, expected] of [['SUI', '0'], ['OSUI', String(swiftUIRenderer)]]) {
+        const environment = JSON.parse(await fs.readFile(path.join(result.artifacts, `${prefix}_${suite}-environment.json`), 'utf8'));
+        assert.equal(environment.generatedRenderer, expected);
+        assert.equal(environment.swiftUIRenderer, expected);
+      }
+    });
+  }
 }
 
 async function runTests(t, fixtures = {}, options = {}) {
@@ -212,6 +229,9 @@ async function runTests(t, fixtures = {}, options = {}) {
   const bin = path.join(directory, 'bin');
   const referenceRoot = path.join(directory, 'Persistent references');
   const commandLog = path.join(directory, 'commands.jsonl');
+  const generationLog = path.join(directory, 'generations.jsonl');
+  const manifestCache = path.join(directory, 'manifest-cache.json');
+  const generatedProject = path.join(directory, 'generated-project.json');
   const simulatorLog = path.join(directory, 'simulator-commands.jsonl');
   const simulatorState = path.join(directory, 'simulators.json');
   await fs.writeFile(simulatorLog, '');
@@ -222,6 +242,8 @@ async function runTests(t, fixtures = {}, options = {}) {
   const snapshotVersion = platform === 'ios' ? '18.5.0' : '26.6.0';
   await fs.mkdir(bin);
   await fs.writeFile(commandLog, '');
+  await fs.writeFile(generationLog, '');
+  await fs.writeFile(manifestCache, JSON.stringify({ swiftUIRenderer: 'stale', miseEnvironment: 'stale' }));
   await fs.writeFile(path.join(bin, 'sw_vers'), '#!/bin/sh\necho 26.6\n', { mode: 0o755 });
   const referenceDirectory = path.join(referenceRoot, snapshotPlatform, snapshotVersion, `OpenSwiftUI${suite}`, 'TapGestureInteractionTests.swift');
   if (options.references ?? !options.update) {
@@ -232,13 +254,31 @@ async function runTests(t, fixtures = {}, options = {}) {
 const fs = require('node:fs');
 const path = require('node:path');
 const args = process.argv.slice(2);
+if (!args.includes('xcodebuild')) {
+  if (args.includes('clean')) fs.rmSync(process.env.SNAPSHOT_MANIFEST_CACHE, { force: true });
+  if (args.includes('generate')) {
+    // Model cached manifests that keep the previous renderer until Tuist cleans them.
+    const settings = fs.existsSync(process.env.SNAPSHOT_MANIFEST_CACHE)
+      ? JSON.parse(fs.readFileSync(process.env.SNAPSHOT_MANIFEST_CACHE))
+      : { swiftUIRenderer: process.env.OPENSWIFTUI_SWIFTUI_RENDERER, miseEnvironment: args[0] === '--env' ? args[1] : '' };
+    fs.writeFileSync(process.env.SNAPSHOT_MANIFEST_CACHE, JSON.stringify(settings));
+    fs.appendFileSync(process.env.SNAPSHOT_GENERATION_LOG, JSON.stringify(settings) + '\\n');
+    fs.writeFileSync(process.env.SNAPSHOT_GENERATED_PROJECT, JSON.stringify(settings));
+  }
+  process.exit(0);
+}
 fs.appendFileSync(process.env.INTERACTION_TEST_COMMAND_LOG, JSON.stringify(args) + '\\n');
 const scheme = args[args.indexOf('-scheme') + 1];
 const result = args[args.indexOf('-resultBundlePath') + 1];
 const fixture = JSON.parse(process.env.INTERACTION_TEST_FIXTURES)[scheme] ?? {};
 const recording = scheme.startsWith('SUI_');
 const referenceRoot = process.env.TEST_RUNNER_SNAPSHOT_REFERENCE_DIR;
-fs.writeFileSync(path.join(path.dirname(result), scheme + '-environment.json'), JSON.stringify({ referenceRoot }));
+const generated = JSON.parse(fs.readFileSync(process.env.SNAPSHOT_GENERATED_PROJECT));
+fs.writeFileSync(path.join(path.dirname(result), scheme + '-environment.json'), JSON.stringify({
+  referenceRoot,
+  generatedRenderer: generated.swiftUIRenderer,
+  swiftUIRenderer: process.env.OPENSWIFTUI_SWIFTUI_RENDERER,
+}));
 console.log('Executed ' + scheme);
 if (!fixture.missingResult) {
   fs.mkdirSync(result, { recursive: true });
@@ -337,7 +377,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   let stdout = '';
   let stderr = '';
   let failed = false;
-  const selectedSteps = new Set(['reference', 'paths', 'record-baseline', 'uitest']);
+  const selectedSteps = new Set(['reference', 'paths', 'generate-recording', 'record-baseline', 'generate-verification', 'uitest']);
   for (const step of action.runs.steps) {
     if (!selectedSteps.has(step.id) && !['Clean up snapshot reference lock', 'Fail if baseline recording failed', 'Clean up test simulators'].includes(step.name) && !(options.collectArtifacts && step.name === 'Collect failure artifacts')) continue;
     const bindings = { inputs, steps };
@@ -358,6 +398,10 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
         GITHUB_OUTPUT: output,
         GITHUB_RUN_ID: '123', GITHUB_JOB: 'snapshot-tests', GITHUB_RUN_ATTEMPT: '1',
         INTERACTION_TEST_COMMAND_LOG: commandLog,
+        SNAPSHOT_GENERATION_LOG: generationLog,
+        SNAPSHOT_MANIFEST_CACHE: manifestCache,
+        SNAPSHOT_GENERATED_PROJECT: generatedProject,
+        OPENSWIFTUI_SWIFTUI_RENDERER: String(options.swiftUIRenderer ?? 1),
         SIMULATOR_LOG: simulatorLog, SIMULATOR_STATE: simulatorState,
         SIMULATOR_CREATE_FAILURE: String(options.simulatorCreateFailure ?? false),
         SIMULATOR_DELETE_FAILURE: String(options.simulatorDeleteFailure ?? false),
@@ -385,6 +429,7 @@ process.stdout.write(fs.readFileSync(path.join(args[args.indexOf('--path') + 1],
   const commands = (await fs.readFile(commandLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
   const verified = inputs.mode === 'record' ? steps['record-baseline'].outcome === 'success' : steps.uitest.outcome === 'success';
   return {
+    generations: (await fs.readFile(generationLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line)),
     simulatorCommands: (await fs.readFile(simulatorLog, 'utf8')).trim().split('\n').filter(Boolean).map(line => JSON.parse(line)),
     remainingSimulators: JSON.parse(await fs.readFile(simulatorState, 'utf8')),
     status: failed || !verified ? 1 : 0,
@@ -447,6 +492,7 @@ test('record mode records SwiftUI references without OpenSwiftUI verification', 
   const result = await runTests(t, {}, { update: true, mode: 'record' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.deepEqual(result.commands.map(args => args[args.indexOf('-scheme') + 1]), ['SUI_InteractionTests']);
+  assert.deepEqual(result.generations.map(generation => generation.swiftUIRenderer), ['0']);
   assert.equal(result.steps['record-baseline'].outcome, 'success');
   assert.equal(result.steps.uitest.outcome, 'skipped');
   assert.equal(expand(action.outputs['record-result'].value, { steps: result.steps }), 'success');

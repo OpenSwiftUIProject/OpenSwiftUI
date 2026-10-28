@@ -300,7 +300,7 @@ test('UI and interaction tests expose the same snapshot inputs and configuration
         assert.ok(step.with['update-reference'].includes(`needs.${prepareName}.outputs.update-reference`));
         assert.equal(step.with.compute, 'false');
         assert.equal(job.strategy.matrix.configuration, undefined);
-        assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, 1);
+        assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, 0);
         assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH, 1);
         assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE, 0);
         assert.equal(job.needs, prepareName);

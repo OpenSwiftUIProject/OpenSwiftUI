@@ -113,7 +113,7 @@ jobs:
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENSWIFTUI_LINK_TESTING: 0
-      OPENSWIFTUI_SWIFTUI_RENDERER: 1
+      OPENSWIFTUI_SWIFTUI_RENDERER: 0
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
@@ -283,7 +283,7 @@ jobs:
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENSWIFTUI_LINK_TESTING: 0
-      OPENSWIFTUI_SWIFTUI_RENDERER: 1
+      OPENSWIFTUI_SWIFTUI_RENDERER: 0
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4

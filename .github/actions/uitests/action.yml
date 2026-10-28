@@ -85,16 +85,6 @@ runs:
         source Scripts/Tuist/common.sh
         tuist_ci_setup
 
-    - name: Generate Example project
-      shell: bash
-      run: |
-        cd Example
-        if [[ "${{ inputs.compute }}" == "true" ]]; then
-          ./setup.sh --compute
-        else
-          ./setup.sh
-        fi
-
     - name: Resolve snapshot reference directory
       id: reference
       shell: bash
@@ -163,12 +153,26 @@ runs:
           echo "derived-data-path=$test_root/DerivedData"
         } >> "$GITHUB_OUTPUT"
 
+    - name: Generate Example project for SwiftUI recording
+      id: generate-recording
+      if: steps.reference.outputs.needs-record == 'true'
+      shell: bash
+      env:
+        OPENSWIFTUI_SWIFTUI_RENDERER: '0'
+      run: |
+        set -euo pipefail
+        cd Example
+        mise exec -- tuist clean
+        ./setup.sh
+
     - name: Record baseline images with SwiftUI
       id: record-baseline
       if: steps.reference.outputs.needs-record == 'true'
       continue-on-error: true
       shell: bash
       env:
+        # SUI baselines must not load OpenSwiftUI's renderer interposers.
+        OPENSWIFTUI_SWIFTUI_RENDERER: '0'
         TEST_DESTINATION: ${{ inputs.destination }}
         UITEST_ONLY_TESTING: ${{ inputs.only-testing }}
         TEST_RUNNER_SNAPSHOT_REFERENCE_DIR: ${{ steps.reference.outputs.root }}
@@ -325,6 +329,21 @@ runs:
       if: steps.record-baseline.outcome == 'failure'
       shell: bash
       run: exit 1
+
+    - name: Generate Example project for OpenSwiftUI verification
+      id: generate-verification
+      if: inputs.mode != 'record'
+      shell: bash
+      run: |
+        set -euo pipefail
+        source Scripts/Tuist/common.sh
+        cd Example
+        tuist_mise exec -- tuist clean
+        if [[ "${{ inputs.compute }}" == "true" ]]; then
+          ./setup.sh --compute
+        else
+          ./setup.sh
+        fi
 
     - name: Run tests with OpenSwiftUI
       id: uitest

@@ -182,6 +182,84 @@ extension DisplayList.ViewUpdater {
         }
     }
 
+    struct BorderColor: AsyncLayer.Property {
+        static let keyPath = "borderColor"
+
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            BackgroundColor.boxValue(value)
+        }
+    }
+
+    struct BorderWidth: AsyncLayer.Property {
+        static let keyPath = "borderWidth"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ShapeFillColor: AsyncLayer.Property {
+        static let keyPath = "fillColor"
+
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            BackgroundColor.boxValue(value)
+        }
+    }
+
+    struct ShapeStrokeColor: AsyncLayer.Property {
+        static let keyPath = "strokeColor"
+
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            BackgroundColor.boxValue(value)
+        }
+    }
+
+    struct ShapePath: AsyncLayer.Property {
+        static let keyPath = "path"
+        static let supportsPresentationModifier = false
+
+        static func boxValue(_ value: Path) -> NSObject {
+            #if canImport(QuartzCore)
+            unsafeDowncast(value.cgPath, to: NSObject.self)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct ShapeLineWidth: AsyncLayer.Property {
+        static let keyPath = "lineWidth"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ShapeMiterLimit: AsyncLayer.Property {
+        static let keyPath = "miterLimit"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ShapeLineDashPhase: AsyncLayer.Property {
+        static let keyPath = "lineDashPhase"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ShapeLineDashPattern: AsyncLayer.Property {
+        static let keyPath = "lineDashPattern"
+        static let supportsPresentationModifier = false
+
+        static func boxValue(_ value: [CGFloat]) -> NSObject {
+            NSMutableArray(array: value.map { NSNumber(value: Double($0)) })
+        }
+    }
+
     struct ContentsMultiplyColor: AsyncLayer.Property {
         static let keyPath = "contentsMultiplyColor"
 
@@ -193,4 +271,51 @@ extension DisplayList.ViewUpdater {
         }
     }
 
+    // MARK: - Gradient Properties
+
+    struct GradientStartPoint: AsyncLayer.Property {
+        static let keyPath = "startPoint"
+
+        static func boxValue(_ value: CGPoint) -> NSObject {
+            PositionLayer.boxValue(value)
+        }
+    }
+
+    struct GradientEndPoint: AsyncLayer.Property {
+        static let keyPath = "endPoint"
+
+        static func boxValue(_ value: CGPoint) -> NSObject {
+            PositionLayer.boxValue(value)
+        }
+    }
+
+    struct GradientColors: AsyncLayer.Property {
+        static let keyPath = "colors"
+        static let supportsPresentationModifier = false
+
+        static func boxValue(_ value: [CGColor]) -> NSObject {
+            value as NSArray
+        }
+    }
+
+    struct GradientLocations: AsyncLayer.Property {
+        static let keyPath = "locations"
+        static let supportsPresentationModifier = false
+
+        static func boxValue(_ value: [NSNumber]) -> NSObject {
+            value as NSArray
+        }
+    }
+
+    #if canImport(QuartzCore)
+    struct GradientInterpolations: AsyncLayer.Property {
+        static let keyPath = "interpolations"
+        static let supportsPresentationModifier = false
+
+        static func boxValue(_ value: [CAMediaTimingFunction]?) -> NSObject {
+            guard let value else { return NSNull() }
+            return value as NSArray
+        }
+    }
+    #endif
 }
