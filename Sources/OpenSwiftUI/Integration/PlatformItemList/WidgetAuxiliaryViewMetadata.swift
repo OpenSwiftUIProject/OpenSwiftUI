@@ -567,16 +567,13 @@ extension WidgetAuxiliaryViewMetadata {
         guard let tint = env.tint else {
             return nil
         }
-        // TODO: Gradient related
-        _openSwiftUIUnimplementedWarning()
-        return nil
-//        if let gradient = tint.resolveGradient(in: env) {
-//            return gradient
-//        }
-//        guard let color = tint.fallbackColor(in: env) else {
-//            return nil
-//        }
-//        return Gradient(colors: [color]).resolve(in: env)
+        if let gradient = tint.resolveGradient(in: env) {
+            return gradient
+        }
+        guard let color = tint.fallbackColor(in: env) else {
+            return nil
+        }
+        return Gradient(colors: [color]).resolve(in: env)
     }
 }
 

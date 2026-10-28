@@ -5,13 +5,13 @@
 //  Created by Kyle on 2025/9/15.
 //
 
+import Foundation
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
 import SwiftUI
 #endif
 
-#if !OPENSWIFTUI // FIXME: Missing LinearGradient and Material
 struct ColorCodedClockView: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1.0)) { timeline in
@@ -67,7 +67,11 @@ struct ColorCodedClockView: View {
                     LegendItem(color: .blue, label: "Seconds")
                 }
                 .padding()
+                #if OPENSWIFTUI // FIXME: Material is not supported.
+                .background(Color.gray.opacity(0.2))
+                #else
                 .background(.ultraThinMaterial)
+                #endif
                 .cornerRadius(15)
                 
                 // Time progress bars
@@ -181,4 +185,7 @@ struct ProgressBar: View {
         }
     }
 }
-#endif
+
+#Preview {
+    ColorCodedClockView()
+}
