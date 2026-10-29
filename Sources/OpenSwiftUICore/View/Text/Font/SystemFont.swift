@@ -95,7 +95,11 @@ extension Font {
     /// This function has been deprecated, use the one with nullable `weight`
     /// and `design` instead.
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, message: "Use `system(size:weight:design:)` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use `system(size:weight:design:)` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `system(size:weight:design:)` instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use `system(size:weight:design:)` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use `system(size:weight:design:)` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use `system(size:weight:design:)` instead.")
     @_disfavoredOverload
     public static func system(
         size: CGFloat,

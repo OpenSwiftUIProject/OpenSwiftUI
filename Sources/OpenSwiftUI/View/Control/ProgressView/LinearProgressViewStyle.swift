@@ -43,7 +43,11 @@ public struct LinearProgressViewStyle: ProgressViewStyle {
     }
 
     /// Creates a linear progress view style with a custom tint color.
-    @available(*, deprecated, message: "Use ``View/tint(_)`` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
     public init(tint: Color) {
         self.tint = tint
     }

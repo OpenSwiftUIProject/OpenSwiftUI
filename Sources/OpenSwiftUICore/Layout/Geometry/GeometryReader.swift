@@ -187,7 +187,11 @@ public struct GeometryProxy {
     /// Returns the container view's bounds rectangle, converted to a defined
     /// coordinate space.
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(iOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(macOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(tvOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(watchOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(visionOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     public func frame(in coordinateSpace: CoordinateSpace) -> CGRect {
         rect(CGRect(origin: .zero, size: size), in: coordinateSpace)

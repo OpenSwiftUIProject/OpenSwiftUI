@@ -109,7 +109,11 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     /// ``init(_:bundle:)``, or one you create from a dynamic UIKit or AppKit
     /// color, this property is `nil`. To evaluate all types of colors, use the
     /// `resolve(in:)` method.
-    @available(*, deprecated, renamed: "resolve(in:)")
+    @available(iOS, deprecated: 100000.0, renamed: "resolve(in:)")
+    @available(macOS, deprecated: 100000.0, renamed: "resolve(in:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "resolve(in:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "resolve(in:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "resolve(in:)")
     public var cgColor: CGColor? {
         provider.staticColor
     }

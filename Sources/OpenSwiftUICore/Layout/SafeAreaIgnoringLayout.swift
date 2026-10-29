@@ -131,7 +131,11 @@ extension View {
     ///
     /// - Returns: A view that may extend outside of the screen's safe area
     ///   on the edges specified by `edges`.
-    @available(*, deprecated, message: "Use ignoresSafeArea(_:edges:) instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use ignoresSafeArea(_:edges:) instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use ignoresSafeArea(_:edges:) instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use ignoresSafeArea(_:edges:) instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use ignoresSafeArea(_:edges:) instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use ignoresSafeArea(_:edges:) instead.")
     @inlinable
     nonisolated public func edgesIgnoringSafeArea(_ edges: Edge.Set) -> some View {
         return modifier(_SafeAreaIgnoringLayout(edges: edges))

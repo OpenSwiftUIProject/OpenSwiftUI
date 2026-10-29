@@ -10,11 +10,19 @@ import OpenSwiftUICore
 
 /// A modifier that can create another modifier with animation.
 @available(OpenSwiftUI_v1_0, *)
-@available(*, deprecated, message: "use Animatable directly")
+@available(iOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(macOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(tvOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(watchOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(visionOS, deprecated: 100000.0, message: "use Animatable directly")
 public protocol AnimatableModifier: Animatable, ViewModifier {}
 
 @available(OpenSwiftUI_v1_0, *)
-@available(*, deprecated, message: "use Animatable directly")
+@available(iOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(macOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(tvOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(watchOS, deprecated: 100000.0, message: "use Animatable directly")
+@available(visionOS, deprecated: 100000.0, message: "use Animatable directly")
 extension AnimatableModifier {
     nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,

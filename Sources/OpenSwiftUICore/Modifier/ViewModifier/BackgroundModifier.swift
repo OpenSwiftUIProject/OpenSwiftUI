@@ -396,7 +396,11 @@ extension View {
     ///   - background: The view to draw behind this view.
     ///   - alignment: The alignment with a default value of
     ///     ``Alignment/center`` that you use to position the background view.
-    @available(*, deprecated, message: "Use `background(alignment:content:)` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use `background(alignment:content:)` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `background(alignment:content:)` instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use `background(alignment:content:)` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use `background(alignment:content:)` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use `background(alignment:content:)` instead.")
     @inlinable
     @_disfavoredOverload
     nonisolated public func background<Background>(_ background: Background, alignment: Alignment = .center) -> some View where Background: View {

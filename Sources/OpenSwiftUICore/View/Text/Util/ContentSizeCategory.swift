@@ -7,7 +7,11 @@
 
 /// The sizes that you can specify for content.
 @available(OpenSwiftUI_v1_0, *)
-@available(*, deprecated, renamed: "DynamicTypeSize")
+@available(iOS, deprecated: 100000.0, renamed: "DynamicTypeSize")
+@available(macOS, deprecated: 100000.0, renamed: "DynamicTypeSize")
+@available(tvOS, deprecated: 100000.0, renamed: "DynamicTypeSize")
+@available(watchOS, deprecated: 100000.0, renamed: "DynamicTypeSize")
+@available(visionOS, deprecated: 100000.0, renamed: "DynamicTypeSize")
 public enum ContentSizeCategory: Hashable, CaseIterable {
     case extraSmall
     case small
@@ -122,7 +126,11 @@ extension EnvironmentValues {
     ///
     /// The default value is ``ContentSizeCategory/large``.
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, renamed: "dynamicTypeSize")
+    @available(iOS, deprecated: 100000.0, renamed: "dynamicTypeSize")
+    @available(macOS, deprecated: 100000.0, renamed: "dynamicTypeSize")
+    @available(tvOS, deprecated: 100000.0, renamed: "dynamicTypeSize")
+    @available(watchOS, deprecated: 100000.0, renamed: "dynamicTypeSize")
+    @available(visionOS, deprecated: 100000.0, renamed: "dynamicTypeSize")
     public var sizeCategory: ContentSizeCategory {
         get { .init(dynamicTypeSize) }
         set { dynamicTypeSize = .init(newValue) }

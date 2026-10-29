@@ -131,7 +131,11 @@ extension View {
     ///
     /// - Returns: A view that clips this view to its bounding frame with the
     ///   specified corner radius.
-    @available(*, deprecated, message: "Use `clipShape` or `fill` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use `clipShape` or `fill` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `clipShape` or `fill` instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use `clipShape` or `fill` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use `clipShape` or `fill` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use `clipShape` or `fill` instead.")
     @inlinable
     public func cornerRadius(_ radius: CGFloat, antialiased: Bool = true) -> some View {
         clipShape(

@@ -217,7 +217,8 @@ extension DisplayGamut: ProtobufEnum {}
 ///
 /// `ControlActiveState` and `EnvironmentValues.controlActiveState` are
 /// deprecated, use `EnvironmentValues.appearsActive` instead.
-@available(*, deprecated, message: "Use `EnvironmentValues.appearsActive` instead.")
+@available(macCatalyst, deprecated: 100000.0, message: "Use `EnvironmentValues.appearsActive` instead.")
+@available(macOS, deprecated: 100000.0, message: "Use `EnvironmentValues.appearsActive` instead.")
 @available(iOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -878,7 +879,7 @@ extension EnvironmentValues {
     /// - `controlActiveState` is set to `.inactive`, `appearsActive` will be
     ///    set to `false`.
     @available(iOS, unavailable)
-    @available(macOS, deprecated, message: "Use `EnvironmentValues.appearsActive` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `EnvironmentValues.appearsActive` instead.")
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)

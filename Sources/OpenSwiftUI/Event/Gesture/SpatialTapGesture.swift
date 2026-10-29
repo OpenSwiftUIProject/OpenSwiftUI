@@ -81,7 +81,10 @@ public struct SpatialTapGesture: PrimitiveGesture, Gesture {
     ///   - count: The required number of taps to complete the tap
     ///     gesture.
     ///   - coordinateSpace: The coordinate space of the tap gesture's location.
-    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(iOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(macOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(watchOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(visionOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @available(tvOS, unavailable)
     @_disfavoredOverload
     public init(count: Int = 1, coordinateSpace: CoordinateSpace = .local) {
@@ -161,7 +164,10 @@ extension View {
     ///      location values. Defaults to ``CoordinateSpace/local``.
     ///    - action: The action to perform. This closure receives an input
     ///      that indicates where the interaction occurred.
-    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(iOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(macOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(watchOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(visionOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     nonisolated public func onTapGesture(
         count: Int = 1,
