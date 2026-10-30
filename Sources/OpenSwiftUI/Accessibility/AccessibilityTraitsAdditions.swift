@@ -117,7 +117,11 @@ extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
 @available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Adds the given traits to the view.
-    @available(*, deprecated, renamed: "accessibilityAddTraits(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
     nonisolated public func accessibility(
         addTraits traits: AccessibilityTraits
     ) -> ModifiedContent<Self, AccessibilityAttachmentModifier> {
@@ -125,7 +129,11 @@ extension View {
     }
 
     /// Removes the given traits from this view.
-    @available(*, deprecated, renamed: "accessibilityRemoveTraits(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
     nonisolated public func accessibility(
         removeTraits traits: AccessibilityTraits
     ) -> ModifiedContent<Self, AccessibilityAttachmentModifier> {
@@ -138,7 +146,11 @@ extension View {
 @available(OpenSwiftUI_v1_0, *)
 extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
     /// Adds the given traits to the view.
-    @available(*, deprecated, renamed: "accessibilityAddTraits(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "accessibilityAddTraits(_:)")
     nonisolated public func accessibility(
         addTraits traits: AccessibilityTraits
     ) -> ModifiedContent<Content, Modifier> {
@@ -146,7 +158,11 @@ extension ModifiedContent where Modifier == AccessibilityAttachmentModifier {
     }
 
     /// Removes the given traits from this view.
-    @available(*, deprecated, renamed: "accessibilityRemoveTraits(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "accessibilityRemoveTraits(_:)")
     nonisolated public func accessibility(
         removeTraits traits: AccessibilityTraits
     ) -> ModifiedContent<Content, Modifier> {

@@ -17,7 +17,11 @@ extension Color {
     /// - Parameter color: A
     ///   [CGColor](https://developer.apple.com/documentation/CoreGraphics/CGColor) instance
     ///   from which to create a color.
-    @available(*, deprecated, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
+    @available(iOS, deprecated: 100000.0, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
+    @available(macOS, deprecated: 100000.0, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
+    @available(tvOS, deprecated: 100000.0, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
+    @available(watchOS, deprecated: 100000.0, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
+    @available(visionOS, deprecated: 100000.0, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
     public init(_ cgColor: CGColor) {
         self.init(cgColor: cgColor)
     }

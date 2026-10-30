@@ -1212,7 +1212,10 @@ extension Stepper {
     ///       of the `onEditingChanged` closure at the start and end of
     ///       the gesture.
     ///     - label: A view describing the purpose of this stepper.
-    @available(*, deprecated, renamed: "Stepper(label:onIncrement:onDecrement:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Stepper(label:onIncrement:onDecrement:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Stepper(label:onIncrement:onDecrement:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Stepper(label:onIncrement:onDecrement:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Stepper(label:onIncrement:onDecrement:onEditingChanged:)")
     @_disfavoredOverload
     nonisolated public init(
         onIncrement: (() -> Void)?,
@@ -1265,7 +1268,10 @@ extension Stepper {
     ///     of the `onEditingChanged` closure at the start and end of
     ///     the gesture.
     ///   - label: A view describing the purpose of this stepper.
-    @available(*, deprecated, renamed: "Stepper(value:step:label:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Stepper(value:step:label:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Stepper(value:step:label:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Stepper(value:step:label:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Stepper(value:step:label:onEditingChanged:)")
     @_disfavoredOverload
     nonisolated public init<V>(
         value: Binding<V>,
@@ -1320,7 +1326,10 @@ extension Stepper {
     ///     of the `onEditingChanged` closure at the start and end of
     ///     the gesture.
     ///   - label: A view describing the purpose of this stepper.
-    @available(*, deprecated, renamed: "Stepper(value:in:step:label:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Stepper(value:in:step:label:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Stepper(value:in:step:label:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Stepper(value:in:step:label:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Stepper(value:in:step:label:onEditingChanged:)")
     @_disfavoredOverload
     nonisolated public init<V>(
         value: Binding<V>,

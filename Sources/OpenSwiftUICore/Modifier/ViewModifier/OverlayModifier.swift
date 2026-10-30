@@ -188,7 +188,11 @@ extension View {
     ///   - alignment: The alignment for `overlay` in relation to this view.
     ///
     /// - Returns: A view that layers `overlay` in front of the view.
-    @available(*, deprecated, message: "Use `overlay(alignment:content:)` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use `overlay(alignment:content:)` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `overlay(alignment:content:)` instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use `overlay(alignment:content:)` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use `overlay(alignment:content:)` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use `overlay(alignment:content:)` instead.")
     @inlinable
     @_disfavoredOverload
     nonisolated public func overlay<Overlay>(_ overlay: Overlay, alignment: Alignment = .center) -> some View where Overlay: View {

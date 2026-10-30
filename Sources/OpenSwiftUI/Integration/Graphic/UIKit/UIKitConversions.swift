@@ -42,7 +42,10 @@ extension UIRectEdge {
 // MARK: - UIColor Conversions
 
 @available(OpenSwiftUI_v1_0, *)
-@available(*, deprecated, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(iOS, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(tvOS, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(watchOS, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(visionOS, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 @available(macOS, unavailable)
 extension Color {
     /// Creates a color from a UIKit color.

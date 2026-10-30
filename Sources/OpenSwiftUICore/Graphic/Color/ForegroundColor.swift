@@ -26,7 +26,11 @@ extension View {
     ///
     /// - Returns: A view that uses the foreground color you supply.
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, renamed: "foregroundStyle(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
     @inlinable
     nonisolated public func foregroundColor(_ color: Color?) -> some View {
         environment(\.foregroundColor, color)

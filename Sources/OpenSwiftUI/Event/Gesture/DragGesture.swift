@@ -133,7 +133,10 @@ public struct DragGesture: PrimitiveGesture, PubliclyPrimitiveGesture, Gesture {
     ///     `10`.
     ///   - coordinateSpace: The coordinate space in which the gesture
     ///     reports locations. The default is ``CoordinateSpace/local``.
-    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(iOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(macOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(watchOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    @available(visionOS, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     public init(minimumDistance: CGFloat = 10, coordinateSpace: CoordinateSpace = .local) {
         self.minimumDistance = minimumDistance

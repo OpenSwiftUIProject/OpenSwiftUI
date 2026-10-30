@@ -410,7 +410,11 @@ extension Slider {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    @available(*, deprecated, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Slider(value:in:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
     nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
@@ -453,7 +457,11 @@ extension Slider {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    @available(*, deprecated, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:minimumValueLabel:maximumValueLabel:onEditingChanged:)")
     nonisolated public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
@@ -498,7 +506,11 @@ extension Slider where ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    @available(*, deprecated, renamed: "Slider(value:in:label:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Slider(value:in:label:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Slider(value:in:label:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Slider(value:in:label:onEditingChanged:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "Slider(value:in:label:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Slider(value:in:label:onEditingChanged:)")
     @_disfavoredOverload
     nonisolated public init<V>(
         value: Binding<V>,
@@ -538,7 +550,11 @@ extension Slider where ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
-    @available(*, deprecated, renamed: "Slider(value:in:step:label:onEditingChanged:)")
+    @available(iOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:onEditingChanged:)")
+    @available(macOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:onEditingChanged:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:onEditingChanged:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:onEditingChanged:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "Slider(value:in:step:label:onEditingChanged:)")
     @_disfavoredOverload
     nonisolated public init<V>(
         value: Binding<V>,

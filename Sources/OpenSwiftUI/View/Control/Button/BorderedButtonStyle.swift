@@ -42,7 +42,7 @@ public struct BorderedButtonStyle: PrimitiveButtonStyle {
     }
 
     /// Creates a bordered button style with a tint color.
-    @available(*, deprecated, message: "Use ``View/tint(_)`` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
     @available(iOS, unavailable)
     @available(macOS, unavailable)
     @available(tvOS, unavailable)

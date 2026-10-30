@@ -593,7 +593,11 @@ extension Text {
     ///
     /// - Parameter color: The color to use when displaying this text.
     /// - Returns: A text view that uses the color value you supply.
-    @available(*, deprecated, renamed: "foregroundStyle(_:)")
+    @available(iOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(macOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(tvOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(watchOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
+    @available(visionOS, deprecated: 100000.0, renamed: "foregroundStyle(_:)")
     public func foregroundColor(_ color: Color?) -> Text {
         modified(with: .color(color))
     }

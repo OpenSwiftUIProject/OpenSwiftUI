@@ -104,7 +104,10 @@ public struct SwitchToggleStyle: ToggleStyle {
 
     /// Creates a switch style with a tint color.
     @available(OpenSwiftUI_v2_0, *)
-    @available(*, deprecated, message: "Use ``View/tint(_)`` instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use ``View/tint(_)`` instead.")
     @available(tvOS, unavailable)
     public init(tint: Color) {
         self.tint = tint

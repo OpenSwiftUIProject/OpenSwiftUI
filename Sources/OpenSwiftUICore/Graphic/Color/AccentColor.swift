@@ -94,7 +94,11 @@ extension View {
     ///
     /// - Parameter accentColor: The color to use as an accent color. Set the
     ///   value to `nil` to use the inherited accent color.
-    @available(*, deprecated, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
+    @available(visionOS, deprecated: 100000.0, message: "Use the asset catalog's accent color or View.tint(_:) instead.")
     @inlinable
     nonisolated public func accentColor(_ accentColor: Color?) -> some View {
         environment(\.accentColor, accentColor)
