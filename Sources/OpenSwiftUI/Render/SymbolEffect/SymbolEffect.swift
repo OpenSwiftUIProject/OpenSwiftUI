@@ -792,7 +792,7 @@ extension SymbolEffect {
             case .effects:
                 let effect = ContentTransition.Effect(
                     type: ContentTransition.EffectType(
-                        type: .symbolAppearDisappear,
+                        type: .appearDisappear,
                         arg0: .int(config.base.transitionFlags.rawValue),
                         arg1: .float(1)
                     )

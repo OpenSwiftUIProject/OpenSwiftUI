@@ -1215,5 +1215,3 @@ extension DisplayList.Item {
         _openSwiftUIUnimplementedWarning()
     }
 }
-
-package struct ORBTransition {}

@@ -340,7 +340,7 @@ public struct SymbolEffectTransition: Transition {
             }
             let effect = ContentTransition.Effect(
                 type: ContentTransition.EffectType(
-                    type: .symbolAppearDisappear,
+                    type: .appearDisappear,
                     arg0: .int(hidden.transitionFlags.rawValue),
                     arg1: .float(_SymbolEffect.Options(options).speed)
                 )
