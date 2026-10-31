@@ -66,9 +66,9 @@ extension Transaction {
     }
 
     package var disablesContentTransitions: Bool {
-        get { self[DisablesContentTransactionKey.self] }
-        set { self[DisablesContentTransactionKey.self] = newValue }
-      }
+        get { self[DisablesContentTransitionsKey.self] }
+        set { self[DisablesContentTransitionsKey.self] = newValue }
+    }
 
     package mutating func disableAnimations() {
         animation = nil
@@ -107,6 +107,6 @@ private struct AnimationReasonKey: TransactionKey {
     static var defaultValue: UInt32? { nil }
 }
 
-private struct DisablesContentTransactionKey: TransactionKey {
+private struct DisablesContentTransitionsKey: TransactionKey {
     static var defaultValue: Bool { false }
 }

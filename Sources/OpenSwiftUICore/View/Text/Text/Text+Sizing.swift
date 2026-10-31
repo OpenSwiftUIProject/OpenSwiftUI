@@ -136,6 +136,12 @@ extension EnvironmentValues {
 
 // MARK: - PreferTextLayoutManagerInput
 
+extension View {
+    nonisolated func preferTextLayoutManager() -> some View {
+        modifier(PreferTextLayoutManagerInputModifier())
+    }
+}
+
 private struct PreferTextLayoutManagerInputModifier: ViewInputsModifier {
     static func _makeViewInputs(
         modifier: _GraphValue<Self>,

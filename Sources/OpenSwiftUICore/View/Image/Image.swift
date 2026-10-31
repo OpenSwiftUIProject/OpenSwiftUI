@@ -177,52 +177,18 @@ package struct ImageResolutionContext {
         let transaction = Graph.withoutUpdate { transactionAttribute.value }
         guard !transaction.disablesAnimations else { return false }
 
-        // TBA: FIXME when we implement ContentTransition and ORBAnimation
         let contentTransitionState = environment.contentTransitionState
-        let contentAnimation = contentTransitionState.animation
-        let transition = contentTransitionState.transition
-        let isReplaceable = transition.isReplaceable
-
-        if let contentAnimation {
-            if case .symbolReplace(let replaceConfig) = transition.storage {
-                if let oldGlyph, oldGlyph.canBeInterpolated(with: glyph) {
-                } else {
-                    var options = replaceConfig.animationOptions
-                    options[.timing] = contentAnimation.rbAnimation
-                    symbolAnimator.addAnimation(
-                        .replace,
-                        options: options,
-                        animationListener: transaction.animationListener,
-                        logicalListener: transaction.animationLogicalListener
-                    )
-                    return false
-                }
-            }
-            // Interpolate animation with content animation timing
-            var options: [ORBSymbolAnimation.OptionKey: Any] = [
-                .timing: contentAnimation.rbAnimation
-            ]
-            let isInterpolate = transition.storage == ContentTransition.interpolate.storage
-            if !isInterpolate || isReplaceable != ContentTransition.interpolate.isReplaceable {
-                options[.interpolateOptions] = true
-            }
-            symbolAnimator.addAnimation(
-                .interpolate,
-                options: options,
-                animationListener: transaction.animationListener,
-                logicalListener: transaction.animationLogicalListener
-            )
-            return false
+        var transition = contentTransitionState.transition
+        if transition.isNamed(.default) {
+            transition = isLinkedOnOrAfter(.v4) ? .interpolate : .identity
         }
-
-        // No content animation: dispatch on storage type
-        switch transition.storage {
-        case .symbolReplace(let replaceConfig):
+        let animation = contentTransitionState.animation ?? transaction.animation
+        if case let .symbolReplace(replaceConfig) = transition.storage,
+           let oldGlyph = symbolAnimator.glyph,
+           !oldGlyph.canBeInterpolated(with: glyph) {
             var options = replaceConfig.animationOptions
-            if let contentAnimation = environment.contentTransitionState.animation {
-                options[.timing] = contentAnimation.rbAnimation
-            } else if let transactionAnimation = transaction.animation {
-                options[.timing] = transactionAnimation.rbAnimation
+            if let animation {
+                options[.timing] = animation.rbAnimation
             }
             symbolAnimator.addAnimation(
                 .replace,
@@ -231,46 +197,19 @@ package struct ImageResolutionContext {
                 logicalListener: transaction.animationLogicalListener
             )
             return false
-
-        case .named(let named):
-            if case .default = named.name {
-                // Resolve .default: >= v4 → .interpolate, else .identity
-                let resolved = isLinkedOnOrAfter(.v4) ? ContentTransition.interpolate : .identity
-                if case .symbolReplace(let replaceConfig) = resolved.storage {
-                    var options = replaceConfig.animationOptions
-                    if let contentAnimation = environment.contentTransitionState.animation {
-                        options[.timing] = contentAnimation.rbAnimation
-                    } else if let transactionAnimation = transaction.animation {
-                        options[.timing] = transactionAnimation.rbAnimation
-                    }
-                    symbolAnimator.addAnimation(
-                        .replace,
-                        options: options,
-                        animationListener: transaction.animationListener,
-                        logicalListener: transaction.animationLogicalListener
-                    )
-                    return false
-                }
-            }
-            // .default (non-replace), .diff, and all other named transitions
-            guard let transactionAnimation = transaction.animation else {
-                return false
-            }
-            var options: [ORBSymbolAnimation.OptionKey: Any] = [
-                .timing: transactionAnimation.rbAnimation
-            ]
-            let isInterpolate = ContentTransition.default.storage == ContentTransition.interpolate.storage
-            if !isInterpolate || isReplaceable != ContentTransition.interpolate.isReplaceable {
-                options[.interpolateOptions] = true
-            }
-            symbolAnimator.addAnimation(
-                .interpolate,
-                options: options,
-                animationListener: transaction.animationListener,
-                logicalListener: transaction.animationLogicalListener
-            )
-            return false
         }
+        guard let animation else { return false }
+        var options: [ORBSymbolAnimation.OptionKey: Any] = [.timing: animation.rbAnimation]
+        if transition != .interpolate {
+            options[.interpolateOptions] = true
+        }
+        symbolAnimator.addAnimation(
+            .interpolate,
+            options: options,
+            animationListener: transaction.animationListener,
+            logicalListener: transaction.animationLogicalListener
+        )
+        return false
         #else
         _openSwiftUIUnimplementedWarning()
         return true
