@@ -7,7 +7,11 @@ import Testing
 
 @MainActor
 struct Environment_ObservableCompatibilityTests {
-    @Observable
+    #if OPENSWIFTUI
+    @OpenObservation::Observable
+    #else
+    @Observation::Observable
+    #endif
     class Model {
         var value: Int = 0
 

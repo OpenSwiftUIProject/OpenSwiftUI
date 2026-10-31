@@ -10,7 +10,11 @@ extension EnvironmentValues {
     @Entry fileprivate var customValue2 = 0
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private final class Model {
     var value = 0
 }
