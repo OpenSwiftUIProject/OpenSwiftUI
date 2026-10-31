@@ -86,15 +86,15 @@ struct ContentTransitionBackendTests {
         #expect(effects[0].type == (direction == .leftToRight ? .sequenceRight : .sequenceLeft))
         #expect(effects[2].type == .blur)
         #expect(effects[2].argumentValue(at: 0) == 4)
-        #expect(effects[3].argumentValue(at: 0) == 0.5)
-        #expect(effects[3].argumentValue(at: 1) == 0)
+        #expect(effects[3].argumentValue(at: 0) == 0)
+        #expect(effects[3].argumentValue(at: 1) == 0.5)
         config.axis = .vertical
         config.direction = .automatic(value: -12)
         let automatic = ContentTransition.numericText(config).rbTransition.effects
         #expect(automatic[0].type == .sequenceDown)
         #expect(automatic[3].flags.rawValue == 3)
-        #expect(automatic[3].argumentValue(at: 0) == 0)
-        #expect(automatic[3].argumentValue(at: 1) == -0.5)
+        #expect(automatic[3].argumentValue(at: 0) == -0.5)
+        #expect(automatic[3].argumentValue(at: 1) == 0)
     }
 
     @Test(arguments: [LayoutDirection.leftToRight, .rightToLeft])

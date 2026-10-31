@@ -1204,8 +1204,8 @@ extension ContentTransition.NamedTransition {
             offset = configuration.offset
             translation.flags = .init(rawValue: 3)
         }
-        translation.setArgumentValue(configuration.axis == .horizontal ? offset : 0, at: 0)
-        translation.setArgumentValue(configuration.axis == .horizontal ? 0 : offset, at: 1)
+        translation.setArgumentValue(configuration.axis == .vertical ? offset : 0, at: 0)
+        translation.setArgumentValue(configuration.axis == .vertical ? 0 : offset, at: 1)
         translation.animationIndex = 1
         transition.addEffect(translation)
 
