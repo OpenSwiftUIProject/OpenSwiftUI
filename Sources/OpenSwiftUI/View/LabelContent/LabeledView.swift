@@ -7,7 +7,10 @@
 
 @_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
-@available(*, deprecated, renamed: "LabeledContent")
+@available(iOS, deprecated: 100000.0, renamed: "LabeledContent")
+@available(macOS, deprecated: 100000.0, renamed: "LabeledContent")
+@available(tvOS, deprecated: 100000.0, renamed: "LabeledContent")
+@available(watchOS, deprecated: 100000.0, renamed: "LabeledContent")
 public struct LabeledView<Label, Content>: View where Label: View, Content: View {
     var label: Label
 

@@ -588,7 +588,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     @_spi(Private)
-    @available(iOS, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    @available(iOS, deprecated: 16.4, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
     final public var addsKeyboardToSafeAreaInsets: Bool {
         get { safeAreaRegions.contains(.keyboard) }
         set { safeAreaRegions.setValue(newValue, for: .keyboard) }

@@ -172,7 +172,11 @@ extension Font {
     }
     
     @available(OpenSwiftUI_v2_0, *)
-    @available(*, deprecated, renamed: "leading")
+    @available(iOS, deprecated: 14.0, renamed: "leading")
+    @available(macOS, deprecated: 11.0, renamed: "leading")
+    @available(tvOS, deprecated: 14.0, renamed: "leading")
+    @available(watchOS, deprecated: 7.0, renamed: "leading")
+    @available(visionOS, deprecated: 1.0, renamed: "leading")
     public func _leading(_ leading: Font._Leading) -> Font {
         modifier(LeadingModifier(leading: .init(leading)))
     }

@@ -68,7 +68,10 @@ extension View {
 
     @_spi(_)
     @available(OpenSwiftUI_v5_0, *)
-    @available(*, deprecated, message: "Use focusEffectDisabled(_:) instead")
+    @available(iOS, deprecated: 17.0, message: "Use focusEffectDisabled(_:) instead")
+    @available(macOS, deprecated: 14.0, message: "Use focusEffectDisabled(_:) instead")
+    @available(tvOS, deprecated: 17.0, message: "Use focusEffectDisabled(_:) instead")
+    @available(watchOS, deprecated: 10.0, message: "Use focusEffectDisabled(_:) instead")
     nonisolated public func focusEffect(_ effect: FocusEffect) -> some View {
         environment(\.focusEffect, effect)
     }
@@ -137,7 +140,10 @@ public struct FocusInteractions: OptionSet, Sendable {
 
 @_spi(_)
 @available(OpenSwiftUI_v5_0, *)
-@available(*, deprecated, message: "Use focusEffectDisabled(_:) instead")
+@available(iOS, deprecated: 17.0, message: "Use focusEffectDisabled(_:) instead")
+@available(macOS, deprecated: 14.0, message: "Use focusEffectDisabled(_:) instead")
+@available(tvOS, deprecated: 17.0, message: "Use focusEffectDisabled(_:) instead")
+@available(watchOS, deprecated: 10.0, message: "Use focusEffectDisabled(_:) instead")
 public struct FocusEffect: Equatable, Sendable {
     enum Kind {
         case automatic
@@ -156,7 +162,10 @@ public struct FocusEffect: Equatable, Sendable {
 @available(OpenSwiftUI_v5_0, *)
 extension EnvironmentValues {
     @_spi(_)
-    @available(*, deprecated, message: "Use isFocusEffectEnabled instead")
+    @available(iOS, deprecated: 17.0, message: "Use isFocusEffectEnabled instead")
+    @available(macOS, deprecated: 14.0, message: "Use isFocusEffectEnabled instead")
+    @available(tvOS, deprecated: 17.0, message: "Use isFocusEffectEnabled instead")
+    @available(watchOS, deprecated: 10.0, message: "Use isFocusEffectEnabled instead")
     public fileprivate(set) var focusEffect: FocusEffect {
         get { isFocusEffectEnabled ? .automatic : .disabled }
         set { isFocusEffectEnabled = newValue.kind == .automatic }
@@ -1165,7 +1174,9 @@ extension View {
     ///   `onFocusChange` when the view gains or loses focus.
     @available(iOS, unavailable)
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, message: "Use FocusState<T> and View.focused(_:equals) for functionality previously provided by the onChange parameter.")
+    @available(macOS, deprecated: 12.0, message: "Use FocusState<T> and View.focused(_:equals) for functionality previously provided by the onChange parameter.")
+    @available(tvOS, deprecated: 15.0, message: "Use FocusState<T> and View.focused(_:equals) for functionality previously provided by the onChange parameter.")
+    @available(watchOS, deprecated: 8.0, message: "Use FocusState<T> and View.focused(_:equals) for functionality previously provided by the onChange parameter.")
     @available(visionOS, unavailable)
     nonisolated public func focusable(
         _ isFocusable: Bool = true,
@@ -1186,7 +1197,10 @@ extension View {
 
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
-    @available(*, deprecated, message: "Use View.focusable(_:interactions:) instead.")
+    @available(iOS, deprecated: 17.0, message: "Use View.focusable(_:interactions:) instead.")
+    @available(macOS, deprecated: 14.0, message: "Use View.focusable(_:interactions:) instead.")
+    @available(tvOS, deprecated: 17.0, message: "Use View.focusable(_:interactions:) instead.")
+    @available(watchOS, deprecated: 10.0, message: "Use View.focusable(_:interactions:) instead.")
     nonisolated public func focusable(_ isFocusable: Bool = true, options: FocusableOptions) -> some View {
         modifier(_FocusableModifier(
             isFocusable: isFocusable,
