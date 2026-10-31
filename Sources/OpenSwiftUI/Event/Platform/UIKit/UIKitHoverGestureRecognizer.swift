@@ -9,7 +9,6 @@
 import COpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - UIKitHoverGestureRecognizer
 

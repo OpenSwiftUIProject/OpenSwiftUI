@@ -10,12 +10,6 @@ import Foundation
 import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
-#if os(iOS) || os(visionOS)
 typealias PlatformFocusItem = any UIFocusItem
 #else
 typealias PlatformFocusItem = PlatformView

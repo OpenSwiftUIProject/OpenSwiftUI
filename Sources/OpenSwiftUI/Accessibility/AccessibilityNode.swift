@@ -13,7 +13,6 @@ import OpenSwiftUICore
 import struct OpenSwiftUICore.UniqueID
 
 #if canImport(UIKit)
-import UIKit
 typealias AccessibilityNodeBase = UIResponder
 #else
 typealias AccessibilityNodeBase = NSObject

@@ -7,7 +7,6 @@
 //  ID: C46338C7764E4E02DFE8CA9F275E0662 (SwiftUI)
 
 #if os(macOS)
-import AppKit
 import OpenSwiftUICore
 
 private var observerKey: UInt8 = 0

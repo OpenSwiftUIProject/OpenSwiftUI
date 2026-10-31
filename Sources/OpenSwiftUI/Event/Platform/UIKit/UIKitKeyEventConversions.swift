@@ -10,7 +10,6 @@
 
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - UIPress + KeyEventProvider
 

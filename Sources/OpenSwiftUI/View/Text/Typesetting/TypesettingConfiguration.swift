@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if canImport(UIKit)
-package import UIKit
 
 // MARK: - TypesettingConfigurationKey + UITraitBridgedEnvironmentKey
 

@@ -9,7 +9,6 @@
 #if canImport(UIKit)
 
 public import OpenSwiftUICore
-public import UIKit
 import COpenSwiftUI
 
 // MARK: - UIRectEdge Conversions

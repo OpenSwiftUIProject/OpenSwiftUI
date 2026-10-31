@@ -6,12 +6,6 @@
 //  Status: Complete
 //  ID: 71E21E30634D2453CAA80C5CA9EF3E2C (SwiftUI)
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)

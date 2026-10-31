@@ -7,7 +7,6 @@
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 
-import AppKit
 import COpenSwiftUI
 
 // MARK: - NSAppearance Conversions [6.5.4]

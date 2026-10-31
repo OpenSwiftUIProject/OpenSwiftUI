@@ -8,7 +8,6 @@
 #if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 class UIViewResponder: PlatformViewResponderBase {
     weak var focusAccessibilityNode: AccessibilityNode?

@@ -8,12 +8,6 @@
 #if canImport(Darwin)
 // MARK: - EdgeInsets + Conversion
 
-#if canImport(UIKit)
-public import UIKit
-#elseif canImport(AppKit)
-public import AppKit
-#endif
-
 extension EdgeInsets {
     /// Create edge insets from the equivalent NSDirectionalEdgeInsets.
     @available(watchOS, unavailable)

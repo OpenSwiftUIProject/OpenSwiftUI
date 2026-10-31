@@ -13,11 +13,6 @@ import UIFoundation_Private
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 import OpenSwiftUICore
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-public import AppKit
-#elseif canImport(UIKit)
-public import UIKit
-#endif
 
 // MARK: - WidgetAuxiliaryViewMetadata [WIP]
 

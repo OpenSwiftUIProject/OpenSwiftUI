@@ -10,7 +10,6 @@
 import OpenAttributeGraphShims
 @_spi(Private)
 import OpenSwiftUICore
-import UIKit
 
 // FIXME: UIKit private Swift API
 

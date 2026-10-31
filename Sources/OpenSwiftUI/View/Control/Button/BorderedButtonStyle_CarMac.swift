@@ -8,9 +8,6 @@
 
 import Foundation
 import OpenSwiftUICore
-#if os(macOS)
-import AppKit
-#endif
 
 // MARK: - BorderedButtonStyle_CarMac
 

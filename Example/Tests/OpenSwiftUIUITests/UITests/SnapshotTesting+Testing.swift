@@ -2,9 +2,6 @@
 //  SnapshotTesting+Testing.swift
 //  OpenSwiftUIUITests
 
-#if os(macOS)
-import AppKit
-#endif
 import Foundation
 import SnapshotTesting
 import TestingHost

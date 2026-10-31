@@ -5,7 +5,6 @@
 //  Status: Complete for iOS
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 // MARK: - TestingSceneDelegate [6.4.41] [iOS]
 

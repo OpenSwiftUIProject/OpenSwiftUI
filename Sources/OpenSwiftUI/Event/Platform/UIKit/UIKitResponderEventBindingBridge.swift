@@ -9,7 +9,6 @@
 #if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - UIKitResponderEventBindingBridge
 

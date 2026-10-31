@@ -9,7 +9,6 @@
 #if os(iOS) || os(visionOS)
 import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
-import UIKit
 #if OPENSWIFTUI_SWIFTUI_RENDERER
 import OpenSwiftUISymbolDualTestsSupport
 #endif

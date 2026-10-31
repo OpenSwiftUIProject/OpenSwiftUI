@@ -8,9 +8,6 @@
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS) || os(visionOS)
-public import UIKit
-#endif
 
 // MARK: - _ViewTest [6.4.41]
 

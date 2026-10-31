@@ -3,7 +3,6 @@
 //  OpenSwiftUITests
 
 #if os(macOS)
-import AppKit
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @testable import OpenSwiftUI

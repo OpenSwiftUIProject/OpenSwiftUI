@@ -12,7 +12,6 @@ import COpenSwiftUI
 import OpenSwiftUICore
 import OpenSwiftUI_SPI
 import libAccessibilityPrivate
-import UIKit
 
 // MARK: - UILargeContentViewerInteractionBridge [WIP]
 

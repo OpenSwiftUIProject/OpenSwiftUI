@@ -6,7 +6,6 @@
 //  Status: TBA
 
 #if os(macOS)
-import AppKit
 import COpenSwiftUI
 import OpenSwiftUICore
 

@@ -7,7 +7,6 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E (SwiftUI)
 
 #if os(iOS) || os(visionOS)
-public import UIKit
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)

@@ -9,7 +9,6 @@
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 
 public import OpenSwiftUICore
-public import AppKit
 import COpenSwiftUI
 
 // MARK: - NSColor Conversions

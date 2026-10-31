@@ -6,8 +6,6 @@
 
 #if os(iOS) || os(visionOS)
 
-import UIKit
-
 // MARK: - DocumentBrowserViewController [WIP]
 
 // TODO

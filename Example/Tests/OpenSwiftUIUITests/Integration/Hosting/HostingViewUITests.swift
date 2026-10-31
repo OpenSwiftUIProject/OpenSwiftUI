@@ -6,12 +6,6 @@ import Testing
 import TestingHost
 import SnapshotTesting
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
-
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct HostingViewUITests {

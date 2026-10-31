@@ -7,7 +7,6 @@
 //  ID: B619265B3CBBC7F42E2392FC185432F2 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 // TODO
 class UIKitMainMenuController {

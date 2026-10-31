@@ -7,7 +7,6 @@
 //  ID: A7473CA4D30DB9CE24790738AC72AF8E (SwiftUI)
 
 #if os(macOS)
-import AppKit
 import COpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore

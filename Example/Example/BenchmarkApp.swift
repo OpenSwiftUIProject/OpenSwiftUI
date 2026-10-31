@@ -12,10 +12,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#endif
-
 struct BenchmarkApp {
     static func main() {
         _TestApp().runBenchmarks([

@@ -16,10 +16,8 @@ protocol SafeAreaHelperDelegate: AnyObject {
 }
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias PlatformEdgeInsets = UIEdgeInsets
 #elseif os(macOS)
-import AppKit
 typealias PlatformEdgeInsets = NSEdgeInsets
 extension NSEdgeInsets {
     static var zero: NSEdgeInsets {

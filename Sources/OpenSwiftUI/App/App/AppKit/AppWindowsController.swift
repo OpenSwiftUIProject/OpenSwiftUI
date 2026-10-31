@@ -7,7 +7,6 @@
 //  ID: 72F61A03E62F0A97E0761B990CF02152 (SwiftUI)
 
 #if os(macOS)
-import AppKit
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore

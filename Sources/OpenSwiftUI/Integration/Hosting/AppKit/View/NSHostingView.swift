@@ -10,7 +10,6 @@
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
-public import AppKit
 import OpenSwiftUI_SPI
 import COpenSwiftUI
 

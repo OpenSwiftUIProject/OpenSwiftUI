@@ -8,12 +8,6 @@ import Testing
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
-
 @MainActor
 struct ImageConversionsTests {
     @Test

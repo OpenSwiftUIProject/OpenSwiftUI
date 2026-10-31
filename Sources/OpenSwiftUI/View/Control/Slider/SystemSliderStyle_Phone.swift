@@ -8,7 +8,6 @@
 
 #if os(iOS) || os(visionOS)
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - PlatformSliderStyle
 

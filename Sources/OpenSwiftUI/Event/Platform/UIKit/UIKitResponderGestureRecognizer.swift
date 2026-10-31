@@ -11,7 +11,6 @@ import COpenSwiftUI
 import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 private let isUIKitGestureDebuggingEnabled = UserDefaults.uiKit?.bool(forKey: "LogGesture") ?? false
 

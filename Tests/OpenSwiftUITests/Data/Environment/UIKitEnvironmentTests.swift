@@ -5,7 +5,6 @@
 #if os(iOS) || os(visionOS)
 @testable import OpenSwiftUI
 import Testing
-import UIKit
 
 @MainActor
 struct UIKitEnvironmentTests {

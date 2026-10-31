@@ -4,11 +4,6 @@
 //
 //  Status: Complete
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 import OpenSwiftUI_SPI
 
 // MARK: - _PerformanceTest [6.4.41]

@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 final class UIHostingViewDebugLayer: CALayer {
     required init?(coder: NSCoder) {

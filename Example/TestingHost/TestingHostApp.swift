@@ -8,12 +8,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
-#else
-import UIKit
-#endif
-
 @main
 struct TestingHostApp: App {
     #if canImport(AppKit) && !targetEnvironment(macCatalyst)

@@ -11,7 +11,6 @@
 import OpenSwiftUICore
 
 #if os(macOS)
-import AppKit
 import COpenSwiftUI
 #endif
 

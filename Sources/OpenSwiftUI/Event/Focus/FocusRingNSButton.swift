@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if os(macOS)
-import AppKit
 import COpenSwiftUI
 
 // MARK: - FocusRingNSButton

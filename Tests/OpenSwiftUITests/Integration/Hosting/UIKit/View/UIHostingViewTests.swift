@@ -7,7 +7,6 @@ import OpenSwiftUI
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
-import UIKit
 
 @MainActor
 struct UIHostingViewTests {

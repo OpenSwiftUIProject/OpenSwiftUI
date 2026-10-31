@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 protocol CurrentEventProvider {
     var currentEvent: UIEvent? { get }

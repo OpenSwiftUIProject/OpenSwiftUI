@@ -54,7 +54,6 @@ private struct HitTestTrace<Value> where Value: HitTestTracing {
 }
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 // MARK: - UIView + HitTestTracing
 
@@ -118,7 +117,6 @@ extension UIView: HitTestTracing {
     }
 }
 #elseif os(macOS)
-import AppKit
 
 // MARK: - NSView + HitTestTracing
 

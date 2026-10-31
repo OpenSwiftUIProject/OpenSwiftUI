@@ -45,11 +45,6 @@ private struct ContentViewWrapper: View {
 }
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import class AppKit.NSResponder
-import class AppKit.NSWindow
-import protocol AppKit.NSApplicationDelegate
-import struct Foundation.Notification
-
 #if OPENSWIFTUI
 @OpenObservation::Observable
 #else
@@ -63,15 +58,6 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
     }
 }
 #else
-import class UIKit.UIApplication
-import class UIKit.UIResponder
-import class UIKit.UIScene
-import class UIKit.UISceneConfiguration
-import class UIKit.UISceneSession
-import class UIKit.UIWindow
-import protocol UIKit.UIApplicationDelegate
-import protocol UIKit.UIWindowSceneDelegate
-
 #if OPENSWIFTUI
 @OpenObservation::Observable
 #else

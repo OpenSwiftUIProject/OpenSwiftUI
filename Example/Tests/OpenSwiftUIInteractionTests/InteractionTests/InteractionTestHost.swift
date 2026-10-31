@@ -2,11 +2,6 @@
 //  InteractionTestHost.swift
 //  OpenSwiftUIInteractionTests
 
-#if os(macOS)
-import AppKit
-#elseif os(iOS)
-import UIKit
-#endif
 import Foundation
 import Hammer
 #if OPENSWIFTUI

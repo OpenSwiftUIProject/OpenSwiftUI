@@ -10,7 +10,6 @@
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - runApp
 

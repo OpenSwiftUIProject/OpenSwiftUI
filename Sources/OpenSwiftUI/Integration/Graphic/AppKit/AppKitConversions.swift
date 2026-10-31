@@ -6,7 +6,6 @@
 //  Status: WIP
 
 #if canImport(AppKit)
-import AppKit
 import OpenSwiftUICore
 
 // MARK: - ControlSize Conversions

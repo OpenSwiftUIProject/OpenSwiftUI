@@ -3,7 +3,6 @@
 //  OpenSwiftUITests
 
 #if os(macOS)
-import AppKit
 import OpenSwiftUI
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport

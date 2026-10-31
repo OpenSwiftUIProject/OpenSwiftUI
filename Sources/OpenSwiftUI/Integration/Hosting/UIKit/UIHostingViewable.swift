@@ -7,7 +7,6 @@
 
 #if os(iOS) || os(visionOS)
 public import Foundation
-import UIKit
 
 /// Abstract the bits UV needs to know about UIHostingController so it doesn't
 /// need to rely on UIHostingController existing in the SDK, which it can't in

@@ -6,7 +6,6 @@
 //  Status: WIP
 
 #if os(iOS) || os(visionOS)
-public import UIKit
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore

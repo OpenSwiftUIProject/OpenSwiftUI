@@ -190,12 +190,10 @@ func applyAppRootModifier(_ view: AnyView) -> AnyView {
 // MARK: - Platform implementation
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias DelegateBaseClass = UIResponder
 typealias PlatformApplication = UIApplication
 typealias PlatformApplicationDelegate = UIApplicationDelegate
 #elseif os(macOS)
-import AppKit
 typealias DelegateBaseClass = NSResponder
 typealias PlatformApplication = NSApplication
 typealias PlatformApplicationDelegate = NSApplicationDelegate
