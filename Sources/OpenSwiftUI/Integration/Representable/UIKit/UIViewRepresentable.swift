@@ -8,7 +8,6 @@
 
 #if os(iOS) || os(visionOS)
 
-public import UIKit
 public import OpenSwiftUICore
 import OpenAttributeGraphShims
 

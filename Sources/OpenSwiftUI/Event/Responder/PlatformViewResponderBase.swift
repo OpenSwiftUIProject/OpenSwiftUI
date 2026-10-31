@@ -9,11 +9,6 @@
 import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(macOS) && !targetEnvironment(macCatalyst)
-import AppKit
-#elseif os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 class PlatformViewResponderBase: ViewResponder {
     weak var hostView: PlatformView?

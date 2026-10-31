@@ -11,7 +11,6 @@ import COpenSwiftUI
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 package import OpenSwiftUICore
-public import UIKit
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
 #else

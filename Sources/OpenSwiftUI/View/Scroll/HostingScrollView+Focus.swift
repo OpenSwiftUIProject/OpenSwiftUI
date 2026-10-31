@@ -12,7 +12,6 @@ import Foundation
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 
 // TODO: Connect the container's focus queries, filler management, and substitution.
 

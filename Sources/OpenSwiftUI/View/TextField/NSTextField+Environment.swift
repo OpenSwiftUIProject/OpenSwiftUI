@@ -6,7 +6,6 @@
 //  Status: WIP
 
 #if os(macOS)
-import AppKit
 import OpenSwiftUICore
 
 // MARK: - NSTextField + Environment

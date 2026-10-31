@@ -18,12 +18,6 @@
 
 import QuartzCore
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
-
 #if !OPENSWIFTUI
 @available(iOS 18.0, macOS 15.0, *)
 #endif

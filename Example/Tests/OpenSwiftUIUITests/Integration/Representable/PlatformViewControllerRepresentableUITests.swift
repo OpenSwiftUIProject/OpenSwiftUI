@@ -6,10 +6,8 @@ import Testing
 import SnapshotTesting
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
 #elseif os(macOS)
-import AppKit
 typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
 #endif
 

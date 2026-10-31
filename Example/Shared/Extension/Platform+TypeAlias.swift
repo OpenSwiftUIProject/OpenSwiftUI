@@ -12,7 +12,6 @@ public import SwiftUI
 #endif
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-public import AppKit
 public typealias PlatformColor = NSColor
 public typealias PlatformImage = NSImage
 public typealias PlatformView = NSView
@@ -20,7 +19,6 @@ public typealias PlatformViewController = NSViewController
 public typealias PlatformHostingController = NSHostingController
 public typealias PlatformHostingView = NSHostingView
 #elseif canImport(UIKit)
-public import UIKit
 public typealias PlatformColor = UIColor
 public typealias PlatformImage = UIImage
 public typealias PlatformView = UIView

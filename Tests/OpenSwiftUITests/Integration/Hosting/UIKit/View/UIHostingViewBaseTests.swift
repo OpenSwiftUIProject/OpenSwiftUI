@@ -8,7 +8,6 @@ import Testing
 import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import UIKit
 import OpenSwiftUITestsSupport
 
 @MainActor

@@ -10,7 +10,6 @@
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 import OpenRenderBoxShims
-public import AppKit
 
 // MARK: - VectorImageLayer + NSImage
 

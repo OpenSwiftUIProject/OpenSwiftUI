@@ -7,7 +7,6 @@
 //  ID: CD9513E1DBF2FF41775224EE6D5A7974 (SwiftUI)
 
 #if os(macOS)
-import AppKit
 
 class AppDelegate: NSResponder, NSApplicationDelegate {
     var graph: AppGraph

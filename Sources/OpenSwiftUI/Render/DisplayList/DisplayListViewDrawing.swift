@@ -13,12 +13,6 @@ import OpenSwiftUICore
 import QuartzCore
 import OpenRenderBoxShims
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 // MARK: - CGDrawingView
 
 final class CGDrawingView: PlatformGraphicsView, PlatformDrawable {

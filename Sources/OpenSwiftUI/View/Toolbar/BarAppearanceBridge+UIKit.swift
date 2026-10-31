@@ -7,7 +7,6 @@
 //  ID: BF747AB022DCE7FC5B6AD0F035BC8E0D (SwiftUI)
 
 #if os(iOS) || os(visionOS)
-import UIKit
 
 // MARK: - BarAppearanceBridge + UIKit [TBA]
 

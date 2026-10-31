@@ -72,7 +72,11 @@ struct ForEachNonConstantRangeView: View {
     }
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private class ForEachLazyContainerNonConstantCountViewModel {
     var data: [Int] = [1, 2]
 }

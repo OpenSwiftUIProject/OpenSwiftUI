@@ -6,9 +6,6 @@ import Testing
 import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 struct IdentifiedViewTreeTests {
     private func helper(identifier: AnyHashable) -> _IdentifiedViewProxy {

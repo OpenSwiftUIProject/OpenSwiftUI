@@ -9,7 +9,6 @@
 #if os(iOS) || os(visionOS)
 import COpenSwiftUI
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - LinearUIKitProgressView
 

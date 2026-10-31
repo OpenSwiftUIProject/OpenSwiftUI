@@ -6,9 +6,6 @@
 //  Status: WIP (TBA)
 
 import Foundation
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // MARK: - AccessibilityRotorEntryRange [TBA]
 

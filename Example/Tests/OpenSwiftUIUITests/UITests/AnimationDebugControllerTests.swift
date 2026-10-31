@@ -3,7 +3,6 @@
 //  OpenSwiftUIUITests
 
 #if os(macOS)
-import AppKit
 import SnapshotTesting
 import Testing
 @testable import TestingHost

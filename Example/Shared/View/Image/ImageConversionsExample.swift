@@ -8,12 +8,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
-#elseif canImport(UIKit)
-import UIKit
-#endif
-
 struct ImageConversionsExample: View {
     var body: some View {
         HStack(spacing: 0) {

@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-public import AppKit
 public import OpenSwiftUICore
 import OpenRenderBoxShims
 

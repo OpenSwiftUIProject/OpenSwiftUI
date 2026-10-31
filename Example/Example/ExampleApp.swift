@@ -26,7 +26,6 @@ struct ExampleApp: App {
 }
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
 private class AppDelegate: NSResponder, NSApplicationDelegate {
     var window: NSWindow?
 
@@ -35,7 +34,6 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
     }
 }
 #else
-import UIKit
 private class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 

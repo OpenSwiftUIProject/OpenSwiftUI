@@ -3,9 +3,6 @@
 //  OpenSwiftUICompatibilityTests
 
 import Testing
-#if os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 @MainActor
 struct IdentifiedViewProxyCompatibilityTests {

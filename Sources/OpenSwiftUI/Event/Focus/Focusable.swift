@@ -13,12 +13,6 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 // MARK: - View + Focus
 
 extension View {

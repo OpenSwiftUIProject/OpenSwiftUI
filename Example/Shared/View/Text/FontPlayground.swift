@@ -9,9 +9,6 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
-#if canImport(UIKit)
-import UIKit
-#endif
 
 // Examples adapted from “SwiftUI under the Hood: Fonts”:
 // https://movingparts.io/fonts-in-swiftui

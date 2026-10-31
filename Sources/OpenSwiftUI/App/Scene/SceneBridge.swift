@@ -8,11 +8,6 @@
 //  TODO: Add test case and verify [Q]
 
 #if canImport(Darwin)
-#if os(iOS) || os(visionOS)
-public import UIKit
-#elseif os(macOS)
-public import AppKit
-#endif
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
 #else

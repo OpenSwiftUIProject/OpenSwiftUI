@@ -10,10 +10,8 @@ import COpenSwiftUI
 import OpenSwiftUICore
 import UIFoundation_Private
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias TraitCollection = UITraitCollection
 #elseif os(macOS)
-import AppKit
 typealias TraitCollection = Void
 #else
 typealias TraitCollection = Void

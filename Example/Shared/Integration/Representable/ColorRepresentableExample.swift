@@ -9,11 +9,9 @@ import SwiftUI
 #endif
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias PlatformViewRepresentable = UIViewRepresentable
 typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
 #elseif os(macOS)
-import AppKit
 typealias PlatformViewRepresentable = NSViewRepresentable
 typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
 #endif

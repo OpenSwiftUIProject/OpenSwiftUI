@@ -7,7 +7,6 @@
 //  ID: 47E85C485E11398B3F3140DCB9554BB7 (SwiftUI)
 
 #if canImport(UIKit)
-public import UIKit
 public import OpenSwiftUICore
 
 // MARK: - Image + UIImage

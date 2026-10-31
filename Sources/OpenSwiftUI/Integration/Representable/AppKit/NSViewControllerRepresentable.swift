@@ -8,7 +8,6 @@
 
 #if os(macOS)
 
-public import AppKit
 public import OpenSwiftUICore
 import OpenAttributeGraphShims
 

@@ -7,9 +7,6 @@
 
 public import OpenSwiftUICore
 import OpenSwiftUI_SPI
-#if os(macOS)
-import AppKit
-#endif
 
 // MARK: - AccessibilityAdjustmentDirection
 

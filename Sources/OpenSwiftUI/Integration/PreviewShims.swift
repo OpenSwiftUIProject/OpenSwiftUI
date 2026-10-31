@@ -8,7 +8,6 @@
 import OpenSwiftUICore
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-public import AppKit
 extension OpenSwiftUI.View {
     @available(*, deprecated, message: "Use the OpenSwiftUI #Preview macro or PreviewProvider instead.")
     public func _previewVC() -> NSViewController {
@@ -16,7 +15,6 @@ extension OpenSwiftUI.View {
     }
 }
 #elseif canImport(UIKit)
-public import UIKit
 extension OpenSwiftUI.View {
     @available(*, deprecated, message: "Use the OpenSwiftUI #Preview macro or PreviewProvider instead.")
     public func _previewVC() -> UIViewController {

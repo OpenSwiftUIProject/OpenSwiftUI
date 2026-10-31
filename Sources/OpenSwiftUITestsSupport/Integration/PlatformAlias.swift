@@ -9,7 +9,6 @@ package import SwiftUI
 #endif
 
 #if os(iOS) || os(visionOS)
-package import UIKit
 package typealias PlatformWindow = UIWindow
 package typealias PlatformViewController = UIViewController
 package typealias PlatformView = UIView
@@ -24,7 +23,6 @@ extension Color {
     }
 }
 #elseif os(macOS)
-package import AppKit
 package typealias PlatformWindow = NSWindow
 package typealias PlatformViewController = NSViewController
 package typealias PlatformView = NSView

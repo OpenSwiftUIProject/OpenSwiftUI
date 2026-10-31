@@ -4,12 +4,6 @@
 //
 //  Status: Complete for iOS
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 // MARK: - TestingAppDelegate [6.4.41] [iOS]
 
 class TestingAppDelegate: DelegateBaseClass, PlatformApplicationDelegate {

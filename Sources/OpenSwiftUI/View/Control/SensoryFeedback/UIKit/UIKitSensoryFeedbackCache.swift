@@ -10,7 +10,6 @@
 
 import OpenAttributeGraphShims
 import OpenSwiftUICore
-import UIKit
 
 // MARK: - AnyUIKitSensoryFeedbackCache
 

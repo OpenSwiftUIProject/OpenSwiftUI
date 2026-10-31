@@ -7,7 +7,6 @@
 //  ID: 7EDEE3BC9F04CB7860AD83774DB90346 (SwiftUI)
 
 #if os(macOS)
-import AppKit
 import OpenSwiftUICore
 
 // MARK: - Coordinator

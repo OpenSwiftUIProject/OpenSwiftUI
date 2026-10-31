@@ -11,11 +11,6 @@ import COpenSwiftUI
 @_spi(DisplayList_ViewSystem)
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(macOS)
-import AppKit
-#elseif os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 // MARK: - RecursiveIgnoreHitTestCustomizing
 

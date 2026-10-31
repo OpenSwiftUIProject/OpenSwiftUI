@@ -13,10 +13,8 @@ import COpenSwiftUI
 import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias PlatformConstraintBasedLayoutHostingView = _UIConstraintBasedLayoutHostingView
 #elseif os(macOS)
-import AppKit
 typealias PlatformConstraintBasedLayoutHostingView = _NSConstraintBasedLayoutHostingView
 #endif
 

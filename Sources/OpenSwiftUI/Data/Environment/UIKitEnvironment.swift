@@ -11,7 +11,6 @@ import COpenSwiftUI
 @_spi(ClarityBoard)
 @_spi(Private)
 package import OpenSwiftUICore
-package import UIKit
 
 private struct BridgedEnvironmentKeysKey: EnvironmentKey {
     static let defaultValue: [any UITraitBridgedEnvironmentKey.Type] = []

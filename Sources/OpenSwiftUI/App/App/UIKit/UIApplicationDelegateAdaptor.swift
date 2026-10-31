@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if os(iOS) || os(visionOS)
-public import UIKit
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 #if OPENSWIFTUI_OPENCOMBINE

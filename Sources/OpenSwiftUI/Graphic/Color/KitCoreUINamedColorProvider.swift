@@ -8,11 +8,6 @@
 
 import CoreUI
 import OpenSwiftUICore
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 struct KitCoreUINamedColorProvider: CoreUINamedColorProvider {
     static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor? {

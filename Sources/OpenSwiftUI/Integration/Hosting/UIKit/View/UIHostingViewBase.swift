@@ -8,7 +8,6 @@
 
 #if os(iOS) || os(visionOS)
 package import QuartzCore
-package import UIKit
 
 import COpenSwiftUI
 import OpenAttributeGraphShims

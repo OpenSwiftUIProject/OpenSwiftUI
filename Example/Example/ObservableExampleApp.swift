@@ -45,13 +45,11 @@ private struct ContentViewWrapper: View {
 }
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-// Avoid AppKit export Foundation and Foundation export Observation issue.
-// Then Observation's Observable macro will conflict with OpenObservation's Observable macro.
-import class AppKit.NSResponder
-import class AppKit.NSWindow
-import protocol AppKit.NSApplicationDelegate
-import struct Foundation.Notification
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private class AppDelegate: NSResponder, NSApplicationDelegate {
     var window: NSWindow?
 
@@ -60,18 +58,11 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
     }
 }
 #else
-// Avoid UIKit export Foundation and Foundation export Observation issue.
-// Then Observation's Observable macro will conflict with OpenObservation's Observable macro.
-import class UIKit.UIApplication
-import class UIKit.UIResponder
-import class UIKit.UIScene
-import class UIKit.UISceneConfiguration
-import class UIKit.UISceneSession
-import class UIKit.UIWindow
-import protocol UIKit.UIApplicationDelegate
-import protocol UIKit.UIWindowSceneDelegate
-
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
@@ -97,7 +88,11 @@ private class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private class SceneDelegate: NSObject, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         print("SceneDelegate will connect to scene: \(scene), session: \(session), options: \(connectionOptions)")

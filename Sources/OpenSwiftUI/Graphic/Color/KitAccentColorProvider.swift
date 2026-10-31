@@ -13,7 +13,6 @@ private func NSUserAccentHasHardwareColor() -> Bool
 @_silgen_name("NSUserAccentColorGetHardwareAccentColorName")
 private func NSUserAccentColorGetHardwareAccentColorName() -> NSString?
 
-import AppKit
 import Foundation
 import OpenSwiftUICore
 

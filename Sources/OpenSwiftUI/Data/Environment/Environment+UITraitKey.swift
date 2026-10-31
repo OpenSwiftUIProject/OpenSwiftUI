@@ -9,7 +9,6 @@
 #if canImport(UIKit)
 
 public import OpenSwiftUICore
-public import UIKit
 
 /// An environment key that is bridged to a UIKit trait.
 ///

@@ -152,12 +152,6 @@ public struct SwitchToggleStyle: ToggleStyle {
 @available(*, unavailable)
 extension SwitchToggleStyle: Sendable {}
 
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 // MARK: - AccessibilityToggleModifier.Switch
 
 #if os(iOS) || os(visionOS)

@@ -8,7 +8,6 @@
 #if canImport(UIKit)
 import Accessibility
 package import OpenSwiftUICore
-import UIKit
 
 extension AccessibilityCore {
     package enum UserSettings {

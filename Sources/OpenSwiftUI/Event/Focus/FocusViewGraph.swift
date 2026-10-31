@@ -9,9 +9,6 @@
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 // MARK: - Focus System Inputs
 

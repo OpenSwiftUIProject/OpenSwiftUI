@@ -7,8 +7,6 @@
 
 #if os(macOS)
 
-public import AppKit
-
 /// An AppKit view controller that hosts OpenSwiftUI view hierarchy.
 ///
 /// Create an `NSHostingController` object when you want to integrate OpenSwiftUI

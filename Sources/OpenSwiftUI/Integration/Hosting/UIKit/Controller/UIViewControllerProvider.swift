@@ -6,7 +6,6 @@
 //  Status: Complete
 
 #if os(iOS) || os(visionOS)
-public import UIKit
 import COpenSwiftUI
 
 // MARK: - UIViewControllerProvider

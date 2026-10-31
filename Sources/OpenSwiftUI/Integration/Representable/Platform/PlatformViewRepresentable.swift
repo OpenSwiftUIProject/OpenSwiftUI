@@ -7,14 +7,12 @@
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
 #if os(iOS) || os(visionOS)
-import UIKit
 typealias PlatformView = UIView
 typealias PlatformScrollView = UIScrollView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
 #elseif os(macOS)
-import AppKit
 typealias PlatformView = NSView
 typealias PlatformScrollView = NSScrollView
 typealias PlatformViewController = NSViewController

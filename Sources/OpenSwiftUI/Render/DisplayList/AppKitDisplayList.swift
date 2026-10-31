@@ -10,7 +10,6 @@
 @_spi(ForOpenSwiftUIOnly)
 @_spi(DisplayList_ViewSystem)
 import OpenSwiftUICore
-import AppKit
 #if OPENSWIFTUI_SWIFTUI_RENDERER
 import OpenSwiftUISymbolDualTestsSupport
 #endif

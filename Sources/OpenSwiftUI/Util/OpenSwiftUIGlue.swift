@@ -11,11 +11,6 @@ public import OpenSwiftUICore
 @_spiOnly
 public import OpenAttributeGraphShims
 import COpenSwiftUI
-#if os(iOS) || os(visionOS) || os(tvOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 // MARK: - OpenSwiftUIGlue
 

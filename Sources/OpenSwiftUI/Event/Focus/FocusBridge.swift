@@ -8,11 +8,6 @@
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import COpenSwiftUI
-#if os(iOS) || os(visionOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 // MARK: - FocusHost
 

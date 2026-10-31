@@ -7,7 +7,6 @@
 
 #if os(iOS) || os(visionOS)
 import COpenSwiftUI
-import UIKit
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
