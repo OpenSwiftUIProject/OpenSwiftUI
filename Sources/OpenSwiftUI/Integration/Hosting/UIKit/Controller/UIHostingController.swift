@@ -88,7 +88,9 @@ open class UIHostingController<Content>: UIViewController where Content : View {
         host.forEachIdentifiedView(body: body)
     }
     
-    @available(*, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    @available(iOS, deprecated: 16.4, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    @available(tvOS, deprecated: 16.4, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    @available(watchOS, deprecated: 9.4, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
     public var _disableSafeArea: Swift.Bool {
         get {
             host.explicitSafeAreaInsets == .zero

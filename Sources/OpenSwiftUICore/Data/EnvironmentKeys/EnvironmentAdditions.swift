@@ -994,7 +994,7 @@ extension EnvironmentValues {
     /// Exposed as SPI for ControlCenter and NotificationCenter.
     @available(OpenSwiftUI_macOS_v2_0, *)
     @available(iOS, unavailable)
-    @available(macOS, deprecated, message: "Use `backgroundMaterial` instead")
+    @available(macOS, deprecated: 12.0, message: "Use `backgroundMaterial` instead")
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)

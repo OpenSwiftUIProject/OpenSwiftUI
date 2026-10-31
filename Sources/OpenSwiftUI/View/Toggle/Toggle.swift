@@ -105,7 +105,10 @@ public struct Toggle<Label>: View where Label: View {
 
     @_spi(_)
     @available(OpenSwiftUI_v4_0, *)
-    @available(*, deprecated, message: "Use Toggle.init(sources:isOn:label:).")
+    @available(iOS, deprecated: 16.0, message: "Use Toggle.init(sources:isOn:label:).")
+    @available(macOS, deprecated: 13.0, message: "Use Toggle.init(sources:isOn:label:).")
+    @available(tvOS, deprecated: 16.0, message: "Use Toggle.init(sources:isOn:label:).")
+    @available(watchOS, deprecated: 9.0, message: "Use Toggle.init(sources:isOn:label:).")
     nonisolated public init<C>(
         isOn: C,
         @ViewBuilder label: () -> Label
@@ -252,7 +255,10 @@ extension Toggle where Label == Text {
 
     @_spi(_)
     @available(OpenSwiftUI_v4_0, *)
-    @available(*, deprecated, message: "Use Toggle.init(_:sources:isOn).")
+    @available(iOS, deprecated: 16.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(macOS, deprecated: 13.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(tvOS, deprecated: 16.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(watchOS, deprecated: 9.0, message: "Use Toggle.init(_:sources:isOn).")
     nonisolated public init<C>(
         _ titleKey: LocalizedStringKey,
         isOn: C
@@ -305,7 +311,10 @@ extension Toggle where Label == Text {
 
     @_spi(_)
     @available(OpenSwiftUI_v4_0, *)
-    @available(*, deprecated, message: "Use Toggle.init(_:sources:isOn).")
+    @available(iOS, deprecated: 16.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(macOS, deprecated: 13.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(tvOS, deprecated: 16.0, message: "Use Toggle.init(_:sources:isOn).")
+    @available(watchOS, deprecated: 9.0, message: "Use Toggle.init(_:sources:isOn).")
     @_disfavoredOverload
     nonisolated public init<S, C>(
         _ title: S,

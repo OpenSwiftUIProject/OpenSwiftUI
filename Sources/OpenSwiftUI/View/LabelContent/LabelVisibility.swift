@@ -63,7 +63,10 @@ extension View {
 
     @_spi(Private)
     @available(OpenSwiftUI_v4_0, *)
-    @available(*, deprecated, message: "Use labelsVisibility(_:) instead")
+    @available(iOS, deprecated: 100000.0, message: "Use labelsVisibility(_:) instead")
+    @available(macOS, deprecated: 100000.0, message: "Use labelsVisibility(_:) instead")
+    @available(tvOS, deprecated: 100000.0, message: "Use labelsVisibility(_:) instead")
+    @available(watchOS, deprecated: 100000.0, message: "Use labelsVisibility(_:) instead")
     nonisolated public func labels(_ visibility: Visibility) -> some View {
         environment(\.labelsVisibility, visibility)
             .input(LabelVisibilityConfigured.self)

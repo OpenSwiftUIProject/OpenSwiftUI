@@ -165,7 +165,11 @@ extension View {
     /// - Returns: A view that wraps this view and applies `animation` to all
     ///   animatable values used within the view.
     @available(OpenSwiftUI_v1_0, *)
-    @available(*, deprecated, message: "Use withAnimation or animation(_:value:) instead.")
+    @available(iOS, deprecated: 15.0, message: "Use withAnimation or animation(_:value:) instead.")
+    @available(macOS, deprecated: 12.0, message: "Use withAnimation or animation(_:value:) instead.")
+    @available(tvOS, deprecated: 15.0, message: "Use withAnimation or animation(_:value:) instead.")
+    @available(watchOS, deprecated: 8.0, message: "Use withAnimation or animation(_:value:) instead.")
+    @available(visionOS, deprecated: 1.0, message: "Use withAnimation or animation(_:value:) instead.")
     @_disfavoredOverload
     @inlinable
     nonisolated public func animation(_ animation: Animation?) -> some View {

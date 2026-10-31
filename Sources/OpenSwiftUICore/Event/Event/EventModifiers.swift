@@ -36,7 +36,11 @@ public struct EventModifiers: OptionSet {
     public static let numericPad: EventModifiers = .init(rawValue: 1 << 5)
 
     /// The Function key.
-    @available(*, deprecated, message: "Function modifier is reserved for system applications")
+    @available(iOS, deprecated: 15.0, message: "Function modifier is reserved for system applications")
+    @available(macOS, deprecated: 12.0, message: "Function modifier is reserved for system applications")
+    @available(tvOS, deprecated: 15.0, message: "Function modifier is reserved for system applications")
+    @available(watchOS, deprecated: 8.0, message: "Function modifier is reserved for system applications")
+    @available(visionOS, deprecated: 1.0, message: "Function modifier is reserved for system applications")
     public static let function: EventModifiers = .init(rawValue: 1 << 6)
 
     package static let _function: EventModifiers = .init(rawValue: 1 << 6)

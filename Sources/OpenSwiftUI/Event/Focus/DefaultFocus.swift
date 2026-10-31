@@ -346,7 +346,7 @@ public struct _FocusSystem {
 
     /// Asks the focus system to re-evaluate default focus and move focus
     /// to that item, if necessary.
-    @available(macOS, deprecated, message: "Prototype SPI, do not use.")
+    @available(macOS, deprecated: 11.0, message: "Prototype SPI, do not use.")
     public func resetToDefault() {
         onResetToDefault?()
     }

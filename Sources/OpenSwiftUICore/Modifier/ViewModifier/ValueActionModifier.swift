@@ -93,7 +93,11 @@ extension View {
     ///     value.
     ///
     /// - Returns: A view that runs an action when the specified value changes.
-    @available(*, deprecated, message: "Use `onChange` with a two or zero parameter action closure instead.")
+    @available(iOS, deprecated: 17.0, message: "Use `onChange` with a two or zero parameter action closure instead.")
+    @available(macOS, deprecated: 14.0, message: "Use `onChange` with a two or zero parameter action closure instead.")
+    @available(tvOS, deprecated: 17.0, message: "Use `onChange` with a two or zero parameter action closure instead.")
+    @available(watchOS, deprecated: 10.0, message: "Use `onChange` with a two or zero parameter action closure instead.")
+    @available(visionOS, deprecated: 1.0, message: "Use `onChange` with a two or zero parameter action closure instead.")
     @inlinable
     nonisolated public func onChange<V>(
         of value: V,

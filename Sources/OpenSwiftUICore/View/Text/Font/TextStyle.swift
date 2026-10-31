@@ -129,7 +129,10 @@ extension Font {
 
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
-    @available(*, deprecated, message: "Use `system(_:design:weight:)` API instead.")
+    @available(iOS, deprecated: 100000.0, message: "Use `system(_:design:weight:)` API instead.")
+    @available(macOS, deprecated: 100000.0, message: "Use `system(_:design:weight:)` API instead.")
+    @available(tvOS, deprecated: 100000.0, message: "Use `system(_:design:weight:)` API instead.")
+    @available(watchOS, deprecated: 100000.0, message: "Use `system(_:design:weight:)` API instead.")
     @_disfavoredOverload
     public static func system(
         _ style: Font.TextStyle,
@@ -164,7 +167,10 @@ extension Font {
 
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
-    @available(*, deprecated, message: "Use `system(_:design:weight:)` instead.")
+    @available(iOS, deprecated: 16.0, message: "Use `system(_:design:weight:)` instead.")
+    @available(macOS, deprecated: 13.0, message: "Use `system(_:design:weight:)` instead.")
+    @available(tvOS, deprecated: 16.0, message: "Use `system(_:design:weight:)` instead.")
+    @available(watchOS, deprecated: 9.0, message: "Use `system(_:design:weight:)` instead.")
     @_disfavoredOverload
     public static func system(
         _ style: Font.PrivateTextStyle,

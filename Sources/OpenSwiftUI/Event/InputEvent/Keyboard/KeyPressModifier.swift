@@ -206,7 +206,9 @@ extension KeyPress: CustomDebugStringConvertible {
 @_spi(_)
 extension View {
     @available(OpenSwiftUI_v5_0, *)
-    @available(*, deprecated, renamed: "onKeyPress(keys:phases:action:)")
+    @available(iOS, deprecated: 17.0, renamed: "onKeyPress(keys:phases:action:)")
+    @available(macOS, deprecated: 14.0, renamed: "onKeyPress(keys:phases:action:)")
+    @available(tvOS, deprecated: 17.0, renamed: "onKeyPress(keys:phases:action:)")
     @available(watchOS, unavailable)
     nonisolated public func onKeyPress(
         keysIn keys: Set<KeyEquivalent>,
@@ -217,7 +219,9 @@ extension View {
     }
 
     @available(OpenSwiftUI_v5_0, *)
-    @available(*, deprecated, renamed: "onKeyPress(keys:phases:action:)")
+    @available(iOS, deprecated: 17.0, renamed: "onKeyPress(characters:phases:action:)")
+    @available(macOS, deprecated: 14.0, renamed: "onKeyPress(characters:phases:action:)")
+    @available(tvOS, deprecated: 17.0, renamed: "onKeyPress(characters:phases:action:)")
     @available(watchOS, unavailable)
     nonisolated public func onKeyPress(
         charactersIn characters: CharacterSet,
