@@ -31,7 +31,11 @@ struct ObservationInteractionTests {
     }
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private final class CounterModel {
     var count = 0
 }

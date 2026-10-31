@@ -20,7 +20,11 @@ struct ObservationExample: View {
     }
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private class ColorModel {
     var showRed = false
 }
@@ -42,7 +46,11 @@ struct ObservationColorExample: View {
     ObservationColorExample()
 }
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private final class CounterModel {
     var count = 0
 }
