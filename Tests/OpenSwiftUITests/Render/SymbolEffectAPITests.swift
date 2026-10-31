@@ -329,7 +329,7 @@ struct SymbolEffectAPITests {
             }
             let effect = try #require(effects.first)
             #expect(effects.count == 1)
-            #expect(effect.type.type == .symbolAppearDisappear)
+            #expect(effect.type.type == .appearDisappear)
             #expect(effect.type.arg0 == .int(flags))
             #expect(effect.type.arg1 == .float(2.5))
             transition = .init(operation: .hasContentTransition, result: .none)
