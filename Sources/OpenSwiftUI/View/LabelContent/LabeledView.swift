@@ -3,7 +3,10 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Text
+//  Status: Complete
+
+public import Foundation
+public import OpenSwiftUICore
 
 @_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
@@ -16,7 +19,7 @@ public struct LabeledView<Label, Content>: View where Label: View, Content: View
 
     var content: Content
 
-    public init(
+    nonisolated public init(
         @ViewBuilder content: () -> Content,
         @ViewBuilder label: () -> Label
     ) {
@@ -37,58 +40,70 @@ public struct LabeledView<Label, Content>: View where Label: View, Content: View
 @available(*, unavailable)
 extension LabeledView: Sendable {}
 
-//@_spi(Private)
-//@available(OpenSwiftUI_v4_0, *)
-//@available(*, deprecated, renamed: "LabeledContent")
-//extension LabeledView where Label == Text {
-//    public init(
-//        _ titleKey: LocalizedStringKey,
-//        @ViewBuilder content: () -> Content
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    @_disfavoredOverload
-//    public init<S>(
-//        _ title: S,
-//        @ViewBuilder content: () -> Content
-//    ) where S: StringProtocol {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
-//
-//@_spi(Private)
-//@available(OpenSwiftUI_v4_0, *)
-//@available(*, deprecated, renamed: "LabeledContent")
-//extension LabeledView where Label == Text, Content == Text {
-//    public init<S>(
-//        _ titleKey: LocalizedStringKey,
-//        value: S
-//    ) where S: StringProtocol {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    @_disfavoredOverload
-//    public init<S1, S2>(
-//        _ title: S1,
-//        value: S2
-//    ) where S1: StringProtocol, S2: StringProtocol {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    public init<F>(
-//        _ titleKey: LocalizedStringKey,
-//        value: F.FormatInput,
-//        format: F
-//    ) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    public init<S, F>(
-//        _ title: S,
-//        value: F.FormatInput,
-//        format: F
-//    ) where S: StringProtocol, F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+@available(*, deprecated, renamed: "LabeledContent")
+extension LabeledView where Label == Text {
+    nonisolated public init(
+        _ titleKey: LocalizedStringKey,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.init(content: content) {
+            Text(titleKey)
+        }
+    }
+
+    @_disfavoredOverload
+    nonisolated public init<S>(
+        _ title: S,
+        @ViewBuilder content: () -> Content
+    ) where S: StringProtocol {
+        self.init(content: content) {
+            Text(title)
+        }
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+@available(*, deprecated, renamed: "LabeledContent")
+extension LabeledView where Label == Text, Content == Text {
+    nonisolated public init<S>(
+        _ titleKey: LocalizedStringKey,
+        value: S
+    ) where S: StringProtocol {
+        self.init(titleKey) {
+            Text(value)
+        }
+    }
+
+    @_disfavoredOverload
+    nonisolated public init<S1, S2>(
+        _ title: S1,
+        value: S2
+    ) where S1: StringProtocol, S2: StringProtocol {
+        self.init(title) {
+            Text(value)
+        }
+    }
+
+    nonisolated public init<F>(
+        _ titleKey: LocalizedStringKey,
+        value: F.FormatInput,
+        format: F
+    ) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
+        self.init(titleKey) {
+            Text(value, format: format)
+        }
+    }
+
+    nonisolated public init<S, F>(
+        _ title: S,
+        value: F.FormatInput,
+        format: F
+    ) where S: StringProtocol, F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
+        self.init(title) {
+            Text(value, format: format)
+        }
+    }
+}
