@@ -5,7 +5,11 @@
 import OpenSwiftUITestsSupport
 import Testing
 
-@Observable
+#if OPENSWIFTUI
+@OpenObservation::Observable
+#else
+@Observation::Observable
+#endif
 private final class Model {
     var value = 0
 

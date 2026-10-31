@@ -13,7 +13,7 @@ import OpenSwiftUICore
 @Suite("ObservationUtil Tests")
 struct ObservationUtilTests {
     
-    @Observable
+    @OpenObservation::Observable
     final class TestModel {
         var value: Int = 0
         var text: String = ""

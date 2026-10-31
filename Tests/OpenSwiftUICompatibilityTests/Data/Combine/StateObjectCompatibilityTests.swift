@@ -18,10 +18,18 @@ struct StateObjectCompatibilityTests {
         var t2 = false
     }
 
-    @Observable
+    #if OPENSWIFTUI
+    @OpenObservation::Observable
+    #else
+    @Observation::Observable
+    #endif
     class Model2 {
         var t1 = false
+        #if OPENSWIFTUI
+        @OpenObservation::ObservationIgnored var t2 = false
+        #else
         @ObservationIgnored var t2 = false
+        #endif
     }
 
     struct Subview: View {

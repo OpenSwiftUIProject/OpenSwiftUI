@@ -67,3 +67,5 @@ module UIFoundation_Private {
     umbrella "Shims/UIFoundation"
     export *
 }
+
+extern module OpenSwiftUICore "Public/module.modulemap"

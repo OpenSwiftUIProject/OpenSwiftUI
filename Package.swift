@@ -660,6 +660,7 @@ let openSwiftUICoreTarget = Target.target(
     cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings + [
         .unsafeFlags(["-module-abi-name", "OpenSwiftUI"]),
+        .unsafeFlags(["-import-underlying-module"], .when(platforms: .darwinPlatforms)),
     ],
     linkerSettings: computeCondition ? [
         .linkedLibrary("c++", .when(platforms: .darwinPlatforms)),
@@ -713,7 +714,9 @@ let openSwiftUITarget = Target.target(
     ],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings,
+    swiftSettings: sharedSwiftSettings + [
+        .unsafeFlags(["-import-underlying-module"], .when(platforms: .darwinPlatforms)),
+    ],
     linkerSettings: [
         // Force Objective-C categories from static COpenSwiftUI into the final framework.
         .unsafeFlags(["-Xlinker", "-ObjC"], .when(platforms: .darwinPlatforms)),

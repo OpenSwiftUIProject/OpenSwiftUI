@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 
 #if canImport(DeveloperToolsSupport)
-@_exported import DeveloperToolsSupport
+public import DeveloperToolsSupport
 import OpenSwiftUICore
 
 /// Creates an Xcode preview from an OpenSwiftUI view.

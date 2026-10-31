@@ -1,0 +1,6 @@
+module OpenSwiftUICore {
+    umbrella header "OpenSwiftUICore.h"
+    textual header "OpenSwiftUI_Metal.h"
+    export *
+    module * { export * }
+}

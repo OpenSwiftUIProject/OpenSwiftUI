@@ -7,7 +7,11 @@ import Testing
 
 @MainActor
 struct ObservationUtilsCompatibilityTests {
-    @Observable
+    #if OPENSWIFTUI
+    @OpenObservation::Observable
+    #else
+    @Observation::Observable
+    #endif
     class Model {
         var showRed = false
     }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "d5e925ff2998f16faece44ea17def8ad6be9208977c0303ec099d396bf1fffbe",
+  "originHash" : "baa9d73a9a30e9cf8367ffea2c8151f6ed08ebfb5fe1056d2f5c10994c2e31fc",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -34,7 +34,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
-        "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
+        "revision" : "b030e44d6471cf1d760137e5da6805cf57aa885b"
       }
     },
     {
