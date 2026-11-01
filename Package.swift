@@ -557,6 +557,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v4_1:\(ignoreAvailability ? minimumVersion : "iOS 16.1, macOS 13.0, tvOS 16.1, watchOS 9.1")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v4_4:\(ignoreAvailability ? minimumVersion : "iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_0:\(ignoreAvailability ? minimumVersion : "iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_watchOS_v5_0:\(ignoreAvailability ? minimumVersion : "watchOS 10.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_1:\(ignoreAvailability ? minimumVersion : "iOS 17.1, macOS 14.1, tvOS 17.1, watchOS 10.1, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_2:\(ignoreAvailability ? minimumVersion : "iOS 17.2, macOS 14.2, tvOS 17.2, watchOS 10.2, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_4:\(ignoreAvailability ? minimumVersion : "iOS 17.4, macOS 14.4, tvOS 17.4, watchOS 10.4, visionOS 1.1")"),
