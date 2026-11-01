@@ -139,7 +139,7 @@ extension CTFontDescriptor {
     ) -> CTFontDescriptor {
         var attributes: [CFString: Any] = [
             kCTFontTraitsAttribute: [
-                kCTFontWidthTrait: kCTFontWeightRegular,
+                kCTFontWeightTrait: weight?.value ?? kCTFontWeightRegular,
                 kCTFontUIFontDesignTrait: design,
             ],
             kCTFontSizeAttribute: size

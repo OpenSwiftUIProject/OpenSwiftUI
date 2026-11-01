@@ -2,18 +2,64 @@
 //  FontTests.swift
 //  OpenSwiftUICoreTests
 
+#if canImport(CoreText)
+import CoreText
+import Numerics
+#endif
 import Foundation
 @_spi(Private)
 import OpenSwiftUICore
 import Testing
 
-#if canImport(CoreText)
-import CoreText
-import Numerics
-#endif
-
 struct FontTests {
     #if canImport(CoreText)
+    @Test(arguments: [
+        (nil, 0.0),
+        (.ultraLight, -0.8),
+        (.thin, -0.6),
+        (.light, -0.4),
+        (.regular, 0.0),
+        (.medium, 0.23),
+        (.semibold, 0.3),
+        (.bold, 0.4),
+        (.heavy, 0.56),
+        (.black, 0.62),
+    ] as [(Font.Weight?, CGFloat)])
+    func systemFontWeight(weight: Font.Weight?, expected: CGFloat) {
+        let descriptor = Font.system(
+            size: 32,
+            weight: weight
+        ).resolve(in: .large)
+        let resolvedWeight = CTFontDescriptorGetWeight(descriptor)
+
+        #expect(
+            resolvedWeight.isApproximatelyEqual(
+                to: expected,
+                absoluteTolerance: 0.01
+            )
+        )
+    }
+
+    @Test(arguments: [
+        (32.0, Font.Weight.bold, 0.4),
+        (17.0, Font.Weight.medium, 0.23),
+    ] as [(CGFloat, Font.Weight, CGFloat)], [
+        nil, .default, .serif, .rounded, .monospaced,
+    ] as [Font.Design?])
+    func systemFontPlatformWeight(
+        request: (size: CGFloat, weight: Font.Weight, expected: CGFloat),
+        design: Font.Design?
+    ) {
+        let font = Font.system(
+            size: request.size,
+            weight: request.weight,
+            design: design
+        ).platformFont(in: EnvironmentValues())
+
+        #expect(font.pointSize == request.size)
+        #expect(font.weight.isApproximatelyEqual(to: request.expected, absoluteTolerance: 0.01))
+    }
+
     @Test
     func fontModifier() {
         let descriptor = Font.body.resolve(in: .large)
