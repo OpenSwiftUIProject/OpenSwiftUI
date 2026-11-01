@@ -124,6 +124,81 @@ struct GradientAnimationExample: View {
     }
 }
 
+struct GradientShowcaseExample: View {
+    var body: some View {
+        ZStack {
+            Color(red: 0.05, green: 0.05, blue: 0.08)
+                .ignoresSafeArea()
+            VStack(spacing: 28) {
+                VStack(spacing: 6) {
+                    Text("OpenSwiftUI 0.25.0")
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundStyle(Color.white)
+                    Text("Gradients")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(Color(white: 1, opacity: 0.6))
+                }
+                VStack(spacing: 18) {
+                    HStack(spacing: 14) {
+                        GradientTile(name: "Linear", style: GradientShowcase.linear)
+                        GradientTile(name: "Radial", style: GradientShowcase.radial)
+                    }
+                    HStack(spacing: 14) {
+                        GradientTile(name: "Elliptical", style: GradientShowcase.elliptical)
+                        GradientTile(name: "Angular", style: GradientShowcase.angular)
+                    }
+                }
+                Capsule()
+                    .fill(.linearGradient(
+                        colors: GradientShowcase.spectrum,
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .frame(height: 10)
+            }
+            .padding(20)
+        }
+    }
+}
+
+private struct GradientTile<Style: ShapeStyle>: View {
+    var name: String
+    var style: Style
+
+    var body: some View {
+        VStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(style)
+                .frame(width: 200, height: 144)
+            Text(name)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color(white: 1, opacity: 0.85))
+        }
+    }
+}
+
+private enum GradientShowcase {
+    static var spectrum: [Color] {
+        [.pink, .orange, .yellow, .green, .cyan, .blue, .purple, .pink]
+    }
+
+    static var linear: LinearGradient {
+        LinearGradient(colors: spectrum, startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
+    static var radial: RadialGradient {
+        RadialGradient(colors: spectrum, center: .center, startRadius: 0, endRadius: 120)
+    }
+
+    static var elliptical: EllipticalGradient {
+        EllipticalGradient(colors: spectrum, center: .center, startRadiusFraction: 0, endRadiusFraction: 0.7)
+    }
+
+    static var angular: AngularGradient {
+        AngularGradient(colors: spectrum, center: .center)
+    }
+}
+
 #Preview("Linear") {
     GradientExample()
 }
@@ -162,4 +237,8 @@ struct GradientAnimationExample: View {
 
 #Preview("Tap to Animate") {
     GradientAnimationExample()
+}
+
+#Preview("Showcase") {
+    GradientShowcaseExample()
 }
