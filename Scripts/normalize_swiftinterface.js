@@ -1,8 +1,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-// Work around https://github.com/swiftlang/swift/issues/93415 until the
-// interface printer merges repeated platform introductions itself.
+// Merge repeated platform introductions in emitted interfaces to work around
+// https://github.com/swiftlang/swift/issues/93415.
+// Fixed upstream by https://github.com/swiftlang/swift/pull/93418;
+// the fix is expected in Swift 6.5. Remove this script and its build integration
+// once the project upgrades to Swift 6.5.
 function compareVersions(left, right) {
   const a = left.split(".").map(BigInt);
   const b = right.split(".").map(BigInt);
