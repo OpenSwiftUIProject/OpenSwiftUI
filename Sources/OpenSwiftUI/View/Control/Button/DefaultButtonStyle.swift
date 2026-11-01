@@ -68,7 +68,10 @@ public struct DefaultButtonStyle: PrimitiveButtonStyle {
             // TODO: macOS ToolbarButtonStyle in ToolbarStyleContext.
             // TODO: macOS SheetToolbarButtonStyle in SheetToolbarStyleContext.
             // TODO: macOS ListAccessoryBarButtonStyle in ListAccessoryBarStyleContext.
-            // TODO: SidebarSectionActionButtonStyle in SidebarSectionActionStyleContext.
+            .modifier(
+                PrimitiveButtonStyleContainerModifier(style: SidebarSectionActionButtonStyle())
+                    .requiring(SidebarSectionActionStyleContext.self)
+            )
             .modifier(
                 PrimitiveButtonStyleContainerModifier(style: PlatformItemListButtonStyle())
                     .requiring(AccessibilityQuickActionStyleContext.self)
