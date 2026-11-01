@@ -647,28 +647,65 @@ extension ViewList {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        guard style.granularity == 1, let viewIDs else {
+        guard style == .init(), let viewIDs else {
             return applyNodes(
                 from: &start,
                 style: style,
                 list: listAttribute,
                 transform: &transform
             ) { start, style, node, transform in
-                _openSwiftUIUnimplementedWarning()
-                return false
+                switch node {
+                case let .list(list, attribute):
+                    return list.applyIDs(from: &start, style: style, listAttribute: attribute, transform: &transform, to: body)
+                case var .sublist(sublist):
+                    let count = style.applyGranularity ? style.granularity * sublist.count : sublist.count
+                    guard start < count else {
+                        start -= count
+                        return true
+                    }
+                    defer { start = 0 }
+                    transform.apply(sublist: &sublist)
+                    for id in sublist.id.elementIDs(count: sublist.count) {
+                        guard body(id) else { return false }
+                    }
+                    return true
+                case let .group(group):
+                    for (list, attribute) in group.lists {
+                        guard list.applyIDs(from: &start, style: style, listAttribute: attribute, transform: &transform, to: body) else {
+                            return false
+                        }
+                    }
+                    return true
+                case let .section(section):
+                    for (list, attribute) in section.base.lists.prefix(section.isHierarchical ? 1 : .max) {
+                        guard list.applyIDs(from: &start, style: style, listAttribute: attribute, transform: &transform, to: body) else {
+                            return false
+                        }
+                    }
+                    return true
+                }
             }
         }
-        _openSwiftUIUnimplementedWarning()
-        return false
+        guard start < viewIDs.count else {
+            start -= viewIDs.count
+            return true
+        }
+        defer { start = 0 }
+        for var id in viewIDs.dropFirst(start) {
+            transform.bindID(&id)
+            guard body(id) else { return false }
+        }
+        return true
     }
 
     package func applyIDs(
         from start: inout Int,
         listAttribute: Attribute<any ViewList>?,
-        transform t: inout ViewList.SublistTransform,
+        transform: ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        applyIDs(from: &start, style: .init(), listAttribute: listAttribute, transform: &t, to: body)
+        var transform = transform
+        return applyIDs(from: &start, style: .init(), listAttribute: listAttribute, transform: &transform, to: body)
     }
 
     package func applyIDs(
@@ -676,16 +713,15 @@ extension ViewList {
         listAttribute: Attribute<any ViewList>?,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        var t = ViewList.SublistTransform()
-        return applyIDs(from: &start, listAttribute: listAttribute, transform: &t, to: body)
+        applyIDs(from: &start, listAttribute: listAttribute, transform: .init(), to: body)
     }
 
     package func applyIDs(
         from start: inout Int,
-        transform t: inout ViewList.SublistTransform,
+        transform: ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        applyIDs(from: &start, listAttribute: nil, transform: &t, to: body)
+        applyIDs(from: &start, listAttribute: nil, transform: transform, to: body)
     }
 
     package func firstOffset(
@@ -1860,7 +1896,7 @@ package struct EmptyViewList: ViewList {
 
     package var traitKeys: ViewTraitKeys? { .init() }
 
-    package var viewIDs: ID.Views? { .init(isDataDependent: false) }
+    package var viewIDs: ID.Views? { ID._Views(EmptyCollection<ID>(), isDataDependent: false) }
 
     package var traits: Traits { .init() }
 
