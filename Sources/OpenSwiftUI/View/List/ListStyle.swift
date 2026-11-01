@@ -20,6 +20,11 @@ extension StyleContext where Self == PlainListStyleContext {
 
 struct SidebarListStyleContext: StyleContext {}
 
+#if os(macOS)
+// TODO: ListStyleContext conformance and matching rules.
+struct SystemPreferencesSidebarListStyleContext: StyleContext {}
+#endif
+
 extension StyleContext where Self == SidebarListStyleContext {
     static var sidebarList: SidebarListStyleContext {
         .init()
