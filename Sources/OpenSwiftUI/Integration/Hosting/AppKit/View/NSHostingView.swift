@@ -964,10 +964,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             return true
         }
         
-        // TODO: screen.displayID
-        let displayID = CGMainDisplayID()
-         
-        let link = DisplayLinkCreate(displayID) { [weak self] link, seconds in
+        guard let screen = window?.screen else {
+            return false
+        }
+        let displayID = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+
+        let link = DisplayLinkCreate(displayID ?? CGMainDisplayID()) { [weak self] link, seconds in
             guard let self else { return }
             Update.locked {
                 guard let displayLink = self.displayLink, displayLink == link else {
