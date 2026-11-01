@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Subview
+//  Status: Complete
 //  ID: 1A3DD35AB7F6976908CD7AF959F34D1F (SwiftUICore)
 
 import Foundation
@@ -148,7 +148,7 @@ public struct ForEach<Data, ID, Content> where Data: RandomAccessCollection, ID:
 @available(*, unavailable)
 extension ForEach: Sendable {}
 
-// MARK: - ForEach + View [Blocked by Subview]
+// MARK: - ForEach + View
 
 @available(OpenSwiftUI_v1_0, *)
 extension ForEach: View, PrimitiveView where Content: View {
@@ -169,8 +169,19 @@ extension ForEach: View, PrimitiveView where Content: View {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs? {
-        // TODO: Subview stuff
-        return nil
+        if let view = view as? _GraphValue<ForEach<ForEachSubviewCollection<Content>, Subview.ID, Content>> {
+            return AnyView._makeView(
+                view: view[offset: { .of(&$0.data.substituteView) }],
+                inputs: inputs
+            )
+        } else if let view = view as? _GraphValue<ForEach<ForEachSectionCollection<Content>, SectionConfiguration.ID, Content>> {
+            return AnyView._makeView(
+                view: view[offset: { .of(&$0.data.substituteView) }],
+                inputs: inputs
+            )
+        } else {
+            return nil
+        }
     }
 
     nonisolated public static func _makeViewList(
@@ -217,8 +228,19 @@ extension ForEach: View, PrimitiveView where Content: View {
         view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs? {
-        // TODO: Subview stuff
-        return nil
+        if let view = view as? _GraphValue<ForEach<ForEachSubviewCollection<Content>, Subview.ID, Content>> {
+            return AnyView._makeViewList(
+                view: view[offset: { .of(&$0.data.substituteView) }],
+                inputs: inputs
+            )
+        } else if let view = view as? _GraphValue<ForEach<ForEachSectionCollection<Content>, SectionConfiguration.ID, Content>> {
+            return AnyView._makeViewList(
+                view: view[offset: { .of(&$0.data.substituteView) }],
+                inputs: inputs
+            )
+        } else {
+            return nil
+        }
     }
 }
 
