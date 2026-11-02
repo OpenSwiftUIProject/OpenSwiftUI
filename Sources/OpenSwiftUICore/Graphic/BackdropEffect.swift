@@ -12,6 +12,10 @@ package struct BackdropEffect {
 
     package var filters: [GraphicsFilter]
 
+    #if os(visionOS)
+    package var captureOnly: Bool
+    #endif
+
     package init(
         scale: Float = 1,
         color: Color.Resolved = .black,
@@ -21,5 +25,8 @@ package struct BackdropEffect {
         self.scale = scale
         self.color = color
         self.filters = filters
+        #if os(visionOS)
+        self.captureOnly = captureOnly
+        #endif
     }
 }

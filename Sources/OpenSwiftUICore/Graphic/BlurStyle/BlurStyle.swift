@@ -11,6 +11,10 @@ package struct BlurStyle: Equatable {
     package var radius: CGFloat
     package var isOpaque: Bool
     package var dither: Bool
+    #if os(visionOS)
+    package var hardEdges: Bool
+    package var isVisionEnabled: Bool
+    #endif
 
     package init(
         radius: CGFloat = 0,
@@ -21,6 +25,10 @@ package struct BlurStyle: Equatable {
         self.radius = radius
         self.isOpaque = isOpaque
         self.dither = dither
+        #if os(visionOS)
+        self.hardEdges = hardEdges
+        self.isVisionEnabled = false
+        #endif
     }
 
     package var isIdentity: Bool {
@@ -40,6 +48,10 @@ extension BlurStyle: ProtobufMessage {
         encoder.cgFloatField(1, radius)
         encoder.boolField(2, isOpaque)
         encoder.boolField(3, dither)
+        #if os(visionOS)
+        encoder.boolField(4, hardEdges)
+        encoder.boolField(5, isVisionEnabled)
+        #endif
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
@@ -49,6 +61,10 @@ extension BlurStyle: ProtobufMessage {
             case 1: style.radius = try decoder.cgFloatField(field)
             case 2: style.isOpaque = try decoder.boolField(field)
             case 3: style.dither = try decoder.boolField(field)
+            #if os(visionOS)
+            case 4: style.hardEdges = try decoder.boolField(field)
+            case 5: style.isVisionEnabled = try decoder.boolField(field)
+            #endif
             default: try decoder.skipField(field)
             }
         }

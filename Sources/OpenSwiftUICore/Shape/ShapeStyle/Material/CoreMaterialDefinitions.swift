@@ -374,27 +374,21 @@ private struct CoreMaterialCache {
     }
 
     #if os(visionOS) && canImport(QuartzCore)
-    private static let subtractSIgnoreAlpha = GraphicsBlendMode.caFilter(CAFilter(type: "subtractSIgnoreAlpha"))
-    private static let plusDIgnoreAlpha = GraphicsBlendMode.caFilter(CAFilter(type: "plusDIgnoreAlpha"))
-    private static let plusLIgnoreAlpha = GraphicsBlendMode.caFilter(CAFilter(type: "plusLIgnoreAlpha"))
-
     func loadBlendModeEffect(_ description: [String: Any]) -> DisplayList.Effect? {
         let filter = description["compositingFilter"] as? [String: Any]
         let type = description["compositingFilter"] as? String ?? filter?["type"] as? String
         switch type {
         case "subtractSIgnoreAlpha":
-            return .blendMode(Self.subtractSIgnoreAlpha)
+            return .blendMode(.subtractSIgnoreAlpha)
         case "plusDIgnoreAlpha":
-            return .blendMode(Self.plusDIgnoreAlpha)
+            return .blendMode(.plusDIgnoreAlpha)
         case "plusLIgnoreAlpha":
-            return .blendMode(Self.plusLIgnoreAlpha)
+            return .blendMode(.plusLIgnoreAlpha)
         case "plusLIgnoreAlphaSourceOverBlend":
             guard let amount = filter?["inputAmount"] as? Double else {
                 return nil
             }
-            let filter = CAFilter(type: "plusLIgnoreAlphaSourceOverBlend")
-            filter.setInput(value: amount, key: .amount)
-            return .blendMode(.caFilter(filter))
+            return .blendMode(.plusLIgnoreAlphaSourceOver(amount))
         default:
             return nil
         }

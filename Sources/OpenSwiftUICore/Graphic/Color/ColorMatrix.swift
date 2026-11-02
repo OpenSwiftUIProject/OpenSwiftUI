@@ -357,6 +357,23 @@ extension _ColorMatrix {
     }
 }
 
+// MARK: - Color.Resolved + _ColorMatrix
+
+extension Color.Resolved {
+    package func applying(_ matrix: _ColorMatrix) -> Color.Resolved {
+        let red = red
+        let green = green
+        let blue = blue
+        return Color.Resolved(
+            colorSpace: .sRGB,
+            red: matrix.m15 + (red * matrix.m11 + green * matrix.m12 + blue * matrix.m13 + opacity * matrix.m14),
+            green: matrix.m25 + (red * matrix.m21 + green * matrix.m22 + blue * matrix.m23 + opacity * matrix.m24),
+            blue: matrix.m35 + (red * matrix.m31 + green * matrix.m32 + blue * matrix.m33 + opacity * matrix.m34),
+            opacity: matrix.m45 + (red * matrix.m41 + green * matrix.m42 + blue * matrix.m43 + opacity * matrix.m44)
+        )
+    }
+}
+
 // MARK: - _ColorMatrix + ShapeStyle
 
 @_spi(Private)

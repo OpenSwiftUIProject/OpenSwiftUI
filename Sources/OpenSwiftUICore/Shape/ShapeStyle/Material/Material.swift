@@ -114,6 +114,15 @@ public struct Material: Sendable {
         case intelligenceLightSource_Unreactive
         case intelligenceLightSource_AudioReactive
         #endif
+        #if os(visionOS)
+        case pinched
+        case selected
+        case disabled
+        case vibrantGlassContent
+        case darkerGlass
+        case lighterGlass
+        case ultraDarkerGlass
+        #endif
         indirect case coreMaterial(light: String, dark: String, bundle: Bundle?)
         #if os(macOS) || os(iOS)
         // case provider(MaterialProviderBoxBase)
@@ -156,9 +165,18 @@ public struct Material: Sendable {
                 if environment.colorScheme == .dark {
                     flags.insert(.darkColorScheme)
                 }
+                #if os(visionOS)
+                if environment.isVisionEnabled {
+                    flags.insert(.isVisionEnabled)
+                }
+                if environment.isBackgroundOpaque {
+                    flags.insert(.noTransparentBlur)
+                }
+                #else
                 if environment.accessibilityReduceTransparency {
                     flags.insert(.reduceTransparency)
                 }
+                #endif
                 if environment.colorSchemeContrast == .increased {
                     flags.insert(.increasedContrast)
                 }
@@ -177,6 +195,10 @@ public struct Material: Sendable {
         package var id: Material.ID
 
         package var flags: Material.ResolvedMaterial.Flags
+
+        #if os(visionOS)
+        package var styleID: ContentStyle.ID? = nil
+        #endif
 
         package var colorScheme: ColorScheme {
             flags.contains(.darkColorScheme) ? .dark : .light
@@ -211,7 +233,19 @@ public struct Material: Sendable {
             flags.insert(.isActive)
         }
         #endif
+        #if os(visionOS)
+        let styleID: ContentStyle.ID?
+        switch id {
+        case .ultraThin, .thin, .regular, .thick, .ultraThick,
+             .pinched, .selected, .disabled, .darkerGlass, .lighterGlass, .ultraDarkerGlass:
+            styleID = env.isVisionEnabled ? env.backgroundContentStyleID : nil
+        default:
+            styleID = nil
+        }
+        return ResolvedMaterial(id: id, flags: flags, styleID: styleID)
+        #else
         return ResolvedMaterial(id: id, flags: flags)
+        #endif
     }
 }
 
@@ -292,13 +326,31 @@ extension Material {
 @available(OpenSwiftUI_watchOS_v5_0, *)
 extension Material {
     @_spi(_)
-    public static var pinched: Material { Material(.regular) }
+    public static var pinched: Material {
+        #if os(visionOS)
+        Material(.pinched)
+        #else
+        Material(.regular)
+        #endif
+    }
 
     @_spi(_)
-    public static var selected: Material { .pinched }
+    public static var selected: Material {
+        #if os(visionOS)
+        Material(.selected)
+        #else
+        .pinched
+        #endif
+    }
 
     @_spi(_)
-    public static var disabled: Material { .pinched }
+    public static var disabled: Material {
+        #if os(visionOS)
+        Material(.disabled)
+        #else
+        .pinched
+        #endif
+    }
 
     @_spi(_)
     public static func coreMaterial(bundle: Bundle? = nil, provider: @escaping (ColorScheme) -> String) -> Material {
@@ -432,6 +484,17 @@ private struct BackgroundMaterialKey: EnvironmentKey {
 
 @available(OpenSwiftUI_v3_0, *)
 extension EnvironmentValues {
+    #if os(visionOS)
+    package var backgroundContentStyleID: ContentStyle.ID? {
+        switch backgroundMaterial?.id {
+        case .ultraThin, .thin, .lighterGlass: .secondary
+        case .regular, .darkerGlass: .tertiary
+        case .thick, .ultraThick, .ultraDarkerGlass: .quaternary
+        default: .primary
+        }
+    }
+    #endif
+
     /// The material underneath the current view.
     ///
     /// This value is `nil` if the current background isn't one of the standard
