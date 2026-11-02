@@ -32,7 +32,7 @@ import COpenSwiftUI
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
-open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Content: View {
+open class NSHostingView<Content>: NSView, NSUserInterfaceValidations, XcodeViewDebugDataProvider where Content: View {
     /// The options for how the hosting view creates and updates constraints
     /// based on the size of its OpenSwiftUI content.
     ///
@@ -126,9 +126,22 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     // TODO: Forward changes to AccessibilityViewGraph when that feature is available.
     var currentAccessibilityFocusStore = AccessibilityFocusStore()
 
+    private var interpretingKeyEvent = false
+
+    private var handledKeyEvent = false
+
     private var keyEventTracker = KeyEvent.Tracker()
 
     private var isOfferingKeyEventToFirstResponder = false
+
+    private var currentResponderCommands = ResponderCommandsKey.defaultValue
+
+    private lazy var _forwardingTarget = _TSHostingViewInvocationTarget { [weak self] selector in
+        if let action = self?.responderAction(for: selector) {
+            self?.handledKeyEvent = true
+            action.perform()
+        }
+    }
 
     private var eventsInProgress: Set<EventID> = []
 
@@ -306,6 +319,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         wantsLayer = true
         // TODO
         renderer.host = self
+        viewGraph.addPreference(ResponderCommandsKey.self)
         eventBindingManager.host = self
         if GestureRecognizerBasedEvents.isEnabled {
             eventBindingManager.delegate = eventBridge
@@ -574,11 +588,22 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     }
 
     open override func keyDown(with event: NSEvent) {
+        func interpretKeyEventsForResponderCommands() -> Bool {
+            handledKeyEvent = false
+            if !currentResponderCommands.isEmpty {
+                interpretingKeyEvent = true
+                interpretKeyEvents([event])
+                interpretingKeyEvent = false
+            }
+            return handledKeyEvent
+        }
+
         guard !isOfferingKeyEventToFirstResponder,
               lastInterceptedKeyEvent === event
         else {
-            // TODO: Interpret responder commands before forwarding.
-            super.keyDown(with: event)
+            if !interpretKeyEventsForResponderCommands() {
+                super.keyDown(with: event)
+            }
             return
         }
         guard !sendKeyEvent(event, phase: .began) else {
@@ -588,8 +613,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             isOfferingKeyEventToFirstResponder = true
             firstResponder.keyDown(with: event)
             isOfferingKeyEventToFirstResponder = false
-        } else {
-            // TODO: Interpret responder commands before forwarding.
+        } else if !interpretKeyEventsForResponderCommands() {
             super.keyDown(with: event)
         }
     }
@@ -609,6 +633,43 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         } else {
             super.keyUp(with: event)
         }
+    }
+
+    private func responderAction(for selector: Selector?) -> (any CommandAction)? {
+        guard let selector else { return nil }
+        return currentResponderCommands[selector]
+    }
+
+    public func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
+        responderAction(for: item.action)?.isValid ?? false
+    }
+
+    open override func insertText(_ insertString: Any) {
+        if !interpretingKeyEvent {
+            super.insertText(insertString)
+        }
+    }
+
+    open override func doCommand(by selector: Selector) {
+        if interpretingKeyEvent {
+            if let action = responderAction(for: selector) {
+                handledKeyEvent = true
+                action.perform()
+            }
+        } else {
+            super.doCommand(by: selector)
+        }
+    }
+
+    open override func responds(to selector: Selector!) -> Bool {
+        super.responds(to: selector) || responderAction(for: selector) != nil
+    }
+
+    open override func forwardingTarget(for selector: Selector!) -> Any? {
+        if responderAction(for: selector) != nil, !super.responds(to: selector) {
+            return _forwardingTarget
+        }
+        return super.forwardingTarget(for: selector)
     }
 
     private func sendKeyEvent(_ event: NSEvent, phase: EventPhase) -> Bool {
@@ -1318,6 +1379,7 @@ extension NSHostingView: ViewRendererHost {
     @_spi(ForOpenSwiftUIOnly)
     public func preferencesDidChange() {
         let preferences = viewGraph.preferenceValues()
+        currentResponderCommands = preferences[ResponderCommandsKey.self].value
         focusBridge.preferencesDidChange(preferences)
         // TODO: Notify the remaining preference bridges.
         delegate?.hostingView(self, didChangePreferences: preferences)
