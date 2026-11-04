@@ -8,6 +8,9 @@
 
 package import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
+#if canImport(IOSurface)
+package import IOSurface
+#endif
 #if canImport(CoreGraphics)
 import CoreGraphics_Private
 #endif
@@ -21,7 +24,7 @@ package import CoreUI
 package struct GraphicsImage: Equatable, Sendable {
     package enum Contents: Equatable, @unchecked Sendable {
         case cgImage(CGImage)
-        case ioSurface(IOSurfaceRef)
+        case ioSurface(IOSurface)
         indirect case vectorGlyph(ResolvedVectorGlyph)
         indirect case vectorLayer(VectorImageLayer)
         indirect case color(Color.Resolved)
