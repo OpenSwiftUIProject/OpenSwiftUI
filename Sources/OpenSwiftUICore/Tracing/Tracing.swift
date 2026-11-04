@@ -19,7 +19,7 @@ import WASILibc
 import OpenAttributeGraphShims
 import Foundation
 import OpenSwiftUICSymbols
-#if canImport(Darwin)
+#if canImport(os.log)
 import os.log
 #endif
 

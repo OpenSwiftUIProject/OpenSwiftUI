@@ -9,7 +9,7 @@
 
 import kdebug_Private
 import OpenAttributeGraphShims
-#if canImport(os)
+#if canImport(os.signpost)
 package import os.signpost
 #else
 public struct OSSignpostType: Hashable, Equatable, RawRepresentable {
@@ -47,12 +47,12 @@ extension Signpost {
     package static let eventHandling = Signpost.os_log(13, "EventHandling").published
 }
 
-#if canImport(Darwin)
+#if canImport(os.signpost)
 private let _signpostLog = OSLog(subsystem: Log.subsystem, category: "OpenSwiftUI")
 #endif
 
 package struct Signpost {
-    #if canImport(Darwin) && !OPENSWIFTUI_SWIFT_LOG
+    #if canImport(os.signpost) && !OPENSWIFTUI_SWIFT_LOG
     package static let archiving = OSSignposter(logger: Log.archiving)
     package static let metaExtraction = OSSignposter(logger: Log.metadataExtraction)
     #endif
@@ -124,7 +124,7 @@ package struct Signpost {
         guard Stability.valid.contains(stability) else {
             return false
         }
-        #if canImport(Darwin)
+        #if canImport(os.signpost)
         switch style {
             case let .kdebug(code):
                 return kdebug_is_enabled(MISC_INSTRUMENTS_DGB_EVENT_CODE(code: code))
@@ -148,7 +148,7 @@ package struct Signpost {
         guard isEnabled else {
             return closure()
         }
-        #if canImport(Darwin)
+        #if canImport(os.signpost)
         let id = OSSignpostID.makeExclusiveID(object)
         switch style {
             case let .kdebug(code):
@@ -179,7 +179,7 @@ package struct Signpost {
         guard isEnabled else {
             return closure()
         }
-        #if canImport(Darwin)
+        #if canImport(os.signpost)
         let id = OSSignpostID.makeExclusiveID(object)
         let args = args()
         switch style {
@@ -207,7 +207,7 @@ package struct Signpost {
         guard isEnabled else {
             return
         }
-        #if canImport(Darwin)
+        #if canImport(os.signpost)
         let id = OSSignpostID.makeExclusiveID(object)
         let args = args()
         switch style {
@@ -220,7 +220,7 @@ package struct Signpost {
     }
     
     
-    #if canImport(Darwin)
+    #if canImport(os.signpost)
     @inline(__always)
     private var styleCode: UInt8 {
         switch style {
@@ -255,7 +255,7 @@ package struct Signpost {
     #endif
 }
 
-#if canImport(os)
+#if canImport(os.signpost)
 extension OSSignpostID {
     fileprivate static let continuation = OSSignpostID(0x0ea89ce2)
     
@@ -286,7 +286,7 @@ func os_signpost(
 }
 #endif
 
-#if canImport(Darwin)
+#if canImport(os.signpost)
 
 // MARK: - kdebug
 
