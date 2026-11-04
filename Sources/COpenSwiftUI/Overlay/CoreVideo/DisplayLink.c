@@ -10,9 +10,11 @@
 #if OPENSWIFTUI_TARGET_OS_OSX
 
 #include <os/lock.h>
-#include <QuartzCore/QuartzCore.h>
 #include <stdatomic.h>
 
+// The C source only needs this QuartzCore function. Importing the framework
+// umbrella also pulls Objective-C layer declarations into this translation unit.
+extern CFTimeInterval CACurrentMediaTime(void);
 extern void CVDisplayLinkSetPaused(CVDisplayLinkRef displayLink, bool paused);
 static void remove_link(DisplayLinkRef displayLink);
 
