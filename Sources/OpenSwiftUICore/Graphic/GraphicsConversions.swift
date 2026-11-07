@@ -91,7 +91,9 @@ extension [GraphicsFilter] {
     package func caFilters() -> [Any]? {
         #if canImport(QuartzCore)
         let caFilters = CAFilterArrayCreate()
-        for filter in self {
+        // Display-list state stores filters in reverse application order.
+        // Core Animation applies them in array order.
+        for filter in reversed() {
             guard let caFilter = filter.makeCAFilter() else {
                 continue
             }
