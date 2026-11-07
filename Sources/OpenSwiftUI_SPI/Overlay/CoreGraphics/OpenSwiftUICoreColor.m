@@ -20,6 +20,13 @@ Class OpenSwiftUICoreColorClass(OpenSwiftUICoreSystem system);
 #if OPENSWIFTUI_TARGET_OS_OSX
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace);
 Class NSColorSpaceClass(void);
+
+// This path can select UIColor dynamically on macOS. AppKit headers do not
+// declare UIColor's initializer, so describe it without adding it to NSColor.
+@protocol OpenSwiftUIUIKitRGBAColor
+- (instancetype)initWithRed:(CGFloat)red green:(CGFloat)green
+                     blue:(CGFloat)blue alpha:(CGFloat)alpha;
+@end
 #endif
 
 BOOL OpenSwiftUICoreColorPlatformColorGetComponents(OpenSwiftUICoreSystem system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
@@ -59,7 +66,8 @@ id OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         return [colorClass colorWithColorSpace:colorSpace components:(CGFloat[]){red, green, blue, alpha} count:4];
     } else {
-        return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
+        return [(id<OpenSwiftUIUIKitRGBAColor>)[colorClass alloc]
+                initWithRed:red green:green blue:blue alpha:alpha];
     }
     #else
     return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
