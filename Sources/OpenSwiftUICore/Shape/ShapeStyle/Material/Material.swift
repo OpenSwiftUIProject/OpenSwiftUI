@@ -445,10 +445,10 @@ extension Material {
 @available(visionOS, unavailable)
 extension Material {
     public static func _intelligenceLightSource(prefersAudioReactivity: Bool = false) -> Material {
-        #if os(macOS) || os(watchOS)
-        _openSwiftUIUnreachableCode()
-        #else
+        #if os(iOS) || os(visionOS)
         Material(prefersAudioReactivity ? .intelligenceLightSource_AudioReactive : .intelligenceLightSource_Unreactive)
+        #else
+        _openSwiftUIUnreachableCode()
         #endif
     }
 }
