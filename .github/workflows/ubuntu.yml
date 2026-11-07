@@ -47,6 +47,7 @@ jobs:
       OPENSWIFTUI_SWIFT_LOG: 1
       OPENSWIFTUI_SWIFT_CRYPTO: 1
       OPENSWIFTUI_LINK_TESTING: 1
+      OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS: 1
     container: swift:${{ matrix.swift_version }}-jammy
     steps:
       - uses: actions/checkout@v4
