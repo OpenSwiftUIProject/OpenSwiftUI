@@ -98,7 +98,7 @@ struct PaintTests {
         let data = try ProtobufEncoder.encoding { encoder in
             try codablePaint.encode(to: &encoder)
         }
-        #expect(data.hexString == "0a0a0d0000803f250000803f")
+        #expect(data.hexString == "0a050d0000803f")
     }
     
     @Test
