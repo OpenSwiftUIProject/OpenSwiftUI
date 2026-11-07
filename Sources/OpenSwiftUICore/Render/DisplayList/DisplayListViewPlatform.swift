@@ -405,6 +405,9 @@ extension DisplayList.ViewUpdater.Platform {
                 layer.backgroundColor = effect.color.cgColor
                 let groupID = state.pointee.backdropGroupID
                 layer.groupName = groupID == 0 ? nil : "OpenSwiftUI-\(groupID)"
+                #if os(visionOS)
+                layer.captureOnly = effect.captureOnly
+                #endif
                 #else
                 _openSwiftUIPlatformUnimplementedWarning()
                 #endif

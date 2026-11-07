@@ -83,6 +83,13 @@ extension GraphicsFilter {
             filter.setInput(value: NSNumber(value: style.radius), key: .radius)
             filter.setInput(value: NSNumber(value: style.isOpaque), key: .normalizeEdges)
             filter.setInput(value: NSNumber(value: style.dither), key: .dither)
+            #if os(visionOS)
+            filter.setInput(value: NSNumber(value: style.hardEdges), key: .hardEdges)
+            if style.isVisionEnabled && style.isOpaque {
+                filter.setInput(value: NSNumber(value: false), key: .normalizeEdges)
+                filter.setInput(value: NSNumber(value: true), key: .normalizeEdgesTransparent)
+            }
+            #endif
             return filter
         case let .variableBlur(style):
             let filter = CAFilter(key: .variableBlur)
