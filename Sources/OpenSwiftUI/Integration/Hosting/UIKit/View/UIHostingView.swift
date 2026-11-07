@@ -386,6 +386,12 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         if wantsTransparentBackground {
             super.backgroundColor = nil
         } else {
+            #if os(visionOS)
+            if traitCollection.userInterfaceIdiom == .vision {
+                super.backgroundColor = nil
+                return
+            }
+            #endif
             setBackground(.systemBackground)
         }
     }
