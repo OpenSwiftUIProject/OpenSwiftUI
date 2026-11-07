@@ -66,6 +66,14 @@ extension ContentStyle.MaterialStyle {
             return [.blendMode(.blendMode(material.colorScheme == .dark ? .plusLighter : .plusDarker))]
         }
         #else
+        #if os(iOS) || os(visionOS)
+        switch material.id {
+        case .intelligenceLightSource_Unreactive, .intelligenceLightSource_AudioReactive:
+            return []
+        default:
+            break
+        }
+        #endif
         return resolveCoreMaterialEffects()
         #endif
     }
@@ -87,6 +95,8 @@ extension Material.ResolvedMaterial {
         switch id {
         case .coreMaterial:
             visitCoreMaterialLayers(&visitor)
+        case let .layers(layers):
+            layers.visit(&visitor)
         case .menu:
             var material = self
             material.id = colorScheme == .dark && colorSchemeContrast == .increased ? .regular : .thick

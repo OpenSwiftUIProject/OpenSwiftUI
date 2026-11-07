@@ -125,8 +125,8 @@ public struct Material: Sendable {
         #endif
         indirect case coreMaterial(light: String, dark: String, bundle: Bundle?)
         #if os(macOS) || os(iOS)
-        // case provider(MaterialProviderBoxBase)
-        // case layers(Layers)
+        case provider(MaterialProviderBoxBase)
+        case layers(Layers)
         #endif
     }
 
@@ -226,6 +226,13 @@ public struct Material: Sendable {
     }
 
     package func resolve(in env: EnvironmentValues, role: ShapeRole? = nil) -> Material.ResolvedMaterial {
+        #if os(macOS) || os(iOS)
+        if case let .provider(provider) = id {
+            var context = Context(environment: env)
+            context.role = role
+            return ResolvedMaterial(id: .layers(provider.resolveLayers(in: context)), flags: flags)
+        }
+        #endif
         var flags = ResolvedMaterial.Flags(environment: env).union(flags)
         #if os(macOS)
         let appearance = activeAppearance == .automatic ? env.materialActiveAppearance : activeAppearance
@@ -673,6 +680,12 @@ package struct ForegroundMaterialStyle: ShapeStyle, PrimitiveShapeStyle {
     }
 
     package func _apply(to shape: inout _ShapeStyle_Shape) {
+        #if os(macOS) || os(iOS)
+        if case let .provider(provider) = material.id {
+            provider.applyForegroundStyle(to: &shape)
+            return
+        }
+        #endif
         switch shape.operation {
         case .prepareText:
             shape.result = .preparedText(.foregroundKeyColor)
