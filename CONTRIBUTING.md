@@ -62,6 +62,14 @@ Run the full SwiftPM test suite when the scope of the change warrants it:
 ./Scripts/test.sh
 ```
 
+Private imports are disabled by default. The full-suite script and unit-test CI
+enable them for tests that use `@_private` imports. To run such tests directly,
+enable them for that invocation:
+
+```shell
+OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS=1 swift test --filter LocationTests
+```
+
 Some integration and compatibility tests require a specific host platform,
 SDK, environment configuration, or local dependency checkout. If a test cannot
 run in your environment, explain that limitation in the pull request.

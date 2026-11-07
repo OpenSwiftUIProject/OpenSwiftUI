@@ -15,4 +15,4 @@ if [[ "$(uname)" == "Linux" ]] && command -v swiftly &> /dev/null && [[ -z "$OPE
   echo "Set OPENSWIFTUI_LIB_SWIFT_PATH=$OPENSWIFTUI_LIB_SWIFT_PATH"
 fi
 
-swift test
+OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS="${OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS:-1}" swift test

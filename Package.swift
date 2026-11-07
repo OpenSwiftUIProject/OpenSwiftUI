@@ -180,7 +180,7 @@ let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocG
 // different overlay file.
 let xrOverlayPath = envStringValue("XR_OVERLAY").flatMap { $0.isEmpty ? nil : $0 }
     ?? "\(NSHomeDirectory())/Library/Developer/OpenSwiftUI/XR/overlay.yaml"
-let enablePrivateImports = envBoolValue("ENABLE_PRIVATE_IMPORTS", default: true)
+let enablePrivateImports = envBoolValue("ENABLE_PRIVATE_IMPORTS", default: false)
 let enableRuntimeConcurrencyCheck = envBoolValue("ENABLE_RUNTIME_CONCURRENCY_CHECK")
 
 let bridgeFramework = envStringValue("OPENSWIFTUI_BRIDGE_FRAMEWORK", default: "SwiftUI")
