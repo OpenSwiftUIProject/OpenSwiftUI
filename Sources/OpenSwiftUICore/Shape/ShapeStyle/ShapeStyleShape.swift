@@ -71,6 +71,8 @@ public struct _ShapeStyle_Shape {
         package static let foreground: RecursiveStyles = .init(rawValue: 1 << 1)
 
         package static let background: RecursiveStyles = .init(rawValue: 1 << 2)
+
+        package static let materialProvider: RecursiveStyles = .init(rawValue: 1 << 3)
     }
     
     package var activeRecursiveStyles: RecursiveStyles = []

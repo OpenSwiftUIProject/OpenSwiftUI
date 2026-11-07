@@ -2,8 +2,8 @@
 //  ModifiedFont.swift
 //  OpenSwiftUICore
 //
-//  Status: Complete
 //  Audited for 6.5.4
+//  Status: Complete
 //  ID: 25811D44B7BE5E768C1CBA33158F398B (SwiftUICore)
 
 public import Foundation

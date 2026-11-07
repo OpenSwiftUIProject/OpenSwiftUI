@@ -70,11 +70,7 @@ struct AnimatedColorTimelineView: View {
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
-                        #if OPENSWIFTUI // FIXME: Material is not supported.
-                        .background(Color.black.opacity(0.3))
-                        #else
                         .background(.ultraThinMaterial)
-                        #endif
                         .cornerRadius(10)
                 }
             }

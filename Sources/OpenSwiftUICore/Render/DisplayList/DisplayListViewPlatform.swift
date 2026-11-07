@@ -405,6 +405,9 @@ extension DisplayList.ViewUpdater.Platform {
                 layer.backgroundColor = effect.color.cgColor
                 let groupID = state.pointee.backdropGroupID
                 layer.groupName = groupID == 0 ? nil : "OpenSwiftUI-\(groupID)"
+                #if os(visionOS)
+                layer.captureOnly = effect.captureOnly
+                #endif
                 #else
                 _openSwiftUIPlatformUnimplementedWarning()
                 #endif
@@ -2085,7 +2088,7 @@ extension DisplayList.GraphicsRenderer {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        try? ctx.drawLayer(flags: []) { _ in
+        ctx.drawLayer(flags: []) { _ in
             // TODO: Blocked by GraphicsContext
             _openSwiftUIUnimplementedFailure()
         }

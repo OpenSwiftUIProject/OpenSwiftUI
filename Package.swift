@@ -153,6 +153,7 @@ let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", 
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform)
 
 let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform)
+let linkCoreMaterial = envBoolValue("LINK_COREMATERIAL", default: buildForDarwinPlatform)
 let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform)
 let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform)
 let linkSymbols = envBoolValue("LINK_SYMBOLS", default: buildForDarwinPlatform)
@@ -256,6 +257,12 @@ sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" :
 sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 if linkCoreUI {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
+}
+
+if linkCoreMaterial {
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_COREMATERIAL", .when(platforms: [.iOS, .macOS, .visionOS]))
+    )
 }
 
 if linkCoreSVG {
@@ -418,6 +425,16 @@ extension Target {
         dependencies.append(.product(name: "CoreUI", package: "DarwinPrivateFrameworks"))
     }
 
+    func addCoreMaterialSettings() {
+        dependencies.append(
+            .product(
+                name: "CoreMaterial",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .macOS, .visionOS])
+            )
+        )
+    }
+
     func addCoreSVGSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'CoreSVG.framework'"
@@ -557,6 +574,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v4_1:\(ignoreAvailability ? minimumVersion : "iOS 16.1, macOS 13.0, tvOS 16.1, watchOS 9.1")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v4_4:\(ignoreAvailability ? minimumVersion : "iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_0:\(ignoreAvailability ? minimumVersion : "iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_watchOS_v5_0:\(ignoreAvailability ? minimumVersion : "watchOS 10.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_1:\(ignoreAvailability ? minimumVersion : "iOS 17.1, macOS 14.1, tvOS 17.1, watchOS 10.1, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_2:\(ignoreAvailability ? minimumVersion : "iOS 17.2, macOS 14.2, tvOS 17.2, watchOS 10.2, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_4:\(ignoreAvailability ? minimumVersion : "iOS 17.4, macOS 14.4, tvOS 17.4, watchOS 10.4, visionOS 1.1")"),
@@ -964,6 +982,10 @@ if linkCoreUI {
     openSwiftUISPITarget.addCoreUISettings()
 }
 
+if linkCoreMaterial {
+    openSwiftUICoreTarget.addCoreMaterialSettings()
+}
+
 if linkCoreSVG {
     openSwiftUICoreTarget.addCoreSVGSettings()
     openSwiftUISPITarget.addCoreSVGSettings()
@@ -995,7 +1017,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkBacklightServices || linkGestures {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreMaterial || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkBacklightServices || linkGestures {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -1007,7 +1029,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkGestures {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreMaterial || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkGestures {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies

@@ -67,11 +67,7 @@ struct ColorCodedClockView: View {
                     LegendItem(color: .blue, label: "Seconds")
                 }
                 .padding()
-                #if OPENSWIFTUI // FIXME: Material is not supported.
-                .background(Color.gray.opacity(0.2))
-                #else
                 .background(.ultraThinMaterial)
-                #endif
                 .cornerRadius(15)
                 
                 // Time progress bars

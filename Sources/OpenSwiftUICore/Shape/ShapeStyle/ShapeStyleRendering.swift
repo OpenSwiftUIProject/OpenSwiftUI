@@ -40,7 +40,7 @@ package struct _ShapeStyle_RenderedShape {
 
     @Attribute var environment: EnvironmentValues
 
-    var blendMode: GraphicsBlendMode = .normal
+    var blendMode: GraphicsBlendMode
 
     var opacity: Float
 
@@ -48,9 +48,23 @@ package struct _ShapeStyle_RenderedShape {
         let rawValue: UInt8
 
         static let drawingGroup: LayerNeeds = .init(rawValue: 1 << 0)
+
+        static let backdrop: LayerNeeds = .init(rawValue: 1 << 1)
     }
 
-    private var layerNeedes: LayerNeeds
+    private var layerNeeds: LayerNeeds
+
+    private var bounds: CGRect {
+        switch shape {
+        case let .path(path, _):
+            let bounds = path.boundingRect
+            return bounds.isNull ? .zero : bounds
+        case let .alphaMask(mask):
+            return CGRect(origin: .zero, size: mask.size)
+        default:
+            return CGRect(origin: .zero, size: item.size)
+        }
+    }
 
     package init(
         _ shape: ShapeStyle.RenderedShape.Shape,
@@ -75,7 +89,7 @@ package struct _ShapeStyle_RenderedShape {
         self._environment = environment
         self.blendMode = .normal
         self.opacity = 1.0
-        self.layerNeedes = []
+        self.layerNeeds = []
     }
 
     package mutating func renderItem(
@@ -137,7 +151,7 @@ package struct _ShapeStyle_RenderedShape {
         defer {
             blendMode = .normal
             opacity = 1.0
-            layerNeedes = []
+            layerNeeds = []
             item.value = .empty
             item.frame = frame
         }
@@ -154,7 +168,7 @@ package struct _ShapeStyle_RenderedShape {
             addEffect(.interpolatorLayer(data.group, serial: data.serial))
             interpolatorData = nil
         }
-        if layerNeedes.contains(.drawingGroup) {
+        if layerNeeds.contains(.drawingGroup) {
             item.addDrawingGroup(contentSeed: contentSeed)
         }
         if blendMode != .blendMode(.normal) {
@@ -194,6 +208,29 @@ package struct _ShapeStyle_RenderedShape {
             render(color: resolved)
         case let .paint(paint):
             render(paint: paint)
+        case let .foregroundMaterial(color, material):
+            let effects = material.resolveEffects()
+            var color = color
+            if effects.contains(where: {
+                if case .filter(.vibrantColorMatrix) = $0 {
+                    return true
+                }
+                return false
+            }) {
+                color = Color.Resolved(linearWhite: 1, opacity: color.opacity)
+            }
+            render(color: color)
+            for effect in effects {
+                render(effect: effect)
+            }
+        case let .backgroundMaterial(material):
+            render(material: material)
+        case let .vibrantColor(color):
+            render(color: .white)
+            render(effect: .filter(.vibrantColorMatrix(color.colorMatrix)))
+        case let .vibrantMatrix(matrix):
+            render(color: .white)
+            render(effect: .filter(.vibrantColorMatrix(matrix)))
         default:
             _openSwiftUIUnimplementedFailure()
         }
@@ -287,6 +324,79 @@ package struct _ShapeStyle_RenderedShape {
         }
     }
 
+    private mutating func render(effect: DisplayList.Effect) {
+        switch effect {
+        case let .opacity(opacity):
+            self.opacity *= opacity
+        case let .blendMode(blendMode):
+            self.blendMode = blendMode
+        case .filter(.vibrantColorMatrix):
+            if layerNeeds.contains(.drawingGroup) {
+                item.addDrawingGroup(contentSeed: contentSeed)
+                layerNeeds.remove(.drawingGroup)
+            }
+            layerNeeds.insert(.backdrop)
+            addEffect(effect)
+        case .identity:
+            break
+        default:
+            addEffect(effect)
+        }
+    }
+
+    private mutating func render(material: Material.ResolvedMaterial) {
+        let bounds = bounds
+        var layers = MaterialLayers(
+            size: bounds.size,
+            version: item.version,
+            contentSeed: contentSeed,
+            options: options
+        )
+        #if os(macOS)
+        material.visitLayers(&layers)
+        #else
+        switch material.id {
+        #if os(iOS)
+        case let .layers(materialLayers):
+            materialLayers.visit(&layers)
+        #endif
+        #if os(iOS) || os(visionOS)
+        case .intelligenceLightSource_Unreactive, .intelligenceLightSource_AudioReactive:
+            material.visitIntelligenceLightSourceLayers(&layers)
+        #endif
+        default:
+            material.visitCoreMaterialLayers(&layers)
+        }
+        #endif
+        let value: DisplayList.Item.Value
+        switch layers.items.count {
+        case 0: value = .empty
+        case 1: value = layers.items[0].value
+        default: value = .effect(.identity, DisplayList(layers.items))
+        }
+        let materialItem = DisplayList.Item(
+            value,
+            frame: bounds,
+            identity: .none,
+            version: item.version
+        )
+        if case let .path(path, fillStyle) = shape, interpolatorData == nil {
+            item.value = .effect(.clip(path, fillStyle), DisplayList(materialItem))
+        } else {
+            render(color: .white)
+            let mask = DisplayList.Item(
+                item.value,
+                frame: CGRect(origin: .zero, size: item.size),
+                identity: .none,
+                version: item.version
+            )
+            item.value = .effect(.mask(DisplayList(mask)), DisplayList(materialItem))
+        }
+        if layers.needsBackdrop {
+            layerNeeds.insert(.backdrop)
+        }
+    }
+
     private mutating func renderVectorGlyph(
         _ glyph: ResolvedVectorGlyph,
         size: CGSize,
@@ -377,7 +487,7 @@ package struct _ShapeStyle_RenderedShape {
                 flags: []
             )
             if nextTime.isFinite {
-                layerNeedes.insert(.drawingGroup)
+                layerNeeds.insert(.drawingGroup)
             }
             layers.endLayer(shape: &self)
             return
@@ -440,7 +550,7 @@ package struct _ShapeStyle_RenderedShape {
                         flags: [.alphaOnly]
                     ))
                     if nextTime.isFinite {
-                        layerNeedes.insert(.drawingGroup)
+                        layerNeeds.insert(.drawingGroup)
                     }
                 }
                 render(style: style)
@@ -585,6 +695,88 @@ package struct _ShapeStyle_RenderedShape {
             ))
         }
         layers.endLayer(shape: &self)
+    }
+}
+
+private struct MaterialLayers: MaterialLayerVisitor {
+    var size: CGSize
+    var version: DisplayList.Version
+    var contentSeed: DisplayList.Seed
+    var options: DisplayList.Options
+    var items: [DisplayList.Item] = []
+    var needsBackdrop: Bool = false
+
+    mutating func visit<L: MaterialLayer>(layer: L) {
+        let content = layer.content
+        switch content {
+        case .backdrop, .chameleonColor:
+            needsBackdrop = true
+        default:
+            break
+        }
+        let frame = CGRect(origin: .zero, size: size)
+        var item = DisplayList.Item(
+            .content(DisplayList.Content(content, seed: contentSeed)),
+            frame: frame,
+            identity: .none,
+            version: version
+        )
+        if layer.opacity != 1.0 {
+            item = DisplayList.Item(
+                .effect(.opacity(layer.opacity), DisplayList(item)),
+                frame: frame,
+                identity: .none,
+                version: version
+            )
+        }
+        if layer.blendMode != .normal {
+            item = DisplayList.Item(
+                .effect(.blendMode(layer.blendMode), DisplayList(item)),
+                frame: frame,
+                identity: .none,
+                version: version
+            )
+            needsBackdrop = true
+        }
+        item.canonicalize(options: options)
+        items.append(item)
+    }
+}
+
+private struct MaterialRenderer: MaterialLayerVisitor {
+    var ctx: GraphicsContext
+    var bounds: CGRect
+
+    mutating func visit<L: MaterialLayer>(layer: L) {
+        ctx.drawLayer(flags: []) { ctx in
+            if layer.opacity != 1.0 {
+                ctx.opacity = Double(layer.opacity)
+            }
+            if layer.blendMode != .normal,
+               case let .blendMode(blendMode) = layer.blendMode {
+                ctx.blendMode = blendMode
+            }
+            switch layer.content {
+            case let .backdrop(backdrop):
+                for filter in backdrop.filters.reversed() {
+                    ctx.addFilter(filter, in: bounds)
+                }
+                ctx.draw(
+                    Path(bounds),
+                    with: GraphicsContext.Shading(storage: .backdrop(backdrop.color)),
+                    style: .fill(FillStyle())
+                )
+            case let .color(color):
+                ctx.draw(Path(bounds), with: .color(color), style: .fill(FillStyle()))
+            case let .chameleonColor(color, filters):
+                for filter in filters.reversed() {
+                    ctx.addFilter(filter, in: bounds)
+                }
+                ctx.draw(Path(bounds), with: .color(color), style: .fill(FillStyle()))
+            default:
+                break
+            }
+        }
     }
 }
 

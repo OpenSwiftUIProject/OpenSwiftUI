@@ -90,6 +90,10 @@ package enum ContentStyle {
         case fill
         case stroke
         case separator
+        #if os(visionOS)
+        case overlay
+        case destructive
+        #endif
         
         package init(_ role: ShapeRole) {
             switch role {

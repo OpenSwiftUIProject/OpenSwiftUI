@@ -417,7 +417,7 @@ struct ResolvedGradientStopTests {
     ] as [(ResolvedGradient.Interpolation?, String)])
     func protobufEncodesOptionalInterpolation(interpolation: ResolvedGradient.Interpolation?, suffix: String) throws {
         let value = stop(rgba(1, 0, 0), 0.5, interpolation)
-        let bytes = "0a0a0d0000803f250000803f150000003f" + suffix
+        let bytes = "0a050d0000803f150000003f" + suffix
         try value.testPBEncoding(hexString: bytes)
         let decoded = try bytes.decodePBHexString(ResolvedGradient.Stop.self)
         #expect(decoded == value)
@@ -448,7 +448,7 @@ struct ResolvedGradientStopTests {
     @Test
     func protobufPreservesWideLocations() throws {
         let value = stop(rgba(1, 0, 0), 65_536)
-        let bytes = "0a0a0d0000803f250000803f11000000000000f040"
+        let bytes = "0a050d0000803f11000000000000f040"
         try value.testPBEncoding(hexString: bytes)
         let decoded = try bytes.decodePBHexString(ResolvedGradient.Stop.self)
         #expect(decoded.location == 65_536)
@@ -663,9 +663,9 @@ struct ResolvedGradientProtobufTests {
         let gradient = ResolvedGradient(stops: [
             stop(rgba(1, 0, 0), 0.5), stop(rgba(0, 0, 1), 0.25), stop(rgba(1, 0, 0), 0.5),
         ], colorSpace: .linear)
-        let bytes = "0a110a0a0d0000803f250000803f150000003f"
-            + "0a110a0a1d0000803f250000803f150000803e"
-            + "0a110a0a0d0000803f250000803f150000003f1001"
+        let bytes = "0a0c0a050d0000803f150000003f"
+            + "0a0c0a051d0000803f150000803e"
+            + "0a0c0a050d0000803f150000003f1001"
         try gradient.testPBEncoding(hexString: bytes)
         let decoded = try bytes.decodePBHexString(ResolvedGradient.self)
         #expect(decoded == gradient)

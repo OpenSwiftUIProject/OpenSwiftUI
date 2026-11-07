@@ -3,8 +3,9 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Empty
+//  Status: WIP
 
+package import Foundation
 package import OpenCoreGraphicsShims
 // package import OpenRenderBoxShims
 
@@ -32,7 +33,7 @@ public struct Shader {
 
     // MARK: - Shader.ResolvedShader
 
-    package struct ResolvedShader {
+    package struct ResolvedShader: Equatable {
         package var rbShader: ORBShader?
 
         package var maxSampleOffset: CGSize
@@ -51,5 +52,32 @@ public struct Shader {
     }
 }
 
+// MARK: - Shader.ResolvedShader + ProtobufMessage [TBA]
+
+extension Shader.ResolvedShader: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        if rbShader != nil {
+            // TODO: Encode the RenderBox shader through its archive delegate.
+            _openSwiftUIUnimplementedFailure()
+        }
+        try encoder.messageField(2, maxSampleOffset, defaultValue: .zero)
+        encoder.uintField(3, UInt(options.rawValue))
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        self.init(maxSampleOffset: .zero, options: [])
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                // TODO: Decode the RenderBox shader through its archive delegate.
+                _openSwiftUIUnimplementedFailure()
+            case 2: maxSampleOffset = try decoder.messageField(field)
+            case 3: options = .init(rawValue: try decoder.uint32Field(field))
+            default: try decoder.skipField(field)
+            }
+        }
+    }
+}
+
 // FIXME: RB
-package class ORBShader {}
+package class ORBShader: NSObject {}

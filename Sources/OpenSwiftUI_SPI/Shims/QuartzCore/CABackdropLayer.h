@@ -8,12 +8,16 @@
 
 #import <Foundation/Foundation.h>
 #import <QuartzCore/CALayer.h>
+#import <TargetConditionals.h>
 
 @interface CABackdropLayer : CALayer
 
 @property (nonatomic) CGFloat scale;
 @property (nonatomic) BOOL allowsInPlaceFiltering;
 @property (nonatomic, copy, nullable) NSString *groupName;
+#if TARGET_OS_VISION
+@property (nonatomic) BOOL captureOnly;
+#endif
 
 @end
 

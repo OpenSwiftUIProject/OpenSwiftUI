@@ -54,6 +54,36 @@ extension BlendMode {
 }
 #endif
 
+// MARK: - GraphicsContext.BlendMode + BlendMode
+
+extension GraphicsContext.BlendMode {
+    init(_ blendMode: OpenSwiftUICore.BlendMode) {
+        self = switch blendMode {
+        case .normal: .normal
+        case .multiply: .multiply
+        case .screen: .screen
+        case .overlay: .overlay
+        case .darken: .darken
+        case .lighten: .lighten
+        case .colorDodge: .colorDodge
+        case .colorBurn: .colorBurn
+        case .softLight: .softLight
+        case .hardLight: .hardLight
+        case .difference: .difference
+        case .exclusion: .exclusion
+        case .hue: .hue
+        case .saturation: .saturation
+        case .color: .color
+        case .luminosity: .luminosity
+        case .sourceAtop: .sourceAtop
+        case .destinationOver: .destinationOver
+        case .destinationOut: .destinationOut
+        case .plusDarker: .plusDarker
+        case .plusLighter: .plusLighter
+        }
+    }
+}
+
 // MARK: - [GraphicsFilter] + caFilters
 
 extension [GraphicsFilter] {
@@ -61,7 +91,9 @@ extension [GraphicsFilter] {
     package func caFilters() -> [Any]? {
         #if canImport(QuartzCore)
         let caFilters = CAFilterArrayCreate()
-        for filter in self {
+        // Display-list state stores filters in reverse application order.
+        // Core Animation applies them in array order.
+        for filter in reversed() {
             guard let caFilter = filter.makeCAFilter() else {
                 continue
             }
@@ -83,6 +115,13 @@ extension GraphicsFilter {
             filter.setInput(value: NSNumber(value: style.radius), key: .radius)
             filter.setInput(value: NSNumber(value: style.isOpaque), key: .normalizeEdges)
             filter.setInput(value: NSNumber(value: style.dither), key: .dither)
+            #if os(visionOS)
+            filter.setInput(value: NSNumber(value: style.hardEdges), key: .hardEdges)
+            if style.isVisionEnabled && style.isOpaque {
+                filter.setInput(value: NSNumber(value: false), key: .normalizeEdges)
+                filter.setInput(value: NSNumber(value: true), key: .normalizeEdgesTransparent)
+            }
+            #endif
             return filter
         case let .variableBlur(style):
             let filter = CAFilter(key: .variableBlur)

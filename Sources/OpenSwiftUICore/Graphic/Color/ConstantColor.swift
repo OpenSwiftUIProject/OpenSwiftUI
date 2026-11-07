@@ -366,10 +366,10 @@ extension Color.Resolved: Codable {
 
 extension Color.Resolved: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
-        encoder.floatField(1, red)
-        encoder.floatField(2, green)
-        encoder.floatField(3, blue)
-        encoder.floatField(4, opacity)
+        encoder.floatField(1, linearRed)
+        encoder.floatField(2, linearGreen)
+        encoder.floatField(3, linearBlue)
+        encoder.floatField(4, opacity, defaultValue: 1)
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
@@ -386,7 +386,7 @@ extension Color.Resolved: ProtobufMessage {
             default: try decoder.skipField(field)
             }
         }
-        self.init(red: red, green: green, blue: blue, opacity: opacity)
+        self.init(linearRed: red, linearGreen: green, linearBlue: blue, opacity: opacity)
     }
 }
 

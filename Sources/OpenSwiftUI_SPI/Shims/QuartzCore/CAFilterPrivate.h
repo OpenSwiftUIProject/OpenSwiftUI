@@ -16,6 +16,8 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface CAFilter : NSObject
 
+@property (nullable, readonly) NSString *type;
+
 + (NSArray<NSString *> *)filterTypes;
 + (instancetype)filterWithName:(NSString *)name;
 + (instancetype)filterWithType:(NSString *)type;
