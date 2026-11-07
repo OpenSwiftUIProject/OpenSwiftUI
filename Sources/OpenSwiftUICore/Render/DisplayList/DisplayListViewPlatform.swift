@@ -2088,7 +2088,7 @@ extension DisplayList.GraphicsRenderer {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        try? ctx.drawLayer(flags: []) { _ in
+        ctx.drawLayer(flags: []) { _ in
             // TODO: Blocked by GraphicsContext
             _openSwiftUIUnimplementedFailure()
         }

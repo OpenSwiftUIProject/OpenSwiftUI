@@ -100,6 +100,26 @@ public struct GraphicsContext {
     }
     
     var storage: Storage
+
+    /// The opacity of drawing operations in the context.
+    ///
+    /// Set this value to affect the opacity of content that you subsequently
+    /// draw into the context. Changing this value has no impact on the
+    /// content you previously drew into the context.
+    public var opacity: Double {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
+
+    /// The blend mode used by drawing operations in the context.
+    ///
+    /// Set this value to affect how any content that you subsequently draw
+    /// into the context blends with content that's already in the context.
+    /// Use one of the ``GraphicsContext/BlendMode-swift.struct`` values.
+    public var blendMode: BlendMode {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
     
     /// The ways that a graphics context combines new content with background
     /// content.
@@ -746,6 +766,16 @@ extension GraphicsContext {
         _openSwiftUIUnimplementedWarning()
     }
 
+    // MARK: - Drawing State [WIP]
+
+    package func draw(_ path: Path, with shading: Shading, style: PathDrawingStyle) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package mutating func addFilter(_ filter: GraphicsFilter, in bounds: CGRect) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     // FIXME
     struct ORBLayerFlags: OptionSet {
         let rawValue: UInt32
@@ -758,7 +788,7 @@ extension GraphicsContext {
     func drawLayer(
         flags: ORBLayerFlags,
         content: (inout GraphicsContext) throws -> Void
-    ) throws {
+    ) rethrows {
         _openSwiftUIUnimplementedFailure()
     }
 
