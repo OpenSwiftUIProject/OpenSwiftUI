@@ -11,7 +11,7 @@ import Foundation
 import CoreUI
 #endif
 #if os(visionOS)
-import QuartzCore_Private
+package import QuartzCore_Private
 #endif
 
 // MARK: - ContentStyle.MaterialStyle
