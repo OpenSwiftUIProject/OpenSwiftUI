@@ -2,8 +2,8 @@
 //  InsettableShape.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 
 public import Foundation
 
@@ -93,7 +93,7 @@ extension Rectangle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            Path(rect.insetBy(dx: amount, dy: amount))
+            Rectangle().path(in: rect.insetBy(dx: amount, dy: amount))
         }
 
         @usableFromInline
@@ -140,7 +140,13 @@ extension RoundedRectangle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            _openSwiftUIUnimplementedFailure()
+            RoundedRectangle(
+                cornerSize: CGSize(
+                    width: max(base.cornerSize.width - amount, 0),
+                    height: max(base.cornerSize.height - amount, 0)
+                ),
+                style: base.style
+            ).path(in: rect.insetBy(dx: amount, dy: amount))
         }
 
         @usableFromInline
@@ -187,7 +193,15 @@ extension UnevenRoundedRectangle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            _openSwiftUIUnimplementedFailure()
+            UnevenRoundedRectangle(
+                cornerRadii: RectangleCornerRadii(
+                    topLeft: max(base.cornerRadii.topLeft - amount, 0),
+                    topRight: max(base.cornerRadii.topRight - amount, 0),
+                    bottomRight: max(base.cornerRadii.bottomRight - amount, 0),
+                    bottomLeft: max(base.cornerRadii.bottomLeft - amount, 0)
+                ),
+                style: base.style
+            ).path(in: rect.insetBy(dx: amount, dy: amount))
         }
         
         @usableFromInline
@@ -226,7 +240,10 @@ extension Capsule: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            _openSwiftUIUnimplementedFailure()
+            let (amount, style) = isLinkedOnOrAfter(.v5)
+                ? Self._extractInset(amount)
+                : (amount, RoundedCornerStyle.circular)
+            return Capsule(style: style).path(in: rect.insetBy(dx: amount, dy: amount))
         }
 
         @usableFromInline
@@ -285,7 +302,7 @@ extension Ellipse: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            _openSwiftUIUnimplementedFailure()
+            Ellipse().path(in: rect.insetBy(dx: amount, dy: amount))
         }
 
         @usableFromInline
@@ -329,7 +346,7 @@ extension Circle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            _openSwiftUIUnimplementedFailure()
+            Circle().path(in: rect.insetBy(dx: amount, dy: amount))
         }
 
         @usableFromInline
