@@ -288,7 +288,7 @@ private struct MaterialLayerCache {
         var environment = EnvironmentValues()
         CoreGlue2.shared.configureDefaultEnvironment(&environment)
         environment.colorScheme = material.colorScheme
-        environment.colorSchemeContrast = material.colorSchemeContrast
+        environment._colorSchemeContrast = material.colorSchemeContrast
         let name = CUIColorName(rawValue: material.colorSchemeContrast == .increased ? 25 : 24)!
         let entry = CUIDesignLibraryCacheKey(name: name, in: environment).fetch()
         let layer = AnyMaterialLayer(content: .color(entry.color), blendMode: GraphicsBlendMode(entry.blendMode))
