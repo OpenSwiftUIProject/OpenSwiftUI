@@ -54,6 +54,36 @@ extension BlendMode {
 }
 #endif
 
+// MARK: - GraphicsContext.BlendMode + BlendMode
+
+extension GraphicsContext.BlendMode {
+    init(_ blendMode: OpenSwiftUICore.BlendMode) {
+        self = switch blendMode {
+        case .normal: .normal
+        case .multiply: .multiply
+        case .screen: .screen
+        case .overlay: .overlay
+        case .darken: .darken
+        case .lighten: .lighten
+        case .colorDodge: .colorDodge
+        case .colorBurn: .colorBurn
+        case .softLight: .softLight
+        case .hardLight: .hardLight
+        case .difference: .difference
+        case .exclusion: .exclusion
+        case .hue: .hue
+        case .saturation: .saturation
+        case .color: .color
+        case .luminosity: .luminosity
+        case .sourceAtop: .sourceAtop
+        case .destinationOver: .destinationOver
+        case .destinationOut: .destinationOut
+        case .plusDarker: .plusDarker
+        case .plusLighter: .plusLighter
+        }
+    }
+}
+
 // MARK: - [GraphicsFilter] + caFilters
 
 extension [GraphicsFilter] {

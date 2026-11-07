@@ -530,10 +530,7 @@ extension Material.ForegroundStyle {
             case let .color(color):
                 self = .color(color, .normal)
             case let .colorBlend(color, blend):
-                guard case let .blendMode(mode) = GraphicsBlendMode(blend) else {
-                    preconditionFailure()
-                }
-                self = .color(color, mode)
+                self = .color(color, .init(blend))
             case let .colorMatrix(matrix):
                 self = .colorMatrix(matrix)
             }
