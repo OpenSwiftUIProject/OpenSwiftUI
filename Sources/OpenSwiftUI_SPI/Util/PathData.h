@@ -21,7 +21,7 @@ OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED
 
 typedef union PathData {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
-    CGPathRef cgPath;
+    CGPathRef _Nullable cgPath;
     #endif
     ORBPath rbPath;
     uint8_t buffer[0x60];

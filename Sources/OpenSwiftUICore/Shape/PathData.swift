@@ -15,9 +15,9 @@ package import OpenRenderBoxShims
 /// C definition:
 ///
 ///     typedef union PathData {
-///         CGPathRef cgPath;    // 8 bytes (pointer)
-///         ORBPath rbPath;      // 16 bytes (2 pointers)
-///         uint8_t buffer[0x60]; // 96 bytes
+///         CGPathRef _Nullable cgPath; // 8 bytes (pointer)
+///         ORBPath rbPath;            // 16 bytes (2 pointers)
+///         uint8_t buffer[0x60];      // 96 bytes
 ///     } PathData;
 package struct PathData {
     // Pointer alignment is required by both the union fields and RenderBox Storage.
@@ -36,15 +36,15 @@ package struct PathData {
         self.cgPath = cgPath
     }
 
-    package var cgPath: Unmanaged<CGPath> {
+    package var cgPath: Unmanaged<CGPath>? {
         get {
             withUnsafeBytes(of: storage) { buffer in
-                buffer.load(as: Unmanaged<CGPath>.self)
+                buffer.load(as: Unmanaged<CGPath>?.self)
             }
         }
         set {
             withUnsafeMutableBytes(of: &storage) { buffer in
-                buffer.storeBytes(of: newValue, as: Unmanaged<CGPath>.self)
+                buffer.storeBytes(of: newValue, as: Unmanaged<CGPath>?.self)
             }
         }
     }
