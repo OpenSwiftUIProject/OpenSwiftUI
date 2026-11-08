@@ -489,6 +489,8 @@ prebuild_compute_framework() {
         SKIP_INSTALL=NO
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES
         SWIFT_EMIT_MODULE_INTERFACE=YES
+        # Keep Swift names for binary inspection; otherwise Xcode adds strip -T.
+        STRIP_SWIFT_SYMBOLS=NO
         ENABLE_USER_SCRIPT_SANDBOXING=NO
     )
 
@@ -540,6 +542,8 @@ build_framework() {
         SKIP_INSTALL=NO
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES
         SWIFT_EMIT_MODULE_INTERFACE=YES
+        # Keep Swift names for binary inspection; otherwise Xcode adds strip -T.
+        STRIP_SWIFT_SYMBOLS=NO
         "SWIFT_ACTIVE_COMPILATION_CONDITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD"
         "GCC_PREPROCESSOR_DEFINITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD=1"
         ENABLE_USER_SCRIPT_SANDBOXING=NO
