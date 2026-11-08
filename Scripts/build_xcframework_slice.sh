@@ -24,7 +24,7 @@ print_usage() {
 Usage: Scripts/build_xcframework_slice.sh [options] [osuicore|osui ...]
 
 Build a single-architecture Release XCFramework for local binary comparison.
-The default target is OpenSwiftUICore.
+Keep Swift symbol names for inspection. The default target is OpenSwiftUICore.
 
 Typical timing on a recent Apple Silicon Mac (rough planning estimates):
   OpenSwiftUICore           clean ~3-8 min;  warm no-change ~10-60 sec
@@ -93,6 +93,8 @@ build_args=(
     --compute
     --sdk iphonesimulator
     --archs arm64
+    # Disable strip -T for local inspection; distribution builds use the default.
+    --keep-swift-symbols
 )
 
 if [ "$KEEP_DERIVED_DATA" = true ]; then
