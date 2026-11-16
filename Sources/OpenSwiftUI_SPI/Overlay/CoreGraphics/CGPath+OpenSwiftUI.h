@@ -1,6 +1,9 @@
 //
 //  CGPath+OpenSwiftUI.h
 //  OpenSwiftUI_SPI
+//
+//  Audited for 6.5.4
+//  Status: Complete
 
 #ifndef CGPath_OpenSwiftUI_h
 #define CGPath_OpenSwiftUI_h
@@ -9,18 +12,11 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#include <Foundation/Foundation.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CoreGraphics.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
-
-/// Defines the shape of a rounded rectangle's corners.
-typedef OPENSWIFTUI_ENUM(uint8_t, PathRoundedCornerStyle) {
-    /// Quarter-circle rounded rect corners.
-    PathRoundedCornerStyleCircular = 0,
-    /// Continuous curvature rounded rect corners.
-    PathRoundedCornerStyleContinuous = 1,
-};
+OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED
 
 /// Parses a path string and appends the path elements to a mutable path.
 ///
@@ -44,8 +40,8 @@ typedef OPENSWIFTUI_ENUM(uint8_t, PathRoundedCornerStyle) {
 /// - Parameters:
 ///   - path: The mutable path to append elements to.
 ///   - utf8CString: The path string to parse.
-/// - Returns: `YES` if parsing succeeded, `NO` if the string is malformed.
-BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString);
+/// - Returns: `true` if parsing succeeded, `false` if the string is malformed.
+bool _CGPathParseString(CGMutablePathRef path, const char *utf8CString);
 
 /// Creates a string description of a path with optional coordinate rounding.
 ///
@@ -54,8 +50,8 @@ BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString);
 ///   - step: The rounding step for coordinates. When non-zero, coordinates
 ///     are rounded to the nearest multiple of this value. Pass 0 for no rounding.
 /// - Returns: A string representation of the path using SVG-like commands
-///   (m for move, l for line, h for close).
-NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step);
+///   (m for move, l for line, q for quad curve, c for cubic curve, h for close).
+CFStringRef _CGPathCopyDescription(CGPathRef path, CGFloat step) OPENSWIFTUI_RETURNS_RETAINED;
 
 /// Creates a rounded rectangle path with the specified corner radii.
 ///
@@ -67,14 +63,13 @@ NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step);
 ///   - rect: The rectangle to create the path from.
 ///   - cornerWidth: The horizontal radius of the rounded corners.
 ///   - cornerHeight: The vertical radius of the rounded corners.
-///   - style: The corner style to use. ``CGPathRoundedCornerStyleCircular``
-///     uses quarter-circle corners. ``CGPathRoundedCornerStyleContinuous``
-///     uses continuous curvature corners.
+///   - continuous: Whether to use continuous curvature corners (`true`) or
+///     quarter-circle corners (`false`).
 /// - Returns: A new path representing the rounded rectangle. Returns a plain
 ///   rectangle path if either corner dimension is 0 or if the rect is empty.
-OPENSWIFTUI_RETURNS_RETAINED
-CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, PathRoundedCornerStyle style);
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, bool continuous) OPENSWIFTUI_RETURNS_RETAINED;
 
+OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif
