@@ -16,7 +16,20 @@ package struct ContentView: View {
         } else if ProcessInfo.processInfo.environment["OPENSWIFTUI_DEMO"] == "breathing" {
             BreathingColorView()
         } else {
+            #if os(Android)
+            switch ProcessInfo.processInfo.environment["OPENSWIFTUI_DEMO"] {
+            case "gradients":
+                GeometryReader { geometry in
+                    GradientShowcaseExample(tileWidth: min(200, max(0, (geometry.size.width - 54) / 2)))
+                }
+            case "gradient-examples":
+                AndroidGradientExamples()
+            default:
+                KineticStudio()
+            }
+            #else
             KineticStudio()
+            #endif
         }
     }
 }

@@ -10,7 +10,7 @@ class AndroidUIKitView: UIView {
 }
 
 private final class AndroidShapeView: AndroidUIKitView {
-    let fillView = UIView(frame: .zero)
+    let fillView = AndroidGradientView(frame: .zero)
 
     override init(frame: UIKit.CGRect) {
         super.init(frame: frame)
@@ -59,8 +59,30 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
             }
             view.fillView.frame = rect.uiRect
             view.fillView.layer.cornerRadius = Double(radius)
+            view.fillView.gradient = nil
             setBackgroundColor(color, of: view.fillView)
             return true
+        }
+    }
+
+    override static func setShape(
+        _ path: Path,
+        gradient: PlatformGradient,
+        style: FillStyle,
+        of view: AnyObject
+    ) -> Bool {
+        MainActor.assumeIsolated {
+            guard let view = view as? AndroidShapeView else { return false }
+            switch path.storage {
+            case .rect, .roundedRect, .ellipse, .empty:
+                view.fillView.frame = path.boundingRect.isNull ? .zero : path.boundingRect.uiRect
+                view.fillView.layer.cornerRadius = 0
+                view.fillView.backgroundColor = .clear
+                view.fillView.gradient = .init(path: path, paint: gradient, antialias: style.isAntialiased)
+                return true
+            default:
+                return false
+            }
         }
     }
 

@@ -2,6 +2,10 @@
 
 This is the Breathing Colors example with text, a counter Button, and a Toggle.
 It uses OpenSwiftUI's shared DisplayList renderer with UIKit-cross-platform.
+Use `--demo gradients` for the shared gradient showcase or `--demo gradient-examples`
+for the same `GradientExample` used by the Apple previews. Android rasterizes
+gradient fills on rectangles, rounded rectangles, and ellipses through the shared
+DisplayList updater; arbitrary paths and gradient strokes are not covered.
 
 ## Quick Run
 
@@ -23,6 +27,8 @@ toolchains, download emulator images, or create an AVD automatically.
 ```bash
 Scripts/android-demo.sh --build-only
 Scripts/android-demo.sh --no-build --serial emulator-5554
+Scripts/android-demo.sh --no-build --serial emulator-5554 --demo gradients
+Scripts/android-demo.sh --no-build --serial emulator-5554 --demo gradient-examples
 Scripts/android-demo.sh --no-build --serial emulator-5554 --demo text
 Scripts/android-demo.sh --no-build --serial emulator-5554 --demo static --print-tree
 adb -s emulator-5554 shell run-as org.openswiftui.androiddemo cat files/display-list.log

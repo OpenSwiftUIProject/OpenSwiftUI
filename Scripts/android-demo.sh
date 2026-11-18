@@ -11,7 +11,7 @@ Build, install, and launch the Android controls demo (arm64, API 28+).
   --no-build         Install and launch the existing APK
   --avd NAME         Start or reuse this installed arm64 emulator
   --serial SERIAL    Use this adb device (or set ANDROID_SERIAL)
-  --demo NAME        breathing (default), text, or static
+  --demo NAME        breathing (default), text, static, gradients, or gradient-examples
   --print-tree       Capture DisplayList output in the app's files/display-list.log
   -h, --help         Show this help
 
@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
 done
 [[ "$mode" == run || "$no_build" == 0 ]] || { printf '%s\n' '--no-build cannot be combined with --prepare/--build-only.' >&2; exit 2; }
 [[ -z "$avd" || -z "$serial" ]] || { printf '%s\n' 'Choose either --avd or --serial/ANDROID_SERIAL.' >&2; exit 2; }
-case "$demo" in breathing|text|static) ;; *) printf 'Unknown demo: %s\n' "$demo" >&2; exit 2 ;; esac
+case "$demo" in breathing|text|static|gradients|gradient-examples) ;; *) printf 'Unknown demo: %s\n' "$demo" >&2; exit 2 ;; esac
 
 source "$(dirname "${BASH_SOURCE[0]}")/Android/common.sh"
 apk="$ANDROID_PROJECT/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk"

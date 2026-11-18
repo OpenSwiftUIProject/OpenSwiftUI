@@ -2,7 +2,9 @@
 //  GradientExample.swift
 //  Shared
 
-#if OPENSWIFTUI
+#if os(Android) || !SWIFT_PACKAGE
+import Foundation
+#if OPENSWIFTUI || os(Android)
 import OpenSwiftUI
 #else
 import SwiftUI
@@ -125,27 +127,29 @@ struct GradientAnimationExample: View {
 }
 
 struct GradientShowcaseExample: View {
+    var tileWidth: CGFloat = 200
+
     var body: some View {
         ZStack {
             Color(red: 0.05, green: 0.05, blue: 0.08)
                 .ignoresSafeArea()
             VStack(spacing: 28) {
                 VStack(spacing: 6) {
-                    Text("OpenSwiftUI 0.25.0")
+                    Text(verbatim: "OpenSwiftUI 0.25.0")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundStyle(Color.white)
-                    Text("Gradients")
+                    Text(verbatim: "Gradients")
                         .font(.system(size: 17, weight: .medium))
                         .foregroundStyle(Color(white: 1, opacity: 0.6))
                 }
                 VStack(spacing: 18) {
                     HStack(spacing: 14) {
-                        GradientTile(name: "Linear", style: GradientShowcase.linear)
-                        GradientTile(name: "Radial", style: GradientShowcase.radial)
+                        GradientTile(name: "Linear", style: GradientShowcase.linear, width: tileWidth)
+                        GradientTile(name: "Radial", style: GradientShowcase.radial, width: tileWidth)
                     }
                     HStack(spacing: 14) {
-                        GradientTile(name: "Elliptical", style: GradientShowcase.elliptical)
-                        GradientTile(name: "Angular", style: GradientShowcase.angular)
+                        GradientTile(name: "Elliptical", style: GradientShowcase.elliptical, width: tileWidth)
+                        GradientTile(name: "Angular", style: GradientShowcase.angular, width: tileWidth)
                     }
                 }
                 Capsule()
@@ -154,7 +158,7 @@ struct GradientShowcaseExample: View {
                         startPoint: .leading,
                         endPoint: .trailing
                     ))
-                    .frame(height: 10)
+                    .frame(width: tileWidth * 2 + 14, height: 10)
             }
             .padding(20)
         }
@@ -164,13 +168,14 @@ struct GradientShowcaseExample: View {
 private struct GradientTile<Style: ShapeStyle>: View {
     var name: String
     var style: Style
+    var width: CGFloat
 
     var body: some View {
         VStack(spacing: 8) {
             RoundedRectangle(cornerRadius: 16)
                 .fill(style)
-                .frame(width: 200, height: 144)
-            Text(name)
+                .frame(width: width, height: 144)
+            Text(verbatim: name)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundStyle(Color(white: 1, opacity: 0.85))
         }
@@ -199,6 +204,7 @@ private enum GradientShowcase {
     }
 }
 
+#if !os(Android)
 #Preview("Linear") {
     GradientExample()
 }
@@ -242,3 +248,5 @@ private enum GradientShowcase {
 #Preview("Showcase") {
     GradientShowcaseExample()
 }
+#endif
+#endif
