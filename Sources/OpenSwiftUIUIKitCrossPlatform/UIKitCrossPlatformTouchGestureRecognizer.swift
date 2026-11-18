@@ -1,10 +1,10 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-final class AndroidTouchGestureRecognizer: UIGestureRecognizer, EventBindingSource {
+final class UIKitCrossPlatformTouchGestureRecognizer: UIGestureRecognizer, EventBindingSource {
     private weak var eventBridge: EventBindingBridge?
     private var activeTouches: Set<UITouch> = []
 

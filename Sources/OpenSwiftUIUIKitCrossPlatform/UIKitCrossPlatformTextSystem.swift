@@ -1,11 +1,11 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 @_spi(Private) import OpenSwiftUICore
 
-struct AndroidTextSystem: PlatformTextSystem {
+struct UIKitCrossPlatformTextSystem: PlatformTextSystem {
     func textStyleTraits(_ style: Font.TextStyle, size: DynamicTypeSize) -> Font.ResolvedTraits {
-        // Android's initial typography policy, independent of CoreText descriptors.
+        // Default typography policy, independent of CoreText descriptors.
         let points: Double = switch style {
         case .largeTitle: 34
         case .title: 28

@@ -1,13 +1,13 @@
 //
-//  AndroidGradientView.swift
+//  UIKitCrossPlatformGradientView.swift
 //  OpenSwiftUI
 
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 
-final class AndroidGradientView: UIView {
+final class UIKitCrossPlatformGradientView: UIView {
     struct Fill: Equatable {
         let path: Path
         let paint: PlatformGradient

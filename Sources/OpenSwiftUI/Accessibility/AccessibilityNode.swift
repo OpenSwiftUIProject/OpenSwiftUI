@@ -12,7 +12,7 @@ import OpenAttributeGraphShims
 import OpenSwiftUICore
 import struct OpenSwiftUICore.UniqueID
 
-#if !os(Android) && canImport(UIKit)
+#if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
 typealias AccessibilityNodeBase = UIResponder
 #else
 typealias AccessibilityNodeBase = NSObject
@@ -47,7 +47,7 @@ class AccessibilityNode: AccessibilityNodeBase {
 
     var platformElementPropertiesDirty = true
 
-    #if !os(Android) && canImport(UIKit)
+    #if os(iOS) || os(visionOS)
     var platformRotorStorage: [String: UIAccessibilityCustomRotor] = [:]
     #elseif os(macOS)
     var platformRotorStorage: [String: CustomRotorStorage] = [:]
@@ -549,7 +549,7 @@ class AccessibilityNode: AccessibilityNodeBase {
         _openSwiftUIUnimplementedFailure()
     }
 
-    #if !os(Android) && canImport(UIKit)
+    #if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
     override var next: UIResponder? {
         parent ?? viewRendererHost as? UIView
     }
@@ -560,7 +560,7 @@ class AccessibilityNode: AccessibilityNodeBase {
               impliedVisibility(consideringParent: true, with: nil) != .hidden else {
             return
         }
-        #if !os(Android) && canImport(UIKit)
+        #if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
         guard viewRendererHost is UIView else { return }
         #endif
         // TODO: Schedule AccessibilityCore.ScreenChanged on the main queue.

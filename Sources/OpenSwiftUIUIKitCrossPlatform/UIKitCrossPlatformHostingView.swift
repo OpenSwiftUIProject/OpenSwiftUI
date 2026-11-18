@@ -1,15 +1,14 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
-import Android
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 @_spi(ForOpenSwiftUIOnly) @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 
 @MainActor
-final class AndroidHostingView<Content: View>: AndroidUIKitView {
+final class UIKitCrossPlatformHostingView<Content: View>: UIKitCrossPlatformView {
     private let content: Content
-    private lazy var host = AndroidViewGraphHost(rootView: content, target: self)
+    private lazy var host = UIKitCrossPlatformViewGraphHost(rootView: content, target: self)
     private let displayLink = DisplayLink()
-    private let touchRecognizer = AndroidTouchGestureRecognizer()
+    private let touchRecognizer = UIKitCrossPlatformTouchGestureRecognizer()
 
     init(rootView: Content) {
         content = rootView
@@ -40,7 +39,7 @@ final class AndroidHostingView<Content: View>: AndroidUIKitView {
     }
 }
 
-private final class AndroidViewGraphHost<Content: View>: ViewRendererHost, ViewGraphRenderDelegate, EventGraphHost {
+private final class UIKitCrossPlatformViewGraphHost<Content: View>: ViewRendererHost, ViewGraphRenderDelegate, EventGraphHost {
     typealias RootView = ModifiedContent<Content, HitTestBindingModifier>
     let viewGraph: ViewGraph
     let renderer: DisplayList.ViewRenderer
@@ -63,7 +62,7 @@ private final class AndroidViewGraphHost<Content: View>: ViewRendererHost, ViewG
         self.target = target
         Update.begin()
         viewGraph = ViewGraph(rootViewType: RootView.self, requestedOutputs: [.displayList, .layout, .viewResponders])
-        renderer = DisplayList.ViewRenderer(platform: .init(definition: AndroidUIViewPlatformViewDefinition.self))
+        renderer = DisplayList.ViewRenderer(platform: .init(definition: UIKitCrossPlatformViewDefinition.self))
         renderer.host = self
         initializeViewGraph()
         eventBindingManager.host = self
@@ -106,7 +105,11 @@ private final class AndroidViewGraphHost<Content: View>: ViewRendererHost, ViewG
     }
 
     func updateRootView() { viewGraph.setRootView(Self.makeRootView(rootView)) }
-    func updateEnvironment() { viewGraph.setEnvironment(EnvironmentValues()) }
+    func updateEnvironment() {
+        var environment = EnvironmentValues()
+        environment.materialUsesTranslucentFallback = true
+        viewGraph.setEnvironment(environment)
+    }
     func updateTransform() { viewGraph.invalidateTransform() }
     func updateSize() { viewGraph.setProposedSize(size) }
     func updateSafeArea() { viewGraph.setSafeAreaInsets(.zero) }

@@ -10,7 +10,7 @@ import Darwin
 import Glibc
 #endif
 
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if os(Android) && OPENSWIFTUI_ANDROID_APP
 import OpenSwiftUIAndroidDemo
 
 @main

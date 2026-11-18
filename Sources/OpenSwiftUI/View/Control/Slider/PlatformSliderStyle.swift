@@ -17,8 +17,12 @@ protocol PlatformSliderCoordinator: PlatformViewCoordinator {}
 #if !canImport(Darwin)
 struct PlatformSliderStyle: SliderStyle {
     func makeBody(configuration: Configuration) -> some View {
+        #if UIKIT_CROSS_PLATFORM
+        PortableSlider(configuration: configuration)
+        #else
         _openSwiftUIPlatformUnimplementedWarning()
         return EmptyView()
+        #endif
     }
 }
 #endif

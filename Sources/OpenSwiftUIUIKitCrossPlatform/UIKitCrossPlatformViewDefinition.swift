@@ -1,16 +1,16 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 import OpenQuartzCoreShims
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 
-class AndroidUIKitView: UIView {
+class UIKitCrossPlatformView: UIView {
     // The shared cache requires layer identity; drawing uses UIKit's native layer.
     let displayListLayer = OpenQuartzCoreShims.CALayer()
 }
 
-private final class AndroidShapeView: AndroidUIKitView {
-    let fillView = AndroidGradientView(frame: .zero)
+private final class UIKitCrossPlatformShapeView: UIKitCrossPlatformView {
+    let fillView = UIKitCrossPlatformGradientView(frame: .zero)
 
     override init(frame: UIKit.CGRect) {
         super.init(frame: frame)
@@ -19,12 +19,12 @@ private final class AndroidShapeView: AndroidUIKitView {
     }
 }
 
-final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
+final class UIKitCrossPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override static var system: System { .uiView }
 
     override static func makeView(kind: ViewKind) -> AnyObject {
         MainActor.assumeIsolated {
-            let view = kind == .shape ? AndroidShapeView(frame: .zero) : AndroidUIKitView(frame: .zero)
+            let view = kind == .shape ? UIKitCrossPlatformShapeView(frame: .zero) : UIKitCrossPlatformView(frame: .zero)
             view.layer.anchorPoint = .zero
             view.isUserInteractionEnabled = false
             return view
@@ -36,15 +36,18 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
     }
 
     override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
-        MainActor.assumeIsolated { AndroidDrawingView(options: options) }
+        MainActor.assumeIsolated { UIKitCrossPlatformDrawingView(options: options) }
     }
 
     override static func setShape(_ path: Path, color: Color.Resolved, style: FillStyle, of view: AnyObject) -> Bool {
         MainActor.assumeIsolated {
-            guard let view = view as? AndroidShapeView else { return false }
+            guard let view = view as? UIKitCrossPlatformShapeView else { return false }
             let rect: Foundation.CGRect
             let radius: Foundation.CGFloat
             switch path.storage {
+            case .empty:
+                rect = .zero
+                radius = 0
             case let .rect(bounds):
                 rect = bounds
                 radius = 0
@@ -72,7 +75,7 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
         of view: AnyObject
     ) -> Bool {
         MainActor.assumeIsolated {
-            guard let view = view as? AndroidShapeView else { return false }
+            guard let view = view as? UIKitCrossPlatformShapeView else { return false }
             switch path.storage {
             case .rect, .roundedRect, .ellipse, .empty:
                 view.fillView.frame = path.boundingRect.isNull ? .zero : path.boundingRect.uiRect
@@ -87,7 +90,7 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
     }
 
     override static func viewLayer(_ view: AnyObject) -> OpenQuartzCoreShims.CALayer {
-        MainActor.assumeIsolated { (view as! AndroidUIKitView).displayListLayer }
+        MainActor.assumeIsolated { (view as! UIKitCrossPlatformView).displayListLayer }
     }
 
     override static func subviews(_ view: AnyObject) -> [AnyObject] {
@@ -119,7 +122,7 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
     }
 
     override static func setClipsToBounds(_ clips: Bool, of view: AnyObject) {
-        MainActor.assumeIsolated { (view as! UIView).clipsToBounds = clips || view is AndroidDrawingView }
+        MainActor.assumeIsolated { (view as! UIView).clipsToBounds = clips || view is UIKitCrossPlatformDrawingView }
     }
 
     override static func setGeometry(position: Foundation.CGPoint, bounds: Foundation.CGRect, of view: AnyObject) {

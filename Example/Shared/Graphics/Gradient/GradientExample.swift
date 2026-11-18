@@ -2,9 +2,9 @@
 //  GradientExample.swift
 //  Shared
 
-#if os(Android) || !SWIFT_PACKAGE
+#if UIKIT_CROSS_PLATFORM || !SWIFT_PACKAGE
 import Foundation
-#if OPENSWIFTUI || os(Android)
+#if OPENSWIFTUI || UIKIT_CROSS_PLATFORM
 import OpenSwiftUI
 #else
 import SwiftUI
@@ -204,7 +204,7 @@ private enum GradientShowcase {
     }
 }
 
-#if !os(Android)
+#if !UIKIT_CROSS_PLATFORM
 #Preview("Linear") {
     GradientExample()
 }

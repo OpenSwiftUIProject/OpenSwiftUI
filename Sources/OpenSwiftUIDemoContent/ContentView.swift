@@ -16,14 +16,16 @@ package struct ContentView: View {
         } else if ProcessInfo.processInfo.environment["OPENSWIFTUI_DEMO"] == "breathing" {
             BreathingColorView()
         } else {
-            #if os(Android)
+            #if UIKIT_CROSS_PLATFORM
             switch ProcessInfo.processInfo.environment["OPENSWIFTUI_DEMO"] {
+            case "materials":
+                MaterialStudy()
             case "gradients":
                 GeometryReader { geometry in
                     GradientShowcaseExample(tileWidth: min(200, max(0, (geometry.size.width - 54) / 2)))
                 }
             case "gradient-examples":
-                AndroidGradientExamples()
+                GradientExamples()
             default:
                 KineticStudio()
             }
@@ -246,16 +248,19 @@ private struct KineticStudio: View {
                 ForEach(0..<3) { index in
                     let shades = StudioInk.colors(index)
                     Button { palette = index } label: {
-                        HStack(spacing: 0) {
-                            shades[0]
-                            shades[1]
-                            shades[2]
+                        VStack(spacing: 3) {
+                            HStack(spacing: 0) {
+                                shades[0]
+                                shades[1]
+                                shades[2]
+                            }
+                            .frame(height: 29)
+                            .cornerRadius(3)
+                            StudioInk.primary
+                                .frame(height: 4)
+                                .opacity(palette == index ? 1 : 0)
                         }
-                        .frame(height: 28)
-                        .cornerRadius(3)
-                        .padding(4)
-                        .background { palette == index ? StudioInk.primary : StudioInk.line }
-                        .cornerRadius(6)
+                        .frame(height: 36)
                     }
                     .buttonStyle(.plain)
                 }
@@ -267,7 +272,7 @@ private struct KineticStudio: View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel("Tempo", value: String(format: "%.1fx", speeds[speedIndex]))
             HStack(spacing: 8) {
-                tempoButton("-", step: -1)
+                tempoButton(step: -1)
                 HStack(alignment: .center, spacing: 3) {
                     ForEach(0..<(compact ? 4 : 12)) { index in
                         (index < (speedIndex + 1) * (compact ? 1 : 3) ? StudioInk.primary : StudioInk.line)
@@ -276,7 +281,7 @@ private struct KineticStudio: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
-                tempoButton("+", step: 1)
+                tempoButton(step: 1)
             }
         }
     }
@@ -304,16 +309,19 @@ private struct KineticStudio: View {
         .font(.system(size: 12))
     }
 
-    private func tempoButton(_ title: String, step: Int) -> some View {
+    private func tempoButton(step: Int) -> some View {
         Button {
             checkpoint()
             speedIndex = min(speeds.count - 1, max(0, speedIndex + step))
         } label: {
-            Text(verbatim: title)
-                .font(.system(size: 22))
-                .frame(width: 36, height: 36)
-                .background { Color.white }
-                .cornerRadius(5)
+            ZStack {
+                Color.white.cornerRadius(5)
+                StudioInk.primary.frame(width: 12, height: 2)
+                if step > 0 {
+                    StudioInk.primary.frame(width: 2, height: 12)
+                }
+            }
+            .frame(width: 36, height: 36)
         }
         .buttonStyle(.plain)
         .opacity((step < 0 && speedIndex == 0) || (step > 0 && speedIndex == speeds.count - 1) ? 0.35 : 1)
@@ -558,8 +566,19 @@ package struct BreathingColorView: View {
                     Text(verbatim: "Blue colors")
                         .font(.system(size: 18))
                 }
+                #if !UIKIT_CROSS_PLATFORM
                 .toggleStyle(DemoSwitchToggleStyle())
+                #endif
                 .frame(width: 240)
+
+                #if UIKIT_CROSS_PLATFORM
+                Toggle(isOn: $usesBlue) {
+                    Text(verbatim: "Disabled colors")
+                        .font(.system(size: 18))
+                }
+                .disabled(true)
+                .frame(width: 240)
+                #endif
             }
             .foregroundColor(.white)
             .padding()
@@ -576,7 +595,8 @@ package struct BreathingColorView: View {
     }
 }
 
-// Android has no native SwitchToggleStyle yet; this stays in the DisplayList path.
+#if !UIKIT_CROSS_PLATFORM
+// Keep the existing demo fallback on platforms without a default switch backend.
 private struct DemoSwitchToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button {
@@ -601,3 +621,4 @@ private struct DemoSwitchToggleStyle: ToggleStyle {
         .buttonStyle(.plain)
     }
 }
+#endif

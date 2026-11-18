@@ -160,6 +160,10 @@ public struct Material: Sendable {
 
             package static let applyHardEdgesBlur = Flags(rawValue: 1 << 11)
 
+            #if UIKIT_CROSS_PLATFORM
+            static let translucentFallback = Flags(rawValue: 1 << 12)
+            #endif
+
             package init(environment: EnvironmentValues) {
                 var flags = Flags()
                 if environment.colorScheme == .dark {
@@ -180,6 +184,11 @@ public struct Material: Sendable {
                 if environment.colorSchemeContrast == .increased {
                     flags.insert(.increasedContrast)
                 }
+                #if UIKIT_CROSS_PLATFORM
+                if environment.materialUsesTranslucentFallback {
+                    flags.insert(.translucentFallback)
+                }
+                #endif
                 #if os(macOS)
                 if environment.reduceDesktopTinting {
                     flags.insert(.disableChameleon)
@@ -646,8 +655,21 @@ extension Material: ShapeStyle, PrimitiveShapeStyle {
         case let .resolveStyle(name, levels):
             guard let level = levels.first else { return }
             let material = resolve(in: shape.environment, role: shape.role)
+            #if UIKIT_CROSS_PLATFORM
+            if material.flags.contains(.translucentFallback) {
+                shape.stylePack[name, level] = .init(.color(material.translucentFallbackColor))
+                return
+            }
+            #endif
             shape.stylePack[name, level] = .init(.backgroundMaterial(material))
         case .fallbackColor:
+            #if UIKIT_CROSS_PLATFORM
+            if shape.environment.materialUsesTranslucentFallback {
+                let material = resolve(in: shape.environment, role: shape.role)
+                shape.result = .color(Color(material.translucentFallbackColor))
+                return
+            }
+            #endif
             shape.result = .color(Color._background)
         case .modifyBackground:
             #if os(macOS)

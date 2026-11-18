@@ -1,11 +1,11 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+#if UIKIT_CROSS_PLATFORM
 import Foundation
 import UIKit
 import OpenQuartzCoreShims
 import OpenRenderBoxShims
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 
-final class AndroidDrawingView: AndroidUIKitView, PlatformDrawable {
+final class UIKitCrossPlatformDrawingView: UIKitCrossPlatformView, PlatformDrawable {
     nonisolated(unsafe) var options: PlatformDrawableOptions
     nonisolated static var allowsContentsMultiplyColor: Bool { false }
     private let label = UILabel(frame: .zero)
@@ -23,18 +23,18 @@ final class AndroidDrawingView: AndroidUIKitView, PlatformDrawable {
 
     nonisolated func update(content: PlatformDrawableContent?, required: Bool) -> Bool {
         MainActor.assumeIsolated {
-            guard let content else {
+            guard let next = content?.textContent else {
                 text = nil
                 label.text = nil
                 label.attributedText = nil
+                if content != nil {
+                    _openSwiftUIPlatformUnimplementedWarning("UIKit-cross-platform drawable other than text")
+                }
                 return true
-            }
-            guard let next = content.textContent else {
-                preconditionFailure("AndroidDrawingView currently supports text content only")
             }
             if required || text?.lineLimit != next.lineLimit || text?.string != next.string {
                 text = next
-                AndroidTextSystem.configure(label, string: next.string, lineLimit: next.lineLimit)
+                UIKitCrossPlatformTextSystem.configure(label, string: next.string, lineLimit: next.lineLimit)
                 setNeedsLayout()
             }
             return true
@@ -70,7 +70,7 @@ final class AndroidDrawingView: AndroidUIKitView, PlatformDrawable {
     ) -> (() -> Void)? { nil }
 
     nonisolated func drawForTesting(in list: ORBDisplayList) {
-        preconditionFailure("Android text drawing uses UIKit/SDL, not an ORB display list")
+        preconditionFailure("Cross-platform text drawing uses UIKit/SDL, not an ORB display list")
     }
 }
 #endif

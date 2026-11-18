@@ -8,10 +8,11 @@ ANDROID_PROJECT="$REPO_ROOT/Android/OpenSwiftUIAndroidDemo"
 ANDROID_BUILD="$REPO_ROOT/.build/android-demo"
 SWIFT_SCRATCH="$ANDROID_BUILD/swift"
 UIKIT_CHECKOUT="$SWIFT_SCRATCH/checkouts/UIKit-cross-platform"
-if [[ -n "${OPENSWIFTUI_ANDROID_UIKIT_PATH:-}" ]]; then
-    [[ -d "$OPENSWIFTUI_ANDROID_UIKIT_PATH" ]] || fail "Missing UIKit checkout: $OPENSWIFTUI_ANDROID_UIKIT_PATH"
-    UIKIT_CHECKOUT="$(cd "$OPENSWIFTUI_ANDROID_UIKIT_PATH" && pwd)"
-    export OPENSWIFTUI_ANDROID_UIKIT_PATH="$UIKIT_CHECKOUT"
+uikit_override="${OPENSWIFTUI_UIKIT_CROSS_PLATFORM_PATH:-${OPENSWIFTUI_ANDROID_UIKIT_PATH:-}}"
+if [[ -n "$uikit_override" ]]; then
+    [[ -d "$uikit_override" ]] || fail "Missing UIKit checkout: $uikit_override"
+    UIKIT_CHECKOUT="$(cd "$uikit_override" && pwd)"
+    export OPENSWIFTUI_UIKIT_CROSS_PLATFORM_PATH="$UIKIT_CHECKOUT"
 fi
 SWIFT_VERSION=6.3.2
 SWIFT_ANDROID_TRIPLE=aarch64-unknown-linux-android28
@@ -37,8 +38,11 @@ case "$(uname -s)" in
 esac
 export PATH="${JAVA_HOME:+$JAVA_HOME/bin:}$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.swiftly/bin:$PATH"
 export SWIFT_ANDROID_SDK_PATH="${SWIFT_ANDROID_SDK_PATH:-$sdk_home/swift-$SWIFT_VERSION-RELEASE_android.artifactbundle/swift-android}"
-swift_sdk_args=(--swift-sdks-path "$(dirname "$(dirname "$SWIFT_ANDROID_SDK_PATH")")"
-    --swift-sdk "swift-$SWIFT_VERSION-RELEASE_android" --triple "$SWIFT_ANDROID_TRIPLE")
+# SwiftPM 6.3 can choose another architecture when filtering by bundle ID.
+# Limit discovery to this version, then select its exact target triple.
+swift_sdk_store="$ANDROID_BUILD/sdk-store/$SWIFT_VERSION"
+swift_sdk_args=(--swift-sdks-path "$swift_sdk_store"
+    --swift-sdk "$SWIFT_ANDROID_TRIPLE" --triple "$SWIFT_ANDROID_TRIPLE")
 export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-$HOME/android-ndk/android-ndk-r27d}"
 if [[ ! -d "$ANDROID_NDK_HOME" && -d "$ANDROID_HOME/ndk/27.3.13750724" ]]; then
     export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/27.3.13750724"
@@ -69,7 +73,7 @@ export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1 OPENATTRIBUTEGRAPH_OPENATTRIBUTE
 export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
 export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_REPO=OpenSwiftUIProject/Compute
 export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_BRANCH=android/dev
-export OPENSWIFTUI_ANDROID_UIKIT=1 OPENSWIFTUI_RENDER_GTK=0
+export OPENSWIFTUI_UIKIT_CROSS_PLATFORM=1 OPENSWIFTUI_ANDROID_APP=1 OPENSWIFTUI_RENDER_GTK=0
 export OPENRENDERBOX_LIB_SWIFT_PATH="$SWIFT_ANDROID_SDK_PATH/swift-resources/usr/lib/swift_static-aarch64"
 export OPENSWIFTUI_ANDROID_SWIFT_STATIC_LIB_DIR="$OPENRENDERBOX_LIB_SWIFT_PATH/android"
 
@@ -86,6 +90,8 @@ check_native_environment() {
     [[ "$version" == *"Swift version $SWIFT_VERSION ("* ]] || fail "Expected Swift $SWIFT_VERSION; got: $version"
     [[ -f "$SWIFT_ANDROID_SDK_PATH/swift-sdk.json" ]] || fail "Missing matching Swift Android SDK: $SWIFT_ANDROID_SDK_PATH"
     [[ "$(basename "$(dirname "$SWIFT_ANDROID_SDK_PATH")")" == "swift-$SWIFT_VERSION-RELEASE_android.artifactbundle" ]] || fail "SWIFT_ANDROID_SDK_PATH must point inside the matching Swift $SWIFT_VERSION Android artifact bundle."
+    mkdir -p "$swift_sdk_store"
+    ln -sfn "$(dirname "$SWIFT_ANDROID_SDK_PATH")" "$swift_sdk_store/swift-$SWIFT_VERSION-RELEASE_android.artifactbundle"
     [[ -f "$ANDROID_NDK_HOME/source.properties" ]] || fail "Set ANDROID_NDK_HOME to Android NDK r27d."
     grep -q '^Pkg.Revision = 27.3.13750724' "$ANDROID_NDK_HOME/source.properties" || fail 'This demo expects Android NDK r27d (27.3.13750724).'
     [[ -d "$SWIFT_ANDROID_SDK_PATH/ndk-sysroot/usr/include" ]] || fail 'Configure the Swift Android SDK with its scripts/setup-android-sdk.sh first.'

@@ -1,7 +1,11 @@
-# Android Controls Demo
+# Android Kinetic Studio Demo
 
-This is the Breathing Colors example with text, a counter Button, and a Toggle.
+Kinetic Studio shares its ContentView with the macOS and iPhone recording hosts:
+three motion studies, palettes, tempo controls, pause/resume, and echo layers.
 It uses OpenSwiftUI's shared DisplayList renderer with UIKit-cross-platform.
+The original Breathing Colors example remains available with `--demo breathing`.
+Use `--demo materials` to change material thickness with a Stepper and coverage
+with a Slider. On Android, material uses an adaptive translucent tint, not backdrop blur.
 Use `--demo gradients` for the shared gradient showcase or `--demo gradient-examples`
 for the same `GradientExample` used by the Apple previews. Android rasterizes
 gradient fills on rectangles, rounded rectangles, and ellipses through the shared
@@ -27,6 +31,8 @@ toolchains, download emulator images, or create an AVD automatically.
 ```bash
 Scripts/android-demo.sh --build-only
 Scripts/android-demo.sh --no-build --serial emulator-5554
+Scripts/android-demo.sh --no-build --serial emulator-5554 --demo breathing
+Scripts/android-demo.sh --no-build --serial emulator-5554 --demo materials
 Scripts/android-demo.sh --no-build --serial emulator-5554 --demo gradients
 Scripts/android-demo.sh --no-build --serial emulator-5554 --demo gradient-examples
 Scripts/android-demo.sh --no-build --serial emulator-5554 --demo text
@@ -50,6 +56,11 @@ dependencies; subsequent runs reuse `.build/android-demo/` in the checkout.
 The [Swift Android setup guide](https://www.swift.org/documentation/articles/swift-sdk-for-android-getting-started.html)
 explains toolchain/SDK matching. Use the pinned versions above for this demo,
 not an unrelated latest SDK with the older compiler.
+
+The runner creates a version-specific SDK discovery directory under
+`.build/android-demo/sdk-store/` and selects `aarch64-unknown-linux-android28`.
+This avoids SwiftPM 6.3 choosing another architecture from the multi-target
+Android bundle. It does not change the globally installed SDKs.
 
 Default macOS locations are discovered automatically. For custom installations:
 
@@ -84,9 +95,26 @@ official Gradle 8.13 wrapper and verifies the distribution checksum. Public
 SSH submodule URLs are rewritten to HTTPS only for the runner's process tree;
 no global Git configuration or GitHub SSH key is needed.
 
-For unpublished UIKit changes only, set `OPENSWIFTUI_ANDROID_UIKIT_PATH` to an
+For unpublished UIKit changes only, set `OPENSWIFTUI_UIKIT_CROSS_PLATFORM_PATH` to an
 explicit checkout. SwiftPM and Gradle both use that override; other dependencies
-remain remote. Unset it to return to the fork's `android/dev` branch.
+remain remote. Unset it to return to the fork's `android/dev` branch. The old
+`OPENSWIFTUI_ANDROID_UIKIT_PATH` still works as a fallback.
+
+## Backend and App Targets
+
+`OPENSWIFTUI_UIKIT_CROSS_PLATFORM=1` enables the `OpenSwiftUIUIKitCrossPlatform`
+host product and defines `UIKIT_CROSS_PLATFORM` for eligible targets. The host
+provides a `UIKitCrossPlatformHostingController` and renders the shared
+DisplayList through UIKit-cross-platform. The embedding app owns its window and
+SDL event loop.
+
+The APK runner also sets `OPENSWIFTUI_ANDROID_APP=1` for the Android entry point,
+JNI and linker settings. The legacy `OPENSWIFTUI_ANDROID_UIKIT=1` enables both
+options when neither new option is set.
+
+`OpenSwiftUILinuxDemo` still uses stdout on Linux. Running a Linux GUI with the
+shared host requires Linux support in the UIKit and SDL packages, and a desktop
+app entry point; switching on the backend alone does not launch a GUI.
 
 ## Android Studio
 
@@ -99,6 +127,15 @@ native libraries. The CLI script remains the quickest entry point and does not
 require Android Studio to be open.
 
 ## Validation
+
+The 2026-10-21 Kinetic Studio APK was built with Swift/Android SDK 6.3.2 and run
+on an arm64 API 36 emulator with host GPU rendering. Flow, Cascade, Lattice,
+all palettes, tempo limits (0.5x and 2.0x), pause/resume, echo layers, and new
+compositions were checked through adb interactions. Paused screenshots captured
+about 15 seconds apart were pixel-identical; resumed frames changed again.
+The portrait layout showed no text clipping and the crash buffer was empty.
+This is a functional smoke check, not a frame-rate benchmark or physical-device
+validation. Use `--demo kinetic` explicitly, or omit it for the default scene.
 
 The 2026-10-19 smoke build used remote Compute `065635a`, OAG `46f2e1b`,
 OCG `19b887a`, and OpenRenderBox `f94140b`, with only the unpublished UIKit

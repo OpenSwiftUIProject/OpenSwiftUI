@@ -544,9 +544,8 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         case let .roundedRect(rect):
             #if canImport(Darwin)
             return rect.contains(p)
-            #elseif os(Android)
-            // The Android renderer draws circular corners for both corner styles.
-            // Its RenderBox backend does not implement rounded path construction.
+            #elseif UIKIT_CROSS_PLATFORM
+            // The SDL backend draws circular corners for both corner styles.
             let bounds = rect.rect
             guard bounds.contains(p) else { return false }
             let radius = rect.clampedCornerSize

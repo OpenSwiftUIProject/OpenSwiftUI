@@ -32,7 +32,7 @@ struct PathTests {
         #expect(!path.contains(CGPoint(x: 11, y: 21)))
     }
 
-    #if os(Android) || canImport(Darwin)
+    #if UIKIT_CROSS_PLATFORM || canImport(Darwin)
     @Test
     func roundedRectangleHitRegion() {
         let path = Path(roundedRect: CGRect(x: 10, y: 20, width: 80, height: 36),

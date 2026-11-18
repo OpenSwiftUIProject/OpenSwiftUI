@@ -5,13 +5,14 @@ usage() {
     cat <<'USAGE'
 Usage: Scripts/android-demo.sh [options]
 
-Build, install, and launch the Android controls demo (arm64, API 28+).
+Build, install, and launch the Android Kinetic Studio demo (arm64, API 28+).
   --prepare          Resolve remote sources only; also prepares Android Studio
   --build-only       Build the APK without connecting to a device
   --no-build         Install and launch the existing APK
   --avd NAME         Start or reuse this installed arm64 emulator
   --serial SERIAL    Use this adb device (or set ANDROID_SERIAL)
-  --demo NAME        breathing (default), text, static, gradients, or gradient-examples
+  --demo NAME        kinetic (default), materials, gradients, gradient-examples,
+                     breathing, text, or static
   --print-tree       Capture DisplayList output in the app's files/display-list.log
   -h, --help         Show this help
 
@@ -24,7 +25,7 @@ mode=run
 no_build=0
 avd=
 serial="${ANDROID_SERIAL:-}"
-demo=breathing
+demo=kinetic
 print_tree=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -41,7 +42,7 @@ while [[ $# -gt 0 ]]; do
 done
 [[ "$mode" == run || "$no_build" == 0 ]] || { printf '%s\n' '--no-build cannot be combined with --prepare/--build-only.' >&2; exit 2; }
 [[ -z "$avd" || -z "$serial" ]] || { printf '%s\n' 'Choose either --avd or --serial/ANDROID_SERIAL.' >&2; exit 2; }
-case "$demo" in breathing|text|static|gradients|gradient-examples) ;; *) printf 'Unknown demo: %s\n' "$demo" >&2; exit 2 ;; esac
+case "$demo" in kinetic|materials|gradients|gradient-examples|breathing|text|static) ;; *) printf 'Unknown demo: %s\n' "$demo" >&2; exit 2 ;; esac
 
 source "$(dirname "${BASH_SOURCE[0]}")/Android/common.sh"
 apk="$ANDROID_PROJECT/app/build/outputs/apk/debug/app-arm64-v8a-debug.apk"

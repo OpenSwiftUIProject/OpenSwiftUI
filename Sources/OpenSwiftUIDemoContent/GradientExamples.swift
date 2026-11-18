@@ -1,7 +1,7 @@
-#if os(Android)
+#if UIKIT_CROSS_PLATFORM
 import OpenSwiftUI
 
-struct AndroidGradientExamples: View {
+struct GradientExamples: View {
     var body: some View {
         VStack(spacing: 18) {
             Text(verbatim: "GradientExample")

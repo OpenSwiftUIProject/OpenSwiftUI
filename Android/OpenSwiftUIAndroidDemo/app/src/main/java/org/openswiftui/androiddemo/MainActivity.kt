@@ -16,7 +16,7 @@ class MainActivity : UIKitActivity() {
     private external fun configureOpenSwiftUI()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Os.setenv("OPENSWIFTUI_DEMO", intent.getStringExtra("demo") ?: "breathing", true)
+        Os.setenv("OPENSWIFTUI_DEMO", intent.getStringExtra("demo") ?: "kinetic", true)
         if (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0 &&
             intent.getBooleanExtra("printTree", false)) {
             Os.setenv("OPENSWIFTUI_PRINT_TREE", "1", true)

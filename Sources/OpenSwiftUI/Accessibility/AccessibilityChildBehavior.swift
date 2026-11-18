@@ -193,7 +193,7 @@ public struct AccessibilityChildBehavior: Hashable {
         properties.traits[.isLabel] = nil
         properties.automationVisibility = nil
         properties.textLayoutProperties = nil
-        #if !os(Android) && canImport(UIKit)
+        #if canImport(Darwin) && canImport(UIKit)
         properties.uiKitBridgedInteraction = nil
         #endif
         return properties

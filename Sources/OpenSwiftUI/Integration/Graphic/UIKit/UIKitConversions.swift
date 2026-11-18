@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 6DC24D5146AF4B80347A1025025F68EE (SwiftUI)
 
-#if !os(Android) && canImport(UIKit)
+#if canImport(Darwin) && canImport(UIKit)
 
 public import OpenSwiftUICore
 import COpenSwiftUI

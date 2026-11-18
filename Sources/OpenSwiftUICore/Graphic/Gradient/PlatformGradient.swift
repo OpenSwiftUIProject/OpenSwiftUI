@@ -2,7 +2,7 @@
 //  PlatformGradient.swift
 //  OpenSwiftUICore
 
-#if os(Android)
+#if UIKIT_CROSS_PLATFORM
 package import Foundation
 
 @_spi(DisplayList_ViewSystem)

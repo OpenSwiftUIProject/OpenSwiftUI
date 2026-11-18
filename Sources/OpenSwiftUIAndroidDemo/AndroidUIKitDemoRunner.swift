@@ -1,14 +1,13 @@
-#if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
-import Android
-import Foundation
+#if os(Android) && UIKIT_CROSS_PLATFORM
 import JNI
 import UIKit
 import OpenSwiftUIDemoContent
+import OpenSwiftUIUIKitCrossPlatform
 public import OpenSwiftUICore
 
 nonisolated(unsafe) private var didConfigureNativeLoaders = false
 @MainActor private var makeRootViewController: () -> UIViewController = {
-    AndroidOpenSwiftUIViewController(rootView: ContentView())
+    UIKitCrossPlatformHostingController(rootView: ContentView())
 }
 
 @_cdecl("OpenSwiftUIAndroidDemoConfigureUIKit")
@@ -45,7 +44,7 @@ public struct AndroidUIKitDemoRunner {
         javaEnvironment: UnsafeMutableRawPointer?
     ) {
         configureNativeLoaders(env: javaEnvironment?.assumingMemoryBound(to: JNIEnv.self))
-        makeRootViewController = { AndroidOpenSwiftUIViewController(rootView: rootView) }
+        makeRootViewController = { UIKitCrossPlatformHostingController(rootView: rootView) }
         OpenSwiftUIAndroidDemoConfigureUIKit()
     }
 
@@ -66,36 +65,11 @@ private final class AndroidOpenSwiftUIAppDelegate: UIResponder, UIApplicationDel
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        PlatformTextSystems.current = AndroidTextSystem()
         let window = UIWindow()
         window.rootViewController = makeRootViewController()
         window.makeKeyAndVisible()
         self.window = window
         return true
-    }
-}
-
-@MainActor
-private final class AndroidOpenSwiftUIViewController<Content: View>: UIViewController {
-    private let rootView: Content
-
-    init(rootView: Content) {
-        self.rootView = rootView
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    override func loadView() {
-        view = AndroidHostingView(rootView: rootView)
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        (view as? AndroidHostingView<Content>)?.startRendering()
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        (view as? AndroidHostingView<Content>)?.stopRendering()
     }
 }
 #endif
