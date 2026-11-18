@@ -1,5 +1,5 @@
 {
-  "originHash" : "24eefaa8369ec7fc8fbfef88d6b9226347dc2a31b09969626ef94ded8f217c33",
+  "originHash" : "63534e9d05a0b5308d449fb922bc357e7b1dfc1a3dfd453a4f7fe79594bdf52c",
   "pins" : [
     {
       "identity" : "compute",
@@ -34,7 +34,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "19b887a5885f69fdb3d5213abadf41ea38d16ff7"
+        "revision" : "3440823f9b2580dcd3795373214521efc37628b8"
       }
     },
     {
@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
-        "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
+        "revision" : "b030e44d6471cf1d760137e5da6805cf57aa885b"
       }
     },
     {
@@ -52,7 +52,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "f94140bc0794a073e3352618c421a14b1cda15d1"
+        "revision" : "0bb9980ad7aab62231913c659d1909a95e50c5b4"
       }
     },
     {
@@ -114,7 +114,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/UIKit-cross-platform",
       "state" : {
         "branch" : "android/dev",
-        "revision" : "d4291383f0848a35cfc994942377d89eda64a149"
+        "revision" : "bc63e6300de743a32fc775a38ee9aa9074f8c2be"
       }
     }
   ],

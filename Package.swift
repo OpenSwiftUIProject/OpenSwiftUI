@@ -951,7 +951,8 @@ let package = Package(
         openSwiftUITestsSupportTarget,
         openSwiftUIExtensionTarget,
         openSwiftUIBridgeTarget,
-    ]
+    ],
+    cxxLanguageStandard: androidUIKitCondition ? .cxx20 : nil
 )
 
 if versionedDocCPlugin {

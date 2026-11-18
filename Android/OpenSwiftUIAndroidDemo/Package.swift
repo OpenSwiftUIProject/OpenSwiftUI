@@ -14,5 +14,6 @@ let package = Package(
             dependencies: [.product(name: "OpenSwiftUIAndroidHost", package: "OpenSwiftUI")],
             swiftSettings: [.interoperabilityMode(.Cxx)]
         ),
-    ]
+    ],
+    cxxLanguageStandard: .cxx20
 )
