@@ -401,7 +401,7 @@ extension ResolvedGradient.ColorSpace {
 
     @inline(__always)
     private func cubeRoot(_ value: Float) -> Float {
-        Float(signOf: value, magnitudeOf: pow(abs(value), 1.0 / 3.0))
+        Float(signOf: value, magnitudeOf: Foundation.powf(abs(value), 1.0 / 3.0))
     }
 
     @inline(__always)
@@ -416,7 +416,7 @@ extension ResolvedGradient.ColorSpace {
             // Keep the reciprocal product and offset as separate Float operations.
             let reciprocal: Float = 1.0 / 1.055
             let offset: Float = 0.055 * reciprocal
-            result = pow(magnitude * reciprocal + offset, 2.4)
+            result = Foundation.powf(magnitude * reciprocal + offset, 2.4)
         }
         return value > 0 ? result : -result
     }
