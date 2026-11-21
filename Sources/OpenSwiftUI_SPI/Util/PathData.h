@@ -34,14 +34,6 @@ static inline PathData PathDataMakeEmpty(void) {
     return data;
 }
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN
-static inline const ORBPathCallbacks *PathDataGetCGPathCallbacks(void) OPENSWIFTUI_SWIFT_NAME(getter:PathData.cgPathCallbacks());
-
-static inline const ORBPathCallbacks *PathDataGetCGPathCallbacks(void) {
-    return &ORBPathCGPathCallbacks;
-}
-#endif
-
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED

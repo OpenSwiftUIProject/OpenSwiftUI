@@ -171,7 +171,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             case .cgPath:
                 path = ORBPath(
                     storage: ORBPath.Storage(data.cgPath!.toOpaque()),
-                    callbacks: PathData.cgPathCallbacks
+                    callbacks: ORBPath.Callbacks.cgPath
                 )
             case .rbPath:
                 path = data.rbPath
