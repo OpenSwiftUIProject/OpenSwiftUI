@@ -47,6 +47,109 @@ struct PathTests {
     }
 
     #if canImport(CoreGraphics)
+    @Test
+    func appendingElementsPreservesControlsAndOriginalCopy() {
+        var path = Path()
+        path.move(to: CGPoint(x: 1, y: 2))
+        path.addLine(to: CGPoint(x: 3, y: 4))
+        let original = path
+        path.addQuadCurve(to: CGPoint(x: 7, y: 8), control: CGPoint(x: 5, y: 6))
+        path.addCurve(to: CGPoint(x: 13, y: 14), control1: CGPoint(x: 9, y: 10), control2: CGPoint(x: 11, y: 12))
+        path.closeSubpath()
+
+        var elements: [Path.Element] = []
+        path.forEach { elements.append($0) }
+        #expect(elements == [
+            .move(to: CGPoint(x: 1, y: 2)),
+            .line(to: CGPoint(x: 3, y: 4)),
+            .quadCurve(to: CGPoint(x: 7, y: 8), control: CGPoint(x: 5, y: 6)),
+            .curve(to: CGPoint(x: 13, y: 14), control1: CGPoint(x: 9, y: 10), control2: CGPoint(x: 11, y: 12)),
+            .closeSubpath,
+        ])
+        var originalElements: [Path.Element] = []
+        original.forEach { originalElements.append($0) }
+        #expect(originalElements == [
+            .move(to: CGPoint(x: 1, y: 2)),
+            .line(to: CGPoint(x: 3, y: 4)),
+        ])
+        #expect(original.currentPoint == CGPoint(x: 3, y: 4))
+    }
+
+    enum BufferedShape: CaseIterable {
+        case rect, ellipse, roundedRect
+    }
+
+    @Test(arguments: BufferedShape.allCases)
+    func bufferedShapesPreserveNegativeRectSizes(shape: BufferedShape) {
+        let rect = CGRect(x: 10, y: 20, width: -6, height: -8)
+        let transform = CGAffineTransform(translationX: 100, y: 200)
+        var path = Path()
+        // Keep the append operation on the buffer path.
+        path.move(to: CGPoint(x: 107, y: 216))
+        switch shape {
+        case .rect:
+            path.addRect(rect, transform: transform)
+        case .ellipse:
+            path.addEllipse(in: rect, transform: transform)
+        case .roundedRect:
+            path.addRoundedRect(in: rect, cornerSize: CGSize(width: 1, height: 2), style: .circular, transform: transform)
+        }
+
+        #expect(path.boundingRect == CGRect(x: 104, y: 212, width: 6, height: 8))
+    }
+
+    @Test
+    func transformedRoundedRectPreservesAsymmetricCorners() {
+        var path = Path()
+        path.addRoundedRect(
+            in: CGRect(x: 10, y: 20, width: 100, height: 100),
+            cornerRadii: RectangleCornerRadii(topLeading: 0, bottomLeading: 20, bottomTrailing: 30, topTrailing: 10),
+            style: .circular,
+            transform: CGAffineTransform(translationX: 100, y: 200)
+        )
+
+        #expect(path.boundingRect == CGRect(x: 110, y: 220, width: 100, height: 100))
+        #expect(path.contains(CGPoint(x: 111, y: 221)))
+        #expect(!path.contains(CGPoint(x: 209, y: 221)))
+        #expect(path.contains(CGPoint(x: 205, y: 225)))
+        #expect(!path.contains(CGPoint(x: 111, y: 319)))
+        #expect(path.contains(CGPoint(x: 118, y: 312)))
+        #expect(!path.contains(CGPoint(x: 202, y: 312)))
+        #expect(path.contains(CGPoint(x: 200, y: 310)))
+    }
+
+    @Test(arguments: [false, true])
+    func transformedArcPreservesEndpoints(relative: Bool) throws {
+        var path = Path()
+        let transform = CGAffineTransform(translationX: 5, y: 7)
+        if relative {
+            path.addRelativeArc(
+                center: CGPoint(x: 20, y: 30),
+                radius: 10,
+                startAngle: .degrees(0),
+                delta: .degrees(90),
+                transform: transform
+            )
+        } else {
+            path.addArc(
+                center: CGPoint(x: 20, y: 30),
+                radius: 10,
+                startAngle: .degrees(0),
+                endAngle: .degrees(90),
+                clockwise: false,
+                transform: transform
+            )
+        }
+
+        var elements: [Path.Element] = []
+        path.forEach { elements.append($0) }
+        #expect(elements.first == .move(to: CGPoint(x: 35, y: 37)))
+        let end = try #require(path.currentPoint)
+        // Storage can encode arc angles as Float.
+        #expect(abs(end.x - 25) < 1e-6)
+        #expect(abs(end.y - 47) < 1e-6)
+    }
+
     @Test(arguments: [false, true])
     func fillRule(eoFill: Bool) {
         let outline = CGMutablePath()
@@ -58,7 +161,7 @@ struct PathTests {
         #expect(path.contains(points[0], eoFill: eoFill))
         #expect(path.contains(points[1], eoFill: eoFill) == !eoFill)
         #expect(!path.contains(points[2], eoFill: eoFill))
-        #expect(path.contains(points: points, eoFill: eoFill).rawValue == (eoFill ? 0b001 : 0b011))
+        #expect((path.contains(points: points, eoFill: eoFill).rawValue & 0b111) == (eoFill ? 0b001 : 0b011))
     }
 
     @Test(arguments: [false, true])

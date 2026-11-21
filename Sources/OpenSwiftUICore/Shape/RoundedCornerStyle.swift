@@ -73,21 +73,19 @@ package struct FixedRoundedRect: Equatable {
         min(min(rect.width, rect.height) / 2, cornerSize.width)
     }
 
-    #if canImport(Darwin)
     package func withTemporaryPath<R>(_ body: (ORBPath) -> R) -> R {
         ORBPath.withTemporaryPath(do: body) { pointer in
-            let storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
-            var points: [CGFloat] = [
+            let points: [CGFloat] = [
                 rect.x,
                 rect.y,
-                rect.width,
-                rect.height,
+                rect.size.width,
+                rect.size.height,
                 cornerSize.width,
-                cornerSize.height
+                cornerSize.height,
             ]
-            storage.append(
-                element: style == .continuous ? .fixedRoundedRectContinuous : .fixedRoundedRectCircular,
-                points: &points,
+            ORBPath.Storage(pointer).append(
+                element: style == .circular ? .fixedRoundedRectCircular : .fixedRoundedRectContinuous,
+                points: points,
                 userInfo: nil
             )
         }
@@ -98,7 +96,6 @@ package struct FixedRoundedRect: Equatable {
             path.contains(point: point, eoFill: false)
         }
     }
-    #endif
 
     package func applying(_ m: CGAffineTransform) -> FixedRoundedRect {
         let newRect = rect.applying(m)
@@ -177,7 +174,6 @@ package struct FixedRoundedRect: Equatable {
         )
     }
 
-    #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
     package var cgPath: CGPath {
         #if canImport(Darwin)
         let clamped = clampedCornerSize
@@ -185,13 +181,12 @@ package struct FixedRoundedRect: Equatable {
             rect,
             clamped.width,
             clamped.height,
-            needsContinuousCorners ? .continuous : .circular
+            needsContinuousCorners
         )
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
     }
-    #endif
 
     @usableFromInline
     package static func == (a: FixedRoundedRect, b: FixedRoundedRect) -> Bool {

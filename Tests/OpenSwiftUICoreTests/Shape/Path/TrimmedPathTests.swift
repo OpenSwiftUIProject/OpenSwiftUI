@@ -36,7 +36,7 @@ struct TrimmedPathTests {
     }
 
     #if canImport(CoreGraphics)
-    @Test(.disabled("Trim is not implemented yet"))
+    @Test
     func partialRectangle() {
         let trimmedPath = Path(CGRect(x: 0, y: 0, width: 100, height: 100))
             .trimmedPath(from: 0.125, to: 0.375)

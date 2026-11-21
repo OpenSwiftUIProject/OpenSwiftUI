@@ -221,6 +221,7 @@ struct FixedRoundedRectTests {
         (CGRect(x: 0, y: 0, width: 100, height: 100), 10.0, RoundedCornerStyle.circular),
         (CGRect(x: 10, y: 20, width: 80, height: 60), 15.0, RoundedCornerStyle.continuous),
         (CGRect(x: 0, y: 0, width: 50, height: 50), 5.0, RoundedCornerStyle.circular),
+        (CGRect(x: 10, y: 20, width: -80, height: -60), 15.0, RoundedCornerStyle.circular),
     ] as [(CGRect, CGFloat, RoundedCornerStyle)])
     func withTemporaryPath(rect: CGRect, cornerRadius: CGFloat, style: RoundedCornerStyle) {
         let roundedRect = FixedRoundedRect(rect, cornerRadius: cornerRadius, style: style)
