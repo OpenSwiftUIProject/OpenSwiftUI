@@ -962,18 +962,7 @@ enum ShapeType {
                 self = .empty
                 return
             }
-            var dash: [CGFloat] = []
-            for i in 0 ..< Int(stroked.style.dashCount) {
-                dash.append(stroked.style.dash![i])
-            }
-            let style = StrokeStyle(
-                lineWidth: stroked.style.lineWidth,
-                lineCap: CGLineCap(rawValue: stroked.style.lineCap) ?? .butt,
-                lineJoin: CGLineJoin(rawValue: stroked.style.lineJoin) ?? .miter,
-                miterLimit: stroked.style.miterLimit,
-                dash: dash,
-                dashPhase: stroked.style.dashPhase
-            )
+            let style = StrokeStyle(stroked.style)
             struct Context {
                 var type: UnsafeMutablePointer<ShapeType>
                 var style: StrokeStyle

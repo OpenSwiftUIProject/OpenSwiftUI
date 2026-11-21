@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "600fcdfb9462e985d5fef429daf236e2de3104db"
+        "revision" : "7b1da8b32736a879afd3964a13085c076eaa1221"
       }
     },
     {
@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "49db676067daf36c6b2c6cec9cb7a4595979f4ae"
+        "revision" : "3c97339a194d3e02f31825dd6da934730449611b"
       }
     },
     {
