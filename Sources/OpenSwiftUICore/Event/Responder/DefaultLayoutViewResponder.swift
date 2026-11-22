@@ -85,9 +85,7 @@ open class DefaultLayoutViewResponder: MultiViewResponder {
             }
             let subgraph = (childViewSubgraph ?? childSubgraph)!
             var childInputs = inputs
-            childInputs.viewInputs = self.inputs
-            childInputs.copyCaches()
-            childInputs.viewSubgraph = subgraph
+            childInputs.mergeViewInputs(self.inputs, viewSubgraph: subgraph)
             let childOutputs = DefaultLayoutGesture.makeDebuggableGesture(
                 gesture: _GraphValue(gesture),
                 inputs: childInputs
