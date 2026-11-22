@@ -32,9 +32,7 @@ package final class PreferenceBridge {
         requestedPreferences = PreferenceKeys()
         bridgedViewInputs = PropertyList()
         for child in children {
-            child._withUnsafeGuaranteedRef { viewGraph in
-                viewGraph.invalidatePreferenceBridge()
-            }
+            child.takeUnretainedValue().invalidatePreferenceBridge()
         }
         viewGraph = nil
         isValid = false
@@ -105,9 +103,7 @@ package final class PreferenceBridge {
     
     package func removedStateDidChange() {
         for child in children {
-            child._withUnsafeGuaranteedRef { viewGraph in
-                viewGraph.updateRemovedState()
-            }
+            child.takeUnretainedValue().updateRemovedState()
         }
     }
     
