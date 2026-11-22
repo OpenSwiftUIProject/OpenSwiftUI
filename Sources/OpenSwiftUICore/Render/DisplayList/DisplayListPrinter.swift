@@ -128,13 +128,13 @@ extension DisplayList.Content.Value {
             printer.pop()
         case let .shape(path, paint, style):
             printer.push("shape")
-            printer.print("(path\(path.description))")
+            printer.print("(path \(path.description))")
             printer.print("(paint \(paint))")
             printer.print("(style \(style))")
             printer.pop()
         case let .shadow(path, shadow):
             printer.push("shadow")
-            printer.print("(path\(path.description))")
+            printer.print("(path \(path.description))")
             printer.print("(shadow \(shadow))")
             printer.pop()
         case .platformView:
@@ -254,7 +254,7 @@ extension DisplayList.Effect {
             printer.print("#:blend-mode \(mode)", newline: false)
         case let .clip(path, style, options):
             printer.push("clip")
-            printer.print("(path\(path.description))")
+            printer.print("(path \(path.description))")
             printer.print("(style \(style))")
             if !options.isEmpty {
                 printer.print("(options \(options))")
