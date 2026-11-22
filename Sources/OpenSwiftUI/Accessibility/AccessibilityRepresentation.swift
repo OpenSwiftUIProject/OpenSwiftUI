@@ -121,7 +121,8 @@ private struct AccessibilityRepresentableStyleModifier: ViewModifier {
         content
             .styleContext(.accessibilityRepresentable)
             .progressViewStyle(AccessibilityProgressViewStyle())
-            // TODO: Apply Picker, List, Slider, Stepper, GroupBox, ControlGroup,
+            .groupBoxStyle(AccessibilityGroupBoxStyle())
+            // TODO: Apply Picker, List, Slider, Stepper, ControlGroup,
             // and Menu styles when their protocols and configurations are available.
     }
 }
@@ -353,8 +354,19 @@ private struct AccessibilityControlStyle<Label>: View where Label: View {
     }
 }
 
-// TODO: AccessibilityMenuStyle, AccessibilityControlGroupStyle, and
-// AccessibilityGroupBoxStyle require their control style protocols and configurations.
+// TODO: AccessibilityMenuStyle and AccessibilityControlGroupStyle require their
+// control style protocols and configurations.
+
+// MARK: - AccessibilityGroupBoxStyle
+
+struct AccessibilityGroupBoxStyle: GroupBoxStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            configuration.content
+        }
+    }
+}
 
 // TODO: AccessibilityStepperStyle and AccessibilitySliderStyle require their
 // current control style configurations.
