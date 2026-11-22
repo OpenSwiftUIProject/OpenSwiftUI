@@ -2,7 +2,7 @@
 //  SeparatorShapeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 43B3709EE4A9B8504AC89AFCD0D99421
 
@@ -19,7 +19,9 @@ extension ShapeStyle where Self == SeparatorShapeStyle {
 /// You can also use ``ShapeStyle/separator`` to construct this style.
 public struct SeparatorShapeStyle: ShapeStyle {
     /// Creates a new separator shape style instance.
-    public init() {}
+    public init() {
+        _openSwiftUIEmptyStub()
+    }
 
     nonisolated public static func _makeView<S>(
         view: _GraphValue<_ShapeView<S, SeparatorShapeStyle>>,
@@ -27,27 +29,37 @@ public struct SeparatorShapeStyle: ShapeStyle {
     ) -> _ViewOutputs where S: Shape {
         legacyMakeShapeView(view: view, inputs: inputs)
     }
-
-    public typealias Resolved = Never
 }
 
 extension SeparatorShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         let environment = shape.environment
-        if let backgroundMaterial = environment.backgroundMaterial {
+        #if os(macOS)
+        shape.role = .fill
+        environment.defaultSeparatorShapeStyle._apply(to: &shape)
+        #else
+        #if os(visionOS)
+        let backgroundMaterial = environment.backgroundMaterial
+            ?? (environment.isVisionEnabled && environment.isPlatterPresent ? Material(.vibrantGlassContent) : nil)
+        #else
+        let backgroundMaterial = environment.backgroundMaterial
+        #endif
+        if let backgroundMaterial {
+            shape.role = .separator
             ForegroundMaterialStyle(material: backgroundMaterial)._apply(to: &shape)
         } else {
             let colorScheme = environment.colorScheme
             let colorSchemeContrast = environment.colorSchemeContrast
             let color = Color(
                 .sRGB,
-                red: colorScheme != .light ? 80 / 255 : 60 / 255,
-                green: colorScheme != .light ? 80 / 255 : 60 / 255,
+                red: colorScheme != .light ? 84 / 255 : 60 / 255,
+                green: colorScheme != .light ? 84 / 255 : 60 / 255,
                 blue: colorScheme != .light ? 88 / 255 : 67 / 255,
                 opacity: ((colorScheme != .light) ? 0.6 : 0.29) + ((colorSchemeContrast != .standard) ? 0.08 : 0.0)
             )
             color._apply(to: &shape)
         }
+        #endif
     }
 
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {

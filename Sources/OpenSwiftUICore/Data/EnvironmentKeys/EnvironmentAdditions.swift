@@ -788,6 +788,19 @@ private struct VerticalUserInterfaceSizeClassKey: EnvironmentKey {
     static var defaultValue: UserInterfaceSizeClass? { .regular }
 }
 
+#if os(visionOS)
+private struct IsPlatterPresentKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    package var isPlatterPresent: Bool {
+        get { self[IsPlatterPresentKey.self] }
+        set { self[IsPlatterPresentKey.self] = newValue }
+    }
+}
+#endif
+
 extension CachedEnvironment.ID {
     package static let horizontalSizeClass: CachedEnvironment.ID = .init()
 

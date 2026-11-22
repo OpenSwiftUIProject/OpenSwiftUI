@@ -60,19 +60,19 @@ extension Font {
     public static let caption3: Font = .system(.caption3)
 
     /// Create a font with the extra large title text style.
-    @available(visionOS 1.0, *)
+    @available(OpenSwiftUI_v5_0, *)
     @available(iOS, unavailable)
     @available(macOS, unavailable)
-    @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     public static let extraLargeTitle: Font = .system(.extraLargeTitle)
 
     /// Create a font with the second level extra large title text style.
-    @available(visionOS 1.0, *)
+    @available(OpenSwiftUI_v5_0, *)
     @available(iOS, unavailable)
     @available(macOS, unavailable)
-    @available(tvOS, unavailable)
     @available(watchOS, unavailable)
+    @available(tvOS, unavailable)
     public static let extraLargeTitle2: Font = .system(.extraLargeTitle2)
 
     /// Gets a system font that uses the specified style, design, and weight.

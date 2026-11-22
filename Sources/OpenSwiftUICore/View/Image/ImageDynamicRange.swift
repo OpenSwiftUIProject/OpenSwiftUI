@@ -132,8 +132,10 @@ extension EnvironmentValues {
     }
 }
 
-struct MaxAllowedDynamicRangeKey: BridgedEnvironmentKey {
-    static var defaultValue: Image.DynamicRange? { nil }
+extension EnvironmentValues {
+    package struct MaxAllowedDynamicRangeKey: BridgedEnvironmentKey {
+        package static var defaultValue: Image.DynamicRange? { nil }
+    }
 }
 
 @_spi(Private)

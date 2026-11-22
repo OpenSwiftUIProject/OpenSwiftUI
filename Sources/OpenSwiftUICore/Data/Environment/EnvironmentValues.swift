@@ -152,6 +152,14 @@ public struct EnvironmentValues: CustomStringConvertible {
         }
     }
     
+    package func getValue<K>(for key: K.Type) -> K.Value where K: EnvironmentKey {
+        if let tracker {
+            tracker.value(_plist, for: EnvironmentPropertyKey<K>.self)
+        } else {
+            _plist[EnvironmentPropertyKey<K>.self]
+        }
+    }
+
     /// Sets a value for the specified environment key.
     ///
     /// - Parameters:
@@ -204,16 +212,8 @@ public struct EnvironmentValues: CustomStringConvertible {
     ///     }
     ///
     public subscript<K>(key: K.Type) -> K.Value where K: EnvironmentKey {
-        get {
-            if let tracker {
-                tracker.value(_plist, for: EnvironmentPropertyKey<K>.self)
-            } else {
-                _plist[EnvironmentPropertyKey<K>.self]
-            }
-        }
-        set {
-            setValue(newValue, for: key)
-        }
+        get { getValue(for: key) }
+        set { setValue(newValue, for: key) }
     }
 
     /// Accesses the environment value associated with a derived environment key.

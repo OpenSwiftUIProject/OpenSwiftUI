@@ -149,6 +149,23 @@ package protocol BridgedEnvironmentResolver {
 }
 
 extension EnvironmentValues {
+    package subscript<K>(key: K.Type) -> K.Value where K: BridgedEnvironmentKey {
+        get {
+            if let resolver = bridgedEnvironmentResolver {
+                resolver.read(for: key, from: self)
+            } else {
+                getValue(for: key)
+            }
+        }
+        set {
+            if let resolver = bridgedEnvironmentResolver {
+                resolver.write(for: key, to: &self, value: newValue)
+            } else {
+                setValue(newValue, for: key)
+            }
+        }
+    }
+
     private struct BridgedEnvironmentResolverKey: EnvironmentKey {
         static var defaultValue: (any BridgedEnvironmentResolver.Type)? { nil }
     }

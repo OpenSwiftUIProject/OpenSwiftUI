@@ -135,7 +135,7 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     ///   - rhs: The second color to compare.
     /// - Returns: A Boolean that's set to `true` if the two colors are equal.
     public static func == (lhs: Color, rhs: Color) -> Bool {
-        lhs.provider.isEqual(to: rhs.provider)
+        lhs.provider === rhs.provider || lhs.provider.isEqual(to: rhs.provider)
     }
     
     public var description: String {

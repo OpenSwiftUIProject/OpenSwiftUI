@@ -8,6 +8,7 @@
 
 #if canImport(UIKit)
 import COpenSwiftUI
+@_spi(_)
 @_spi(ClarityBoard)
 @_spi(Private)
 package import OpenSwiftUICore
@@ -147,22 +148,70 @@ extension UITraitCollection {
         result.horizontalSizeClass = UserInterfaceSizeClass(horizontalSizeClass)
         result.verticalSizeClass = UserInterfaceSizeClass(verticalSizeClass)
         result.backgroundInfo.layer = userInterfaceLevel.rawValue
-        let displayCornerRadius = displayCornerRadius
-        if displayCornerRadius != _UITraitCollectionDisplayCornerRadiusUnspecified {
-            result.displayCornerRadius = displayCornerRadius
+        let radius = displayCornerRadius
+        result.displayCornerRadius = radius == _UITraitCollectionDisplayCornerRadiusUnspecified ? nil : radius
+        #if os(visionOS)
+        switch mrui_placementTarget?.anchoredPlane() {
+        case 1: result._anchoredPlane = .vertical
+        case 2: result._anchoredPlane = .horizontal
+        default: break
         }
+        if _pointsPerMeter != 0 {
+            result.pointsPerMeter = _pointsPerMeter
+        }
+        if _platterGroundingShadowVisibility != 0 {
+            result.platterGroundingShadowVisibility = switch _platterGroundingShadowVisibility {
+            case 1: .visible
+            case 2: .hidden
+            default: .automatic
+            }
+        }
+        result.isInOrnament = mrui_ornamentStatus
+        if userInterfaceIdiom == .vision {
+            result.isPlatterPresent = _platterStatus == 1
+            resolveContainerMaterial(into: &result)
+        }
+        if userInterfaceIdiom == .vision {
+            result.isVisionEnabled = true
+        }
+        #endif
         if _userInterfaceRenderingMode == 2 {
+            #if !os(visionOS)
             result.backgroundMaterial = .thick
+            #endif
             result.vibrantColorStyle = SystemVibrantColorStyle.self
         }
+        #if os(visionOS)
+        if _SemanticFeature_v6.isEnabled {
+            result.vibrantColorStyle = SystemVibrantColorStyle_Vision.self
+        }
+        #endif
         if _vibrancy == .vibrant,
            _SemanticFeature_v5.isEnabled,
            result.backgroundMaterial == nil {
             result.backgroundMaterial = .thick
+            #if os(visionOS)
+            resolveContainerMaterial(into: &result)
+            #endif
         }
         AccessibilityCore.UserSettings.resolve(into: &result)
         return result
     }
+
+    #if os(visionOS)
+    @inline(__always)
+    private func resolveContainerMaterial(into environment: inout EnvironmentValues) {
+        switch _containerVibrancy {
+        case 0: environment.backgroundMaterial = Material(.lighterGlass)
+        case 1: environment.backgroundMaterial = Material(.darkerGlass)
+        case 2: environment.backgroundMaterial = Material(.ultraDarkerGlass)
+        default: environment.backgroundMaterial = nil
+        }
+        if environment.backgroundMaterial == nil, environment.isPlatterPresent {
+            environment.backgroundMaterial = Material(.vibrantGlassContent)
+        }
+    }
+    #endif
 
     var viewPhase: ViewPhase {
         if let wrapper = _environmentWrapper,
@@ -223,6 +272,13 @@ extension UITraitCollection {
 }
 
 extension UIMutableTraits {
+    fileprivate var _headroomUsage: OpenSwiftUIHDRHeadroomUsage {
+        @_silgen_name("$s5UIKit15UIMutableTraitsPAAE14_headroomUsageSo014_UIHDRHeadroomE0Vvg")
+        get
+        @_silgen_name("$s5UIKit15UIMutableTraitsPAAE14_headroomUsageSo014_UIHDRHeadroomE0Vvs")
+        set
+    }
+
     var _vibrancy: _UIUserInterfaceVibrancy {
         @_silgen_name("$s5UIKit15UIMutableTraitsPAAE9_vibrancySo24_UIUserInterfaceVibrancyVvg")
         get
@@ -230,6 +286,35 @@ extension UIMutableTraits {
         set
     }
 }
+
+extension EnvironmentValues.MaxAllowedDynamicRangeKey: UITraitBridgedEnvironmentKey {
+    package static func read(from traitCollection: UITraitCollection) -> Image.DynamicRange? {
+        traitCollection._headroomUsage == .disabled ? .standard : nil
+    }
+
+    package static func write(to mutableTraits: inout any UIMutableTraits, value: Image.DynamicRange?) {
+        switch value?.storage {
+        case .standard:
+            mutableTraits._headroomUsage = .disabled
+        case .constrainedHigh, .high, nil:
+            mutableTraits._headroomUsage = .enabled
+        @unknown default:
+            _openSwiftUIUnreachableCode()
+        }
+    }
+}
+
+#if os(visionOS)
+extension PointScaleKey: UITraitBridgedEnvironmentKey {
+    package static func read(from traitCollection: UITraitCollection) -> PointScale {
+        PointScale(pointsPerMeter: traitCollection._pointsPerMeter)
+    }
+
+    package static func write(to mutableTraits: inout any UIMutableTraits, value: PointScale) {
+        _openSwiftUIEmptyStub()
+    }
+}
+#endif
 
 struct InheritedTraitCollectionKey: EnvironmentKey {
     static var defaultValue: UITraitCollection? { nil }
