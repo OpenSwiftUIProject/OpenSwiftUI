@@ -450,11 +450,11 @@ private func findValueWithSecondaryLookup<Lookup>(
     repeat {
         let skipFilter = currentElement.skipFilter
         guard skipFilter.mayContain(filter) || skipFilter.mayContain(secondaryFilter) else {
-            if currentElement.skip != nil {
-                continue
-            } else {
+            guard let skip = currentElement.skip else {
                 return nil
             }
+            currentElement = skip.takeUnretainedValue()
+            continue
         }
         if let before = currentElement.before {
             let result = findValueWithSecondaryLookup(

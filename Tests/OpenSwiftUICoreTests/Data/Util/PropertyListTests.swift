@@ -101,6 +101,11 @@ struct PropertyListTests {
         #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "42")
         plist[StringFromIntLookup.Primary.self] = "BB"
         #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "BB")
+
+        for _ in 0..<32 {
+            plist.prependValue(true, for: BoolKey.self)
+        }
+        #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "BB")
     }
 
     @Test
