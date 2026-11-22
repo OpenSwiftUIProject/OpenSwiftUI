@@ -2,7 +2,7 @@
 //  PropertyList.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
@@ -363,13 +363,14 @@ package struct PropertyList: CustomStringConvertible {
             let pointer = tuple.address(as: Element.self)
             var current: Element! = otherElements
             for index in 0 ..< copyCount {
-                pointer[index] = current
+                (pointer + index).initialize(to: current)
                 current = current.after
             }
             for index in 0 ..< copyCount {
                 let element = pointer[copyCount - index - 1]
                 elements = element.copy(before: element.before, after: elements)
             }
+            pointer.deinitialize(count: copyCount)
         }
     }
 
@@ -450,11 +451,11 @@ private func findValueWithSecondaryLookup<Lookup>(
     repeat {
         let skipFilter = currentElement.skipFilter
         guard skipFilter.mayContain(filter) || skipFilter.mayContain(secondaryFilter) else {
-            if currentElement.skip != nil {
-                continue
-            } else {
+            guard let skip = currentElement.skip else {
                 return nil
             }
+            currentElement = skip.takeUnretainedValue()
+            continue
         }
         if let before = currentElement.before {
             let result = findValueWithSecondaryLookup(
@@ -495,12 +496,12 @@ private func compareLists(
     guard lhsElement !== rhsElement else {
         return true
     }
-    guard lhsElement.matches(rhsElement, ignoredTypes: &ignoredTypes) else {
-        return false
-    }
     var currentLhsElement = lhsElement
     var currentRhsElement = rhsElement
     repeat {
+        guard currentLhsElement.matches(currentRhsElement, ignoredTypes: &ignoredTypes) else {
+            return false
+        }
         let lhsBefore = currentLhsElement.before
         let rhsBefore = currentRhsElement.before
         if let lhsBefore, let rhsBefore {
@@ -597,7 +598,7 @@ extension PropertyList {
                 let keyID = ObjectIdentifier(Lookup.Primary.self)
                 guard let trackedValue = data.values[keyID] else {
                     let value = plist.valueWithSecondaryLookup(secondaryLookupHandler)
-                    let trackedValue = SecondaryLookupTrackedValue<Lookup>(value: value)
+                    let trackedValue = SecondaryLookupTrackedValue<Lookup>(value)
                     data.values[keyID] = trackedValue
                     return value
                 }
@@ -796,7 +797,7 @@ private struct DerivedValue<Key>: AnyTrackedValue where Key: DerivedPropertyKey 
 private struct SecondaryLookupTrackedValue<Lookup>: AnyTrackedValue where Lookup: PropertyKeyLookup {
     var value: Lookup.Primary.Value
 
-    init(value: Lookup.Primary.Value) {
+    init(_ value: Lookup.Primary.Value) {
         self.value = value
     }
 
@@ -864,6 +865,16 @@ extension PropertyList {
             }
         }
 
+        deinit {
+            // Release a uniquely owned tail iteratively so long lists do not exhaust the stack.
+            var current: Element? = self
+            repeat {
+                guard let element = current else { break }
+                current = element.after
+                element.after = nil
+            } while isKnownUniquelyReferenced(&current)
+        }
+
         /// Executes a closure for each element that matches the filter.
         ///
         /// - Parameters:
@@ -902,7 +913,9 @@ extension PropertyList {
 
         /// A textual representation of the element.
         @usableFromInline
-        package var description: String { _openSwiftUIBaseClassAbstractMethod() }
+        package var description: String {
+            _openSwiftUIUnreachableCode()
+        }
 
         /// Checks if this element matches another element, ignoring specified types.
         ///
@@ -911,7 +924,7 @@ extension PropertyList {
         ///   - ignoredTypes: Types to ignore during comparison.
         /// - Returns: `true` if the elements match, otherwise `false`.
         fileprivate func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
-            _openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIUnreachableCode()
         }
 
         /// Creates a copy of this element with the specified before and after elements.
@@ -921,7 +934,7 @@ extension PropertyList {
         ///   - after: The element to link after this one.
         /// - Returns: A new element with the same value but different links.
         fileprivate func copy(before: Element?, after: Element?) -> Element {
-            _openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIUnreachableCode()
         }
 
         /// Extracts a value of the specified type from this element.

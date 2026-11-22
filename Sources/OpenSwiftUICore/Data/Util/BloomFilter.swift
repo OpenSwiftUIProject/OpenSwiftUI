@@ -2,8 +2,9 @@
 //  BloomFilter.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
+//  ID: EAD08B10536A579F94A338A4C016B0FF (SwiftUICore)
 
 /// A probabilistic data structure used to test whether an element is a member of a set.
 ///
@@ -12,7 +13,7 @@
 /// are not. Elements can be added to the set, but not removed.
 ///
 /// This implementation uses a simple bit array represented as a UInt and a hash function
-/// to set 3 different bits for each added element.
+/// to set up to three bits for each added element.
 package struct BloomFilter: Equatable {
     /// The internal bit representation of the Bloom filter.
     package var value: UInt
@@ -27,7 +28,7 @@ package struct BloomFilter: Equatable {
     ///
     /// - Parameter value: The hashable value to add to the filter.
     @inlinable
-    package init<T>(value: T) where T : Hashable {
+    package init<T>(value: T) where T: Hashable {
         self.init(hashValue: value.hashValue)
     }
     
@@ -59,14 +60,9 @@ package struct BloomFilter: Equatable {
         return value
     }
     
-    /// Tests whether another Bloom filter might be contained in this one.
+    /// Returns whether this filter contains every bit set in `other`.
     ///
-    /// Due to the probabilistic nature of Bloom filters, this method may return true
-    /// even when the other filter is not actually a subset (false positive). However,
-    /// if it returns false, then the other filter definitely contains elements not in this one.
-    ///
-    /// - Parameter other: Another Bloom filter to test against this one.
-    /// - Returns: `true` if the other filter might be contained in this one, `false` if it definitely is not.
+    /// Different inputs can set the same bits, so a match can be a false positive.
     @inlinable
     package func mayContain(_ other: BloomFilter) -> Bool {
         (other.value & ~value) == 0
@@ -80,18 +76,8 @@ package struct BloomFilter: Equatable {
         value == 0
     }
     
-    /// Creates a Bloom filter using a hash value.
-    ///
-    /// This initializer sets 3 different bits in the filter based on different parts of the hash value.
-    ///
-    /// - Parameter hashValue: The hash value to use for bit selection.
-    @inlinable
-    init(hashValue: Int) {
-        // Make sure we do LSR instead of ASR
-        let value = UInt(bitPattern: hashValue)
-        let bit0 = 1 &<< (value &>> 0x10)
-        let bit1 = 1 &<< (value &>> 0xa)
-        let bit2 = 1 &<< (value &>> 0x4)
-        self.value = bit0 | bit1 | bit2
+    private init(hashValue: Int) {
+        let bits = UInt(bitPattern: hashValue)
+        value = (1 &<< (bits >> 4)) | (1 &<< (bits >> 10)) | (1 &<< (bits >> 16))
     }
 }
