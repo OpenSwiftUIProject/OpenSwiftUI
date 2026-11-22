@@ -296,8 +296,29 @@ struct AccessibilitySliderModifier<Content>: AccessibilityConfigurationModifier 
     }
 }
 
-// TODO: AccessibilityGroupBoxLabelModifier
-// TODO: AccessibilityGroupBoxContentModifier
+// MARK: - AccessibilityGroupBoxLabelModifier
+
+struct AccessibilityGroupBoxLabelModifier<Content: View>: AccessibilityConfigurationModifier {
+    var namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        content
+            .accessibilityCombinedElement(options: [], ignoredTraits: [])
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityLabeledPair(role: .label, id: "groupBox", in: namespace)
+    }
+}
+
+// MARK: - AccessibilityGroupBoxContentModifier
+
+struct AccessibilityGroupBoxContentModifier<Content: View>: AccessibilityConfigurationModifier {
+    var namespace: Namespace.ID
+
+    func body(content: Content) -> some View {
+        content.accessibilityLabeledPair(role: .content, id: "groupBox", in: namespace)
+    }
+}
+
 // TODO: AccessibilityDisclosureModifier
 // TODO: AccessibilityTableCellModifier
 // TODO: AccessibilityListCoreCellModifier
