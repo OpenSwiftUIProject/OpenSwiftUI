@@ -598,7 +598,7 @@ extension PropertyList {
                 let keyID = ObjectIdentifier(Lookup.Primary.self)
                 guard let trackedValue = data.values[keyID] else {
                     let value = plist.valueWithSecondaryLookup(secondaryLookupHandler)
-                    let trackedValue = SecondaryLookupTrackedValue<Lookup>(value: value)
+                    let trackedValue = SecondaryLookupTrackedValue<Lookup>(value)
                     data.values[keyID] = trackedValue
                     return value
                 }
@@ -797,7 +797,7 @@ private struct DerivedValue<Key>: AnyTrackedValue where Key: DerivedPropertyKey 
 private struct SecondaryLookupTrackedValue<Lookup>: AnyTrackedValue where Lookup: PropertyKeyLookup {
     var value: Lookup.Primary.Value
 
-    init(value: Lookup.Primary.Value) {
+    init(_ value: Lookup.Primary.Value) {
         self.value = value
     }
 
