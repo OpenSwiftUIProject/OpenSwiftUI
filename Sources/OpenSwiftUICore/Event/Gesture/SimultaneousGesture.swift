@@ -149,12 +149,13 @@ private struct SimultaneousPreference<First, Second, Key>: Rule where First: Ges
 
     func mergedValue() -> Value? {
         var result: Value? = nil
-        if !phase1.isFailed {
+        if !phase1.isFailed, let value1 {
             result = value1
         }
-        if !phase2.isFailed {
-            if var value = result, let value2 {
+        if !phase2.isFailed, let value2 {
+            if var value = result {
                 Key.reduce(value: &value) { value2 }
+                result = value
             } else {
                 result = value2
             }
