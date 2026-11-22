@@ -410,27 +410,17 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// `Path.stringRepresentation`. Fails if the `string` does not
     /// describe a valid path.
     public init?(_ string: String) {
-        #if canImport(CoreGraphics)
         let mutablePath = CGMutablePath()
-        guard let utf8 = (string as NSString).utf8String,
-              _CGPathParseString(mutablePath, utf8) else {
+        guard string.withCString({ _CGPathParseString(mutablePath, $0) }) else {
             return nil
         }
         storage = .path(PathBox(mutablePath))
-        #else
-        _openSwiftUIPlatformUnimplementedWarning()
-        return nil
-        #endif
     }
 
     /// A description of the path that may be used to recreate the path
     /// via `init?(_:)`.
     public var description: String {
-        #if canImport(Darwin)
-        _CGPathCopyDescription(cgPath, 0.0) as String
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
+        String(cfString: _CGPathCopyDescription(cgPath, 0.0))
     }
 
     /// An immutable path representing the elements in the path.

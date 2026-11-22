@@ -108,6 +108,37 @@ struct PathTests {
     }
 
     @Test
+    func stringRepresentationAndParsing() {
+        #expect(Path().description == "inf inf m inf inf l inf inf l inf inf l h")
+
+        let validCases: [(String, String)] = [
+            ("100 0 m 200 100 l h", "100 0 m 200 100 l h"),
+            ("0 0 m 50 0 100 100 q", "0 0 m 50 0 100 100 q"),
+            ("0 0 m 25 0 75 100 100 100 c", "0 0 m 25 0 75 100 100 100 c"),
+            ("0 0 m 50 0 100 100 q 200 0 t", "0 0 m 50 0 100 100 q 150 200 200 0 q"),
+            ("0 0 m 50 50 100 100 v", "0 0 m 0 0 50 50 100 100 c"),
+            ("0 0 m 25 0 100 100 y", "0 0 m 25 0 100 100 100 100 c"),
+            ("10 20 30 40 re", "10 20 m 40 20 l 40 60 l 10 60 l h"),
+            ("-10 -20 m 0.5 1.5 l", "-10 -20 m 0.5 1.5 l"),
+            ("0\t0\nm\r\n100\t100\tl", "0 0 m 100 100 l"),
+            ("100 200m", "100 200 m"),
+            ("1.5e2 -2.5e1 m", "150 -25 m"),
+        ]
+
+        for (input, expected) in validCases {
+            let parsed = Path(input)
+            #expect(parsed != nil)
+            #expect(parsed?.description == expected)
+        }
+
+        #expect(Path("Inf -inf m") != nil)
+
+        for invalid in ["0 0 z", "0 m", "1 2 3 4 5 6 7 m", "10 20 rx"] {
+            #expect(Path(invalid) == nil)
+        }
+    }
+
+    @Test
     func appendingElementsPreservesControlsAndOriginalCopy() {
         var path = Path()
         path.move(to: CGPoint(x: 1, y: 2))
