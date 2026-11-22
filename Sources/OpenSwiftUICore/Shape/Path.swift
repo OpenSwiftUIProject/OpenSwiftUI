@@ -435,7 +435,6 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
     /// An immutable path representing the elements in the path.
     public var cgPath: CGPath {
-        #if canImport(CoreGraphics)
         switch storage {
         case .empty:
             return CGPath(rect: .null, transform: nil)
@@ -450,9 +449,6 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         case let .path(pathBox):
             return pathBox.cgPath
         }
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
     }
 
     package func retainRBPath() -> ORBPath {

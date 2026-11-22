@@ -3,11 +3,9 @@
 //  OpenSwiftUICoreTests
 
 import Foundation
+import OpenCoreGraphicsShims
 import OpenSwiftUICore
 import Testing
-#if canImport(CoreGraphics)
-import CoreGraphics
-#endif
 
 struct TrimmedPathTests {
     @Test
@@ -35,7 +33,6 @@ struct TrimmedPathTests {
         #expect(path.trimmedPath(from: from, to: to).isEmpty)
     }
 
-    #if canImport(CoreGraphics)
     @Test
     func partialRectangle() {
         let trimmedPath = Path(CGRect(x: 0, y: 0, width: 100, height: 100))
@@ -50,5 +47,4 @@ struct TrimmedPathTests {
         #expect(path.boundingBoxOfPath == expectedBounds)
         #expect(path.currentPoint == CGPoint(x: 100, y: 50))
     }
-    #endif
 }

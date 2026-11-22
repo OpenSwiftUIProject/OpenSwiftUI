@@ -197,7 +197,6 @@ struct FixedRoundedRectTests {
         #expect(roundedRect.contains(rect: CGRect(x: 200, y: 200, width: 10, height: 10)) == false)
     }
 
-    #if canImport(Darwin)
     @Test(arguments: [
         (CGPoint(x: 50, y: 50), true),   // Center point - inside
         (CGPoint(x: 200, y: 200), false), // Point clearly outside
@@ -217,6 +216,7 @@ struct FixedRoundedRectTests {
         #expect(roundedRect.contains(point) == expected)
     }
 
+    #if canImport(Darwin)
     @Test(arguments: [
         (CGRect(x: 0, y: 0, width: 100, height: 100), 10.0, RoundedCornerStyle.circular),
         (CGRect(x: 10, y: 20, width: 80, height: 60), 15.0, RoundedCornerStyle.continuous),

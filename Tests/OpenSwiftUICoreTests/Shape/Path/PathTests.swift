@@ -2,10 +2,8 @@
 //  PathTests.swift
 //  OpenSwiftUICoreTests
 
-#if canImport(CoreGraphics)
-import CoreGraphics
-#endif
 import Foundation
+import OpenCoreGraphicsShims
 @_spi(ForOpenSwiftUIOnly) @testable import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
@@ -71,7 +69,44 @@ struct PathTests {
         }
     }
 
-    #if canImport(CoreGraphics)
+    @Test
+    func cgPathAcrossStorages() {
+        #expect(Path().cgPath.boundingBoxOfPath == .null)
+
+        let rect = CGRect(x: 10, y: 20, width: 80, height: 40)
+        #expect(Path(rect).cgPath == CGPath(rect: rect, transform: nil))
+        let ellipseBounds = Path(ellipseIn: rect).cgPath.boundingBoxOfPath
+        #expect(abs(ellipseBounds.origin.x - 10) < 1e-6)
+        #expect(abs(ellipseBounds.origin.y - 20) < 1e-6)
+        #expect(abs(ellipseBounds.size.width - 80) < 1e-6)
+        #expect(abs(ellipseBounds.size.height - 40) < 1e-6)
+
+        let circular = Path(roundedRect: rect, cornerSize: CGSize(width: 10, height: 8), style: .circular).cgPath
+        let circularBounds = circular.boundingBoxOfPath
+        #expect(abs(circularBounds.origin.x - 10) < 1e-6)
+        #expect(abs(circularBounds.origin.y - 20) < 1e-6)
+        #expect(abs(circularBounds.size.width - 80) < 1e-6)
+        #expect(abs(circularBounds.size.height - 40) < 1e-6)
+        #expect(abs(circular.currentPoint.x - 90) < 1e-6)
+        #expect(abs(circular.currentPoint.y - 40) < 1e-6)
+
+        let continuous = Path(roundedRect: rect, cornerSize: CGSize(width: 10, height: 8), style: .continuous).cgPath
+        let continuousBounds = continuous.boundingBoxOfPath
+        #expect(abs(continuousBounds.origin.x - 10) < 1e-5)
+        #expect(abs(continuousBounds.origin.y - 20) < 1e-5)
+        #expect(abs(continuousBounds.size.width - 80) < 1e-5)
+        #expect(abs(continuousBounds.size.height - 40) < 1e-5)
+
+        let oversizedCircular = FixedRoundedRect(rect, cornerSize: CGSize(width: 100, height: 100), style: .circular).cgPath
+        #expect(abs(oversizedCircular.boundingBoxOfPath.size.width - 80) < 1e-6)
+        #expect(abs(oversizedCircular.boundingBoxOfPath.size.height - 40) < 1e-6)
+
+        var custom = Path()
+        custom.move(to: CGPoint(x: 2, y: 3))
+        custom.addLine(to: CGPoint(x: 12, y: 23))
+        #expect(custom.cgPath.boundingBoxOfPath == CGRect(x: 2, y: 3, width: 10, height: 20))
+    }
+
     @Test
     func appendingElementsPreservesControlsAndOriginalCopy() {
         var path = Path()
@@ -230,5 +265,4 @@ struct PathTests {
         #expect(path.contains(CGPoint(x: 25, y: 5)))
         #expect(original.boundingRect == CGRect(x: 0, y: 0, width: 10, height: 10))
     }
-    #endif
 }
