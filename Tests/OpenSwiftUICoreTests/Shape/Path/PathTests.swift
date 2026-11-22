@@ -46,6 +46,31 @@ struct PathTests {
         #expect(path.boundingRect == CGRect(x: 1, y: 2, width: 10, height: 20))
     }
 
+    @Test
+    func protobufRoundTrip() throws {
+        var customPath = Path()
+        customPath.move(to: CGPoint(x: 1, y: 2))
+        customPath.addLine(to: CGPoint(x: 3, y: 4))
+        customPath.addQuadCurve(to: CGPoint(x: 7, y: 8), control: CGPoint(x: 5, y: 6))
+        customPath.addCurve(to: CGPoint(x: 13, y: 14), control1: CGPoint(x: 9, y: 10), control2: CGPoint(x: 11, y: 12))
+        customPath.closeSubpath()
+
+        let cases: [Path] = [
+            Path(),
+            Path(CGRect(x: 1, y: 2, width: 30, height: 40)),
+            Path(ellipseIn: CGRect(x: 3, y: 4, width: 20, height: 10)),
+            Path(roundedRect: CGRect(x: 0, y: 0, width: 50, height: 30), cornerSize: CGSize(width: 6, height: 8), style: .continuous),
+            customPath,
+        ]
+
+        for original in cases {
+            let encoded = try ProtobufEncoder.encoding(original)
+            var decoder = ProtobufDecoder(encoded)
+            let decoded = try Path(from: &decoder)
+            #expect(decoded == original)
+        }
+    }
+
     #if canImport(CoreGraphics)
     @Test
     func appendingElementsPreservesControlsAndOriginalCopy() {

@@ -854,7 +854,7 @@ extension Path: ProtobufMessage {
             let rbPath = retainRBPath()
             defer { rbPath.release() }
             if let data = rbPath.data {
-                encoder.dataField(4, data as Data)
+                encoder.dataField(4, Data(cfData: data))
             }
         }
     }
@@ -871,7 +871,7 @@ extension Path: ProtobufMessage {
                 path.storage = .roundedRect(try decoder.messageField(field))
             case 4:
                 let data = try decoder.dataField(field)
-                path.storage = .path(PathBox(takingPath: ORBPath(data: data as CFData)))
+                path.storage = .path(PathBox(takingPath: ORBPath(data: data.cfData)))
             default:
                 try decoder.skipField(field)
             }
