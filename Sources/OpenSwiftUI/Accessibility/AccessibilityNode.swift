@@ -400,9 +400,12 @@ class AccessibilityNode: AccessibilityNodeBase {
 
     var isLabel: Bool {
         if traits[.isLabel, default: false] { return true }
-        guard relationshipScope != nil else { return false }
-        // TODO: Resolve labeled-pair content in the relationship scope.
-        _openSwiftUIUnimplementedFailure()
+        guard let relationshipScope else { return false }
+        return !relationshipScope.nodes(
+            for: .labeledPair(.label),
+            of: self,
+            returning: .labeledPair(.content)
+        ).isEmpty
     }
 
     var sortPriority: Double? {
@@ -572,12 +575,12 @@ class AccessibilityNode: AccessibilityNodeBase {
         to attachment: AccessibilityAttachment?
     ) {
         // TODO: Compute attachment notifications and post them on the main queue.
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
 
     private func scheduleNotifyForChildrenChange(fullReplacement: Bool) {
         // TODO: Schedule AccessibilityCore.ScreenChanged or LayoutChanged.
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
 
     func accessibilityCustomAttribute(_ name: String) -> Any? {
