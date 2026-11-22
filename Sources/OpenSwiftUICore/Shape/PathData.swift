@@ -2,7 +2,7 @@
 //  PathData.swift
 //  OpenSwiftUICore
 
-#if !OPENSWIFTUI_CF_CGTYPES
+#if !canImport(Darwin)
 
 package import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
