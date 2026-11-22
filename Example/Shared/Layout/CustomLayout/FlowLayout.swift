@@ -155,7 +155,7 @@ struct FlowLayoutDemo: View {
                 }
             }
             .padding()
-//            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
 //            GroupBox("Fixed width container (320)") {
 //                FlowLayout(spacing: 8, rowSpacing: 8, alignment: .center, maxRowWidth: 320) {
@@ -194,9 +194,8 @@ private struct TagChip: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(Color.accentColor.opacity(0.12), in: Capsule())
-            // TODO: strokePath is not supported yet.
-//            .overlay {
-//                Capsule().strokeBorder(Color.accentColor.opacity(0.35))
-//            }
+            .overlay {
+                Capsule().strokeBorder(Color.accentColor.opacity(0.35))
+            }
     }
 }

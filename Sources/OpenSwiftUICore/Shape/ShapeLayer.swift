@@ -3,14 +3,14 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP (Path classification and GraphicsContext rendering)
+//  Status: WIP (GraphicsContext rendering)
 //  ID: E19F490D25D5E0EC8A24903AF958E341 (SwiftUICore)
 
 import Foundation
 import OpenQuartzCoreShims
+import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 import UIFoundation_Private
-// import OpenRenderBoxShims
 
 // MARK: - ColorShapeLayer
 
@@ -873,13 +873,13 @@ extension DisplayList.ViewUpdater {
     }
 }
 
-// MARK: - ShapeType [WIP]
+// MARK: - ShapeType
 
 enum ShapeType {
+    case empty
     case rect(CGRect, radius: CGFloat, style: RoundedCornerStyle)
     case rectBorder(CGRect, radius: CGFloat, style: RoundedCornerStyle, lineWidth: CGFloat)
     case strokedPath(Path, style: StrokeStyle)
-    case empty
     case other
 
     init(_ path: Path) {
@@ -906,24 +906,145 @@ enum ShapeType {
             )
         case .stroked, .trimmed:
             self = .other
-        case .path:
-            // TODO: Classify RenderBox paths with initFromFilled.
+        case let .path(box):
             self = .other
+            struct Context {
+                var type: UnsafeMutablePointer<ShapeType>
+            }
+            withUnsafeMutablePointer(to: &self) { type in
+                var context = Context(type: type)
+                withUnsafeMutablePointer(to: &context) { ptr in
+                    box.withRBPath { rbPath in
+                        _ = rbPath.applyShape(allowLine: true, info: ptr) { ptr, type, shape in
+                            ptr.assumingMemoryBound(to: Context.self)
+                                .pointee.type.pointee
+                                .initFromFilled(type: type, shape: shape)
+                        }
+                    }
+                }
+            }
         }
     }
 
-//    private func initFromFilled(
-//        type: ORBPathShapeType,
-//        shape: UnsafePointer<ORBPathShape>
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    private func initFromStroked(
-//        type: ORBPathShapeType,
-//        shape: UnsafePointer<ORBPathShape>,
-//        style: StrokeStyle
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    private mutating func initFromFilled(
+        type: ORBPathShapeType,
+        shape: UnsafePointer<ORBPathShape>
+    ) {
+        switch type {
+        case .rect:
+            let rect = shape.pointee.rect
+            guard rect.transform.isRectilinear else {
+                return
+            }
+            self = .rect(
+                rect.rect.applying(rect.transform),
+                radius: 0.0,
+                style: .circular
+            )
+        case .fixedRoundedRect:
+            let roundedRect = shape.pointee.fixedRoundedRect
+            guard roundedRect.transform.isRectilinear else {
+                return
+            }
+            let rect = roundedRect.rect.applying(roundedRect.transform)
+            let cornerSize = roundedRect.cornerSize.applying(roundedRect.transform)
+            guard cornerSize.width == cornerSize.height else {
+                return
+            }
+            self = .rect(
+                rect,
+                radius: min(min(rect.width, rect.height) / 2, cornerSize.width),
+                style: roundedRect.style == .continuous ? .continuous : .circular
+            )
+        case .stroked:
+            let stroked = shape.pointee.stroked
+            guard !stroked.path.isEmpty else {
+                self = .empty
+                return
+            }
+            let style = StrokeStyle(stroked.style)
+            struct Context {
+                var type: UnsafeMutablePointer<ShapeType>
+                var style: StrokeStyle
+            }
+            withUnsafeMutablePointer(to: &self) { type in
+                var context = Context(type: type, style: style)
+                withUnsafeMutablePointer(to: &context) { ptr in
+                    _ = stroked.path.applyShape(allowLine: true, info: ptr) { ptr, type, shape in
+                        let context = ptr.assumingMemoryBound(to: Context.self)
+                        context.pointee.type.pointee.initFromStroked(
+                            type: type,
+                            shape: shape,
+                            style: context.pointee.style
+                        )
+                    }
+                }
+            }
+            guard case .other = self else {
+                return
+            }
+            self = .strokedPath(Path(stroked.path), style: style)
+        default:
+            return
+        }
+    }
+
+    private mutating func initFromStroked(
+        type: ORBPathShapeType,
+        shape: UnsafePointer<ORBPathShape>,
+        style: StrokeStyle
+    ) {
+        guard style.dash.isEmpty else {
+            return
+        }
+        switch type {
+        case .rect:
+            let rect = shape.pointee.rect
+            guard style.lineJoin == .miter,
+                  style.miterLimit > 1.4142,
+                  rect.transform.isIdentity
+            else {
+                return
+            }
+            self = .rectBorder(
+                rect.rect.insetBy(dx: -style.lineWidth / 2, dy: -style.lineWidth / 2),
+                radius: 0,
+                style: .circular,
+                lineWidth: style.lineWidth
+            )
+        case .ellipse:
+            let ellipse = shape.pointee.ellipse
+            guard ellipse.rect.width == ellipse.rect.height,
+                  ellipse.transform.isIdentity
+            else {
+                return
+            }
+            let baseRadius = ellipse.rect.width / 2
+            self = .rectBorder(
+                ellipse.rect.insetBy(dx: -style.lineWidth / 2, dy: -style.lineWidth / 2),
+                radius: baseRadius == 0 ? 0 : baseRadius + style.lineWidth / 2,
+                style: .circular,
+                lineWidth: style.lineWidth
+            )
+        case .fixedRoundedRect:
+            let roundedRect = shape.pointee.fixedRoundedRect
+            guard roundedRect.cornerSize.width == roundedRect.cornerSize.height,
+                  roundedRect.transform.isIdentity
+            else {
+                return
+            }
+            let baseRadius = min(
+                min(roundedRect.rect.width, roundedRect.rect.height) / 2,
+                roundedRect.cornerSize.width
+            )
+            self = .rectBorder(
+                roundedRect.rect.insetBy(dx: -style.lineWidth / 2, dy: -style.lineWidth / 2),
+                radius: baseRadius == 0 ? 0 : baseRadius + style.lineWidth / 2,
+                style: roundedRect.style == .continuous ? .continuous : .circular,
+                lineWidth: style.lineWidth
+            )
+        default:
+            return
+        }
+    }
 }

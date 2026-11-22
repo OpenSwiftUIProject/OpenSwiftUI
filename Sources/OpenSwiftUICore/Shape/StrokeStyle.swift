@@ -7,6 +7,9 @@
 
 public import Foundation
 public import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
+
+// MARK: - StrokeStyle
 
 /// The characteristics of a stroke that traces a path.
 @available(OpenSwiftUI_v1_0, *)
@@ -52,6 +55,8 @@ public struct StrokeStyle: Equatable {
     }
 }
 
+// MARK: - StrokeStyle + Animatable
+
 @available(OpenSwiftUI_v1_0, *)
 extension StrokeStyle: Animatable {
     public var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
@@ -63,5 +68,25 @@ extension StrokeStyle: Animatable {
             miterLimit = newValue.second.first
             dashPhase = newValue.second.second
         }
+    }
+}
+
+// MARK: - StrokeStyle + ORB
+
+extension StrokeStyle {
+    @inline(__always)
+    package init(_ style: ORBPathStrokeStyle) {
+        var dash: [CGFloat] = []
+        for i in 0 ..< Int(style.dashCount) {
+            dash.append(style.dash![i])
+        }
+        self.init(
+            lineWidth: style.lineWidth,
+            lineCap: style.lineCap,
+            lineJoin: style.lineJoin,
+            miterLimit: style.miterLimit,
+            dash: dash,
+            dashPhase: style.dashPhase
+        )
     }
 }

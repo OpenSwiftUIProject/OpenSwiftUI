@@ -42,11 +42,8 @@ struct FontPlayground: View {
             #if canImport(UIKit)
             Text("BackdropText")
                 .font(.headline)
-
-            #if !OPENSWIFTUI // FIXME: CGPath crash
             BackdropText()
                 .font(.custom("Avenir", size: 32).italic())
-            #endif
             #endif
 
             Text("Inter 4.1: slant × weight")
@@ -457,3 +454,7 @@ private extension UIFont {
     }
 }
 #endif
+
+#Preview {
+    FontPlayground()
+}

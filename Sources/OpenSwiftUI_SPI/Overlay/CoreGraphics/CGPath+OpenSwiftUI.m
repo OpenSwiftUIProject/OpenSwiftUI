@@ -1,144 +1,173 @@
 //
 //  CGPath+OpenSwiftUI.m
 //  OpenSwiftUI_SPI
+//
+//  Audited for 6.5.4
+//  Status: Complete
 
 #import "CGPath+OpenSwiftUI.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#import <Foundation/Foundation.h>
-#import <CoreGraphics/CoreGraphics.h>
-#import <xlocale.h>
-
 #include <OpenRenderBoxShims/OpenRenderBoxShims.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <xlocale.h>
 
-BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
+bool _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
     double numbers[6];
     int numCount = 0;
     CGFloat currentX = 0.0, currentY = 0.0;
     CGFloat lastControlX = 0.0, lastControlY = 0.0;
-    const char *ptr = utf8CString;
-    do {
-        while (*ptr <= 0x1f) {
-            switch (*ptr) {
-            case 0: return true;
-            case 9: case 10: case 12: case 13: ptr++; break;
-            default: return false;
-            }
-        }
-        unsigned char c = (unsigned char)*ptr;
-        BOOL isNumberStart = NO;
-        switch (c) {
-            case ' ': break;
-            case '+': case '-': case '.': case '0' ... '9':
-            case 'E': case 'P': case 'X': case 'e': case 'p': case 'x':
-                isNumberStart = YES;
-                break;
-            case 'I':
-                if (ptr[1] == 'n' && ptr[2] == 'f') { isNumberStart = YES; }
-                break;
-            case 'm':
-                if (numCount != 2) return NO;
-                CGPathMoveToPoint(path, NULL,
-                                  numbers[0], numbers[1]);
-                currentX = lastControlX = numbers[0];
-                currentY = lastControlY = numbers[1];
-                numCount = 0;
-                break;
-            case 'l':
-                if (numCount != 2) return NO;
-                CGPathAddLineToPoint(path, NULL,
-                                     numbers[0], numbers[1]);
-                currentX = lastControlX = numbers[0];
-                currentY = lastControlY = numbers[1];
-                numCount = 0;
-                break;
-            case 'c':
-                if (numCount != 6) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3],
-                                      numbers[4], numbers[5]);
-                lastControlX = numbers[2];
-                lastControlY = numbers[3];
-                currentX = numbers[4];
-                currentY = numbers[5];
-                numCount = 0;
-                break;
-            case 'q':
-                if (numCount != 4) return NO;
-                CGPathAddQuadCurveToPoint(path, NULL,
-                                          numbers[0], numbers[1],
-                                          numbers[2], numbers[3]);
-                lastControlX = numbers[0];
-                lastControlY = numbers[1];
-                currentX = numbers[2];
-                currentY = numbers[3];
-                numCount = 0;
-                break;
-            case 't':
-                if (numCount != 2) return NO;
-                CGFloat reflectedX = currentX * 2.0 - lastControlX;
-                CGFloat reflectedY = currentY * 2.0 - lastControlY;
-                CGPathAddQuadCurveToPoint(path, NULL,
-                                            reflectedX, reflectedY,
-                                            numbers[0], numbers[1]);
-                lastControlX = reflectedX;
-                lastControlY = reflectedY;
-                currentX = numbers[0];
-                currentY = numbers[1];
-                numCount = 0;
-                break;
-            case 'v':
-                if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      currentX, currentY,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3]);
-                lastControlX = numbers[0];
-                lastControlY = numbers[1];
-                currentX = numbers[2];
-                currentY = numbers[3];
-                numCount = 0;
-                break;
-            case 'y':
-                if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3],
-                                      numbers[2], numbers[3]);
-                lastControlX = numbers[2];
-                lastControlY = numbers[3];
-                numCount = 0;
-                break;
-            case 'h':
-                if (numCount != 0) return NO;
-                CGPathCloseSubpath(path);
-                lastControlX = 0.0;
-                lastControlY = 0.0;
-                numCount = 0;
-                break;
-            case 'r':
-                if (ptr[1] != 'e') return NO;
-                if (numCount != 4) return NO;
-                CGPathAddRect(path, NULL,
-                              CGRectMake(numbers[0], numbers[1],
-                                         numbers[2], numbers[3]));
-                ptr++;
-                numCount = 0;
+    while (1) {
+        unsigned char c;
+        while ((c = (unsigned char)*utf8CString) <= 0x1f) {
+            switch (c) {
+            case 0:
+                return true;
+            case 9:
+            case 10:
+            case 12:
+            case 13:
+                utf8CString++;
                 break;
             default:
                 return false;
+            }
+        }
+        bool isNumberStart = false;
+        switch (c) {
+        case ' ':
+            break;
+        case '+':
+        case '-':
+        case '.':
+        case '0' ... '9':
+        case 'E':
+        case 'P':
+        case 'X':
+        case 'e':
+        case 'p':
+        case 'x':
+            isNumberStart = true;
+            break;
+        case 'I':
+            if (utf8CString[1] == 'n' && utf8CString[2] == 'f') {
+                isNumberStart = true;
+            }
+            break;
+        case 'm':
+            if (numCount != 2) return false;
+            CGPathMoveToPoint(path, NULL, numbers[0], numbers[1]);
+            currentX = lastControlX = numbers[0];
+            currentY = lastControlY = numbers[1];
+            numCount = 0;
+            break;
+        case 'l':
+            if (numCount != 2) return false;
+            CGPathAddLineToPoint(path, NULL, numbers[0], numbers[1]);
+            currentX = lastControlX = numbers[0];
+            currentY = lastControlY = numbers[1];
+            numCount = 0;
+            break;
+        case 'c':
+            if (numCount != 6) return false;
+            CGPathAddCurveToPoint(
+                path, NULL,
+                numbers[0], numbers[1],
+                numbers[2], numbers[3],
+                numbers[4], numbers[5]
+            );
+            lastControlX = numbers[2];
+            lastControlY = numbers[3];
+            currentX = numbers[4];
+            currentY = numbers[5];
+            numCount = 0;
+            break;
+        case 'q':
+            if (numCount != 4) return false;
+            CGPathAddQuadCurveToPoint(
+                path, NULL,
+                numbers[0], numbers[1],
+                numbers[2], numbers[3]
+            );
+            lastControlX = numbers[0];
+            lastControlY = numbers[1];
+            currentX = numbers[2];
+            currentY = numbers[3];
+            numCount = 0;
+            break;
+        case 't': {
+            if (numCount != 2) return false;
+            CGFloat reflectedX = currentX * 2.0 - lastControlX;
+            CGFloat reflectedY = currentY * 2.0 - lastControlY;
+            CGPathAddQuadCurveToPoint(
+                path, NULL,
+                reflectedX, reflectedY,
+                numbers[0], numbers[1]
+            );
+            lastControlX = reflectedX;
+            lastControlY = reflectedY;
+            currentX = numbers[0];
+            currentY = numbers[1];
+            numCount = 0;
+            break;
+        }
+        case 'v':
+            if (numCount != 4) return false;
+            CGPathAddCurveToPoint(
+                path, NULL,
+                currentX, currentY,
+                numbers[0], numbers[1],
+                numbers[2], numbers[3]
+            );
+            lastControlX = numbers[0];
+            lastControlY = numbers[1];
+            currentX = numbers[2];
+            currentY = numbers[3];
+            numCount = 0;
+            break;
+        case 'y':
+            if (numCount != 4) return false;
+            CGPathAddCurveToPoint(
+                path, NULL,
+                numbers[0], numbers[1],
+                numbers[2], numbers[3],
+                numbers[2], numbers[3]
+            );
+            currentX = numbers[2];
+            currentY = numbers[3];
+            numCount = 0;
+            break;
+        case 'h':
+            if (numCount != 0) return false;
+            CGPathCloseSubpath(path);
+            currentX = 0.0;
+            currentY = 0.0;
+            break;
+        case 'r':
+            if (utf8CString[1] != 'e') return false;
+            if (numCount != 4) return false;
+            CGPathAddRect(
+                path, NULL,
+                CGRectMake(numbers[0], numbers[1], numbers[2], numbers[3])
+            );
+            currentX = numbers[2];
+            currentY = numbers[3];
+            utf8CString++;
+            numCount = 0;
+            break;
+        default:
+            return false;
         }
         if (isNumberStart) {
             if (numCount == 6) return false;
-            char *endPtr;
-            numbers[numCount++] = strtod_l(ptr, &endPtr, NULL);
-            ptr = endPtr;
+            numbers[numCount++] = strtod_l(utf8CString, (char **)&utf8CString, NULL);
         } else {
-            ptr++;
+            utf8CString++;
         }
-    } while (1);
+    }
 }
 
 typedef struct PathInfo {
@@ -147,111 +176,87 @@ typedef struct PathInfo {
     CGFloat inverseStep;
 } PathInfo;
 
-#define APPEND_COORD(coord) do { \
-    CGFloat value = (coord); \
-    if (path_info->step != 0.0) { \
-        value = path_info->step * round(value * path_info->inverseStep); \
-    } \
-    char buffer[64]; \
-    snprintf_l(buffer, 64, NULL, "%g ", value); \
-    CFStringAppendCString(path_info->description, buffer, kCFStringEncodingUTF8); \
-} while (0)
-
-#define APPEND_POINTS(count) do { \
-    for (int i = 0; i < (count); i++) { \
-        APPEND_COORD(element->points[i].x); \
-        APPEND_COORD(element->points[i].y); \
-    } \
-} while (0)
-
-void copy_path_iter(void * __nullable info, const CGPathElement * element) {
+static void copy_path_iter(void * _Nullable info, const CGPathElement *element) {
     PathInfo *path_info = (PathInfo *)info;
-    if (path_info->description != NULL) {
+    if (CFStringGetLength(path_info->description) != 0) {
         CFStringAppend(path_info->description, CFSTR(" "));
     }
     UniChar ch;
+    int count;
     switch (element->type) {
-        case kCGPathElementMoveToPoint:
-            APPEND_POINTS(1);
-            ch = 'm';
-            break;
-        case kCGPathElementAddLineToPoint:
-            APPEND_POINTS(1);
-            ch = 'l';
-            break;
-        case kCGPathElementAddQuadCurveToPoint:
-            APPEND_POINTS(2);
-            ch = 'q';
-            break;
-        case kCGPathElementAddCurveToPoint:
-            APPEND_POINTS(3);
-            ch = 'c';
-            break;
-        case kCGPathElementCloseSubpath:
-            ch = 'h';
-            break;
-        default:
-            return;
+    case kCGPathElementMoveToPoint:
+        ch = 'm';
+        count = 2;
+        break;
+    case kCGPathElementAddLineToPoint:
+        ch = 'l';
+        count = 2;
+        break;
+    case kCGPathElementAddQuadCurveToPoint:
+        ch = 'q';
+        count = 4;
+        break;
+    case kCGPathElementAddCurveToPoint:
+        ch = 'c';
+        count = 6;
+        break;
+    case kCGPathElementCloseSubpath:
+        ch = 'h';
+        count = 0;
+        break;
+    default:
+        return;
+    }
+    #pragma clang loop unroll(disable)
+    for (int i = 0; i < count; i++) {
+        CGFloat value = ((const CGFloat *)element->points)[i];
+        if (path_info->step != 0.0) {
+            value = path_info->step * round(value * path_info->inverseStep);
+        }
+        char buffer[64];
+        snprintf_l(buffer, sizeof(buffer), NULL, "%g ", value);
+        CFStringAppendCString(path_info->description, buffer, kCFStringEncodingUTF8);
     }
     CFStringAppendCharacters(path_info->description, &ch, 1);
 }
 
-#undef APPEND_COORD
-#undef APPEND_POINTS
-
-NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step) {
+CFStringRef _CGPathCopyDescription(CGPathRef path, CGFloat step) {
     PathInfo info = {
-        CFStringCreateMutable(kCFAllocatorDefault, 0),
+        CFStringCreateMutable(NULL, 0),
         step,
         1.0 / step
     };
-    CGPathApply(path, &info, &copy_path_iter);
-    return (__bridge_transfer NSString *)(info.description);
+    CGPathApply(path, &info, copy_path_iter);
+    return info.description;
 }
 
-CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, PathRoundedCornerStyle style) {
-    // Clamp corner dimensions to be non-negative
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, bool continuous) {
     if (cornerWidth < 0.0) {
         cornerWidth = 0.0;
     }
     if (cornerHeight < 0.0) {
         cornerHeight = 0.0;
     }
-
-    // If either corner dimension is 0, or rect is empty, return a plain rectangle
     if (cornerWidth == 0.0 || cornerHeight == 0.0 || CGRectIsEmpty(rect)) {
         return CGPathCreateWithRect(rect, NULL);
     }
-
-    if (style == PathRoundedCornerStyleContinuous) {
+    if (continuous) {
         ORBPath rbPath = ORBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, ORBPathRoundedCornerStyleContinuous, NULL);
         CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
         ORBPathRelease(rbPath);
         return cgPath;
     }
-
-    // Use CoreGraphics path creation (circular style)
     CGFloat width = CGRectGetWidth(rect);
     CGFloat height = CGRectGetHeight(rect);
-
-    // Clamp cornerWidth to at most half the width
     if (cornerWidth * 2.0 > width) {
         cornerWidth = nextafter(width * 0.5, 0.0);
     }
-
-    // Clamp cornerHeight to at most half the height
     if (cornerHeight * 2.0 > height) {
         cornerHeight = nextafter(height * 0.5, 0.0);
     }
-
-    // Final validation
-    if (cornerWidth < 0.0 || cornerWidth * 2.0 > width) {
+    if (cornerWidth < 0.0 || cornerWidth * 2.0 > width || cornerHeight < 0.0 || cornerHeight * 2.0 > height) {
         return CGPathCreateWithRect(rect, NULL);
     }
-    if (cornerHeight < 0.0 || cornerHeight * 2.0 > height) {
-        return CGPathCreateWithRect(rect, NULL);
-    }
-
     return CGPathCreateWithRoundedRect(rect, cornerWidth, cornerHeight, NULL);
 }
 

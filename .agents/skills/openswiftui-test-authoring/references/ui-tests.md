@@ -6,6 +6,9 @@ Follow the nearest test under `Example/Tests/OpenSwiftUIUITests`.
 
 - Exercise public API through rendered example content. Add or change shared
   example content only when the requested UI test needs an entry point.
+- Prefer examples from official DocC documentation and SDK doc comments for the
+  target API when authoring shared examples and UI snapshot cases, adapting
+  only as needed for deterministic sizing, layout, or supported dependencies.
 - Use the existing snapshot helpers, suite traits, and platform guards instead of
   introducing a parallel harness.
 - Make layout, state, and timing deterministic enough that the snapshot represents

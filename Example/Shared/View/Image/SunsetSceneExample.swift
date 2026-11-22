@@ -427,11 +427,10 @@ private struct BadgeView: View {
                 Capsule()
                     .fill(Color.black.opacity(0.3))
             }
-            // TODO: strokePath is not supported yet.
-//            .overlay {
-//                Capsule()
-//                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-//            }
+            .overlay {
+                Capsule()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            }
             .padding(.bottom, 40)
         }
     }

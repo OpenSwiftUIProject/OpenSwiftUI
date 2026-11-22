@@ -2,12 +2,12 @@
 //  FlowerView.swift
 //  Shared
 
+import Foundation
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
 import SwiftUI
 #endif
-import Foundation
 
 struct FlowerView: View {
     var body: some View {
@@ -43,4 +43,12 @@ struct FlowerViewAnimation: View {
         .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: animate)
         .task { animate = true }
     }
+}
+
+#Preview("Static") {
+    FlowerView()
+}
+
+#Preview("Animated") {
+    FlowerViewAnimation()
 }

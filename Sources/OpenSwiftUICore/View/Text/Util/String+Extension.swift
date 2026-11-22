@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+package import CoreFoundation
 package import Foundation
 
 // MARK: - String + Extension
@@ -76,3 +77,29 @@ extension NSAttributedString {
     }
 }
 #endif
+
+/* OpenSwiftUI Addition Begin */
+
+// MARK: - String + CFString
+
+extension String {
+    @inline(__always)
+    package init(cfString: CFString) {
+        #if canImport(Darwin)
+        self = cfString as String
+        #else
+        self = unsafeBitCast(cfString, to: NSString.self) as String
+        #endif
+    }
+
+    @inline(__always)
+    package var cfString: CFString {
+        #if canImport(Darwin)
+        self as CFString
+        #else
+        unsafeBitCast(self as NSString, to: CFString.self)
+        #endif
+    }
+}
+
+/* OpenSwiftUI Addition End */

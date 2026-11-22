@@ -1,7 +1,9 @@
 //
 //  CGPath+OpenSwiftUITests.swift
 //  OpenSwiftUI_SPITests
+//
 
+import Foundation
 import OpenSwiftUI_SPI
 import Testing
 
@@ -15,25 +17,25 @@ struct CGPath_OpenSwiftUITests {
     struct ParseString {
         @Test(arguments: [
             // m - move to
-            ("100 0 m 200 100 l h", true, " 100 0 m 200 100 l h"),
+            ("100 0 m 200 100 l h", true, "100 0 m 200 100 l h"),
             // l - line to (multiple)
-            ("0 0 m 100 0 l 100 100 l 0 100 l h", true, " 0 0 m 100 0 l 100 100 l 0 100 l h"),
+            ("0 0 m 100 0 l 100 100 l 0 100 l h", true, "0 0 m 100 0 l 100 100 l 0 100 l h"),
             // q - quad curve
-            ("0 0 m 50 0 100 100 q", true, " 0 0 m 50 0 100 100 q"),
+            ("0 0 m 50 0 100 100 q", true, "0 0 m 50 0 100 100 q"),
             // c - cubic curve
-            ("0 0 m 25 0 75 100 100 100 c", true, " 0 0 m 25 0 75 100 100 100 c"),
+            ("0 0 m 25 0 75 100 100 100 c", true, "0 0 m 25 0 75 100 100 100 c"),
             // v - smooth cubic (cp1 = current point)
-            ("0 0 m 50 50 100 100 v", true, " 0 0 m 0 0 50 50 100 100 c"),
+            ("0 0 m 50 50 100 100 v", true, "0 0 m 0 0 50 50 100 100 c"),
             // y - shorthand cubic (cp2 = endpoint)
-            ("0 0 m 25 0 100 100 y", true, " 0 0 m 25 0 100 100 100 100 c"),
+            ("0 0 m 25 0 100 100 y", true, "0 0 m 25 0 100 100 100 100 c"),
             // re - rectangle
-            ("10 20 30 40 re", true, " 10 20 m 40 20 l 40 60 l 10 60 l h"),
+            ("10 20 30 40 re", true, "10 20 m 40 20 l 40 60 l 10 60 l h"),
             // Negative numbers
-            ("-10 -20 m 30 40 l", true, " -10 -20 m 30 40 l"),
+            ("-10 -20 m 30 40 l", true, "-10 -20 m 30 40 l"),
             // Decimal numbers
-            ("0.5 1.5 m 2.5 3.5 l", true, " 0.5 1.5 m 2.5 3.5 l"),
+            ("0.5 1.5 m 2.5 3.5 l", true, "0.5 1.5 m 2.5 3.5 l"),
             // Whitespace variants (tab, newline)
-            ("0\t0\nm\n100\t100\tl", true, " 0 0 m 100 100 l"),
+            ("0\t0\nm\n100\t100\tl", true, "0 0 m 100 100 l"),
             // Invalid: unknown command
             ("0 0 z", false, ""),
             // Invalid: wrong number of parameters
@@ -46,7 +48,7 @@ struct CGPath_OpenSwiftUITests {
             let result = _CGPathParseString(path, input)
             #expect(result == expectedResult)
             if expectedResult {
-                let description = _CGPathCopyDescription(path, 0)
+                let description = _CGPathCopyDescription(path, 0) as String
                 #expect(description == expectedString)
             }
         }
@@ -56,11 +58,11 @@ struct CGPath_OpenSwiftUITests {
 
     struct CopyDescription {
         @Test(arguments: [
-            (0.0, " 100 0 m 189.5 189.5 l 0 189.5 l h"),
-            (1.0, " 100 0 m 190 190 l 0 190 l h"),
-            (2.0, " 100 0 m 190 190 l 0 190 l h"),
-            (3.0, " 99 0 m 189 189 l 0 189 l h"),
-            (4.0, " 100 0 m 188 188 l 0 188 l h"),
+            (0.0, "100 0 m 189.5 189.5 l 0 189.5 l h"),
+            (1.0, "100 0 m 190 190 l 0 190 l h"),
+            (2.0, "100 0 m 190 190 l 0 190 l h"),
+            (3.0, "99 0 m 189 189 l 0 189 l h"),
+            (4.0, "100 0 m 188 188 l 0 188 l h"),
         ])
         func copyDescription(step: Double, expected: String) {
             let path = CGMutablePath()
@@ -68,7 +70,7 @@ struct CGPath_OpenSwiftUITests {
             path.addLine(to: CGPoint(x: 189.5, y: 189.5))
             path.addLine(to: CGPoint(x: 0, y: 189.5))
             path.closeSubpath()
-            let description = _CGPathCopyDescription(path, step)
+            let description = _CGPathCopyDescription(path, step) as String
             #expect(description == expected)
         }
 
@@ -77,8 +79,8 @@ struct CGPath_OpenSwiftUITests {
             let path = CGMutablePath()
             path.move(to: CGPoint(x: 0, y: 0))
             path.addQuadCurve(to: CGPoint(x: 100, y: 100), control: CGPoint(x: 50, y: 0))
-            let description = _CGPathCopyDescription(path, 1)
-            #expect(description == " 0 0 m 50 0 100 100 q")
+            let description = _CGPathCopyDescription(path, 1) as String
+            #expect(description == "0 0 m 50 0 100 100 q")
         }
 
         @Test
@@ -86,8 +88,8 @@ struct CGPath_OpenSwiftUITests {
             let path = CGMutablePath()
             path.move(to: CGPoint(x: 0, y: 0))
             path.addCurve(to: CGPoint(x: 100, y: 100), control1: CGPoint(x: 25, y: 0), control2: CGPoint(x: 75, y: 100))
-            let description = _CGPathCopyDescription(path, 1)
-            #expect(description == " 0 0 m 25 0 75 100 100 100 c")
+            let description = _CGPathCopyDescription(path, 1) as String
+            #expect(description == "0 0 m 25 0 75 100 100 100 c")
         }
     }
 
@@ -97,32 +99,31 @@ struct CGPath_OpenSwiftUITests {
         @Test
         func zeroCornerWidth() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 0, 10, .circular)
-            #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
+            let path = _CGPathCreateRoundedRect(rect, 0, 10, false)
+            #expect((_CGPathCopyDescription(path, 0) as String) == "0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func zeroCornerHeight() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 10, 0, .circular)
-            #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
+            let path = _CGPathCreateRoundedRect(rect, 10, 0, false)
+            #expect((_CGPathCopyDescription(path, 0) as String) == "0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func negativeCornerValues() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, -5, -5, .circular)
-            #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
+            let path = _CGPathCreateRoundedRect(rect, -5, -5, false)
+            #expect((_CGPathCopyDescription(path, 0) as String) == "0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func emptyRect() {
             let rect = CGRect(x: 0, y: 0, width: 0, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 10, 10, .circular)
-            #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 0 0 l 0 50 l 0 50 l h")
+            let path = _CGPathCreateRoundedRect(rect, 10, 10, false)
+            #expect((_CGPathCopyDescription(path, 0) as String) == "0 0 m 0 0 l 0 50 l 0 50 l h")
         }
     }
 }
 
 #endif
-

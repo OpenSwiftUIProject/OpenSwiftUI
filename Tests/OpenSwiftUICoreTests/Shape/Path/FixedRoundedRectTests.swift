@@ -1,236 +1,210 @@
 //
 //  FixedRoundedRectTests.swift
-//  OpenSwiftUITests
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
 import Foundation
+import OpenCoreGraphicsShims
+@testable import OpenSwiftUICore
 import Testing
 
+@Suite(.tags(.aigc))
 struct FixedRoundedRectTests {
-    // MARK: - Initialization
+
+    // MARK: - Initialization & Properties
 
     @Test
-    func initWithRect() {
+    func initializersAndEquality() {
         let rect = CGRect(x: 10, y: 20, width: 100, height: 50)
-        let roundedRect = FixedRoundedRect(rect)
-        #expect(roundedRect.rect == rect)
-        #expect(roundedRect.cornerSize == .zero)
-        #expect(roundedRect.style == .circular)
+        let plain = FixedRoundedRect(rect)
+        #expect(plain.rect == rect)
+        #expect(plain.cornerSize == .zero)
+        #expect(plain.style == .circular)
+
+        let uniform = FixedRoundedRect(rect, cornerRadius: 12, style: .circular)
+        #expect(uniform == FixedRoundedRect(rect, cornerSize: CGSize(width: 12, height: 12), style: .circular))
+        #expect(uniform != FixedRoundedRect(rect, cornerRadius: 12, style: .continuous))
+        #expect(uniform != FixedRoundedRect(rect, cornerRadius: 15, style: .circular))
+    }
+
+    @Test(arguments: [
+        (CGSize.zero, RoundedCornerStyle.circular, false, true, false),
+        (CGSize(width: 10, height: 10), .circular, true, true, false),
+        (CGSize(width: 10, height: 10), .continuous, true, true, true),
+        (CGSize.zero, .continuous, false, true, false),
+        (CGSize(width: 10, height: 0), .circular, true, false, false),
+    ])
+    func cornerFlags(
+        cornerSize: CGSize,
+        style: RoundedCornerStyle,
+        isRounded: Bool,
+        isUniform: Bool,
+        needsContinuousCorners: Bool
+    ) {
+        let value = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 50), cornerSize: cornerSize, style: style)
+        #expect(value.isRounded == isRounded)
+        #expect(value.isUniform == isUniform)
+        #expect(value.needsContinuousCorners == needsContinuousCorners)
+    }
+
+    @Test(arguments: [
+        (CGSize(width: 10, height: 15), CGSize(width: 10, height: 15), 10.0),
+        (CGSize(width: 30, height: 30), CGSize(width: 25, height: 25), 25.0),
+        (CGSize(width: 40, height: 10), CGSize(width: 25, height: 10), 25.0),
+    ])
+    func clampedCornerDimensions(input: CGSize, expectedSize: CGSize, expectedRadius: CGFloat) {
+        let value = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 50), cornerSize: input, style: .circular)
+        #expect(value.clampedCornerSize == expectedSize)
+        #expect(value.clampedCornerRadius == expectedRadius)
+    }
+
+    // MARK: - Transforms & Insets
+
+    @Test(arguments: [
+        (CGSize.zero, CGRect(x: 0, y: 0, width: 100, height: 50), CGSize(width: 10, height: 10)),
+        (CGSize(width: 5, height: 12), CGRect(x: 5, y: 12, width: 90, height: 26), CGSize(width: 5, height: 0)),
+        (CGSize(width: 60, height: 30), nil as CGRect?, nil as CGSize?),
+    ])
+    func insetBy(delta: CGSize, expectedRect: CGRect?, expectedCornerSize: CGSize?) {
+        let base = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 50), cornerRadius: 10, style: .circular)
+        let result = base.insetBy(dx: delta.width, dy: delta.height)
+        #expect(result?.rect == expectedRect)
+        #expect(result?.cornerSize == expectedCornerSize)
     }
 
     @Test
-    func initWithCornerSize() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let cornerSize = CGSize(width: 10, height: 15)
-        let roundedRect = FixedRoundedRect(rect, cornerSize: cornerSize, style: .continuous)
-        #expect(roundedRect.rect == rect)
-        #expect(roundedRect.cornerSize == cornerSize)
-        #expect(roundedRect.style == .continuous)
-    }
-
-    @Test
-    func initWithCornerRadius() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let roundedRect = FixedRoundedRect(rect, cornerRadius: 12, style: .circular)
-        #expect(roundedRect.rect == rect)
-        #expect(roundedRect.cornerSize == CGSize(width: 12, height: 12))
-        #expect(roundedRect.style == .circular)
-    }
-
-    // MARK: - Properties
-
-    @Test
-    func isRounded() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let notRounded = FixedRoundedRect(rect)
-        #expect(notRounded.isRounded == false)
-
-        let rounded = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        #expect(rounded.isRounded == true)
-
-        let partiallyRounded = FixedRoundedRect(rect, cornerSize: CGSize(width: 5, height: 0), style: .circular)
-        #expect(partiallyRounded.isRounded == true)
-    }
-
-    @Test
-    func isUniform() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let uniform = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        #expect(uniform.isUniform == true)
-
-        let nonUniform = FixedRoundedRect(rect, cornerSize: CGSize(width: 10, height: 15), style: .circular)
-        #expect(nonUniform.isUniform == false)
-    }
-
-    @Test
-    func needsContinuousCorners() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let circularRounded = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        #expect(circularRounded.needsContinuousCorners == false)
-
-        let continuousRounded = FixedRoundedRect(rect, cornerRadius: 10, style: .continuous)
-        #expect(continuousRounded.needsContinuousCorners == true)
-
-        let continuousNotRounded = FixedRoundedRect(rect, cornerRadius: 0, style: .continuous)
-        #expect(continuousNotRounded.needsContinuousCorners == false)
-    }
-
-    @Test
-    func clampedCornerSize() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        // Corner size fits within rect
-        let normal = FixedRoundedRect(rect, cornerSize: CGSize(width: 10, height: 10), style: .circular)
-        #expect(normal.clampedCornerSize == CGSize(width: 10, height: 10))
-
-        // Corner size exceeds half of smaller dimension (height=50, so max=25)
-        let oversized = FixedRoundedRect(rect, cornerSize: CGSize(width: 30, height: 30), style: .circular)
-        #expect(oversized.clampedCornerSize == CGSize(width: 25, height: 25))
-
-        // Non-uniform corner size
-        let nonUniform = FixedRoundedRect(rect, cornerSize: CGSize(width: 40, height: 10), style: .circular)
-        #expect(nonUniform.clampedCornerSize == CGSize(width: 25, height: 10))
-    }
-
-    @Test
-    func clampedCornerRadius() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let normal = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        #expect(normal.clampedCornerRadius == 10)
-
-        let oversized = FixedRoundedRect(rect, cornerRadius: 30, style: .circular)
-        #expect(oversized.clampedCornerRadius == 25)
-    }
-
-    // MARK: - Equality
-
-    @Test
-    func equality() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let a = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        let b = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-        let c = FixedRoundedRect(rect, cornerRadius: 10, style: .continuous)
-        let d = FixedRoundedRect(rect, cornerRadius: 15, style: .circular)
-        #expect(a == b)
-        #expect(a != c)
-        #expect(a != d)
-    }
-
-    // MARK: - Transformations
-
-    @Test
-    func insetBy() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let roundedRect = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-
-        let inset = roundedRect.insetBy(dx: 5, dy: 5)
-        #expect(inset != nil)
-        #expect(inset?.rect == CGRect(x: 5, y: 5, width: 90, height: 40))
-        #expect(inset?.cornerSize == CGSize(width: 5, height: 5))
-
-        // Zero inset returns self
-        let noInset = roundedRect.insetBy(dx: 0, dy: 0)
-        #expect(noInset == roundedRect)
-
-        // Inset that makes rect empty returns nil
-        let tooMuchInset = roundedRect.insetBy(dx: 60, dy: 30)
-        #expect(tooMuchInset == nil)
-    }
-
-    @Test
-    func hasIntersection() {
-        let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-        let roundedRect = FixedRoundedRect(rect, cornerRadius: 10, style: .circular)
-
-        #expect(roundedRect.hasIntersection(CGRect(x: 50, y: 25, width: 20, height: 10)) == true)
-        #expect(roundedRect.hasIntersection(CGRect(x: 200, y: 200, width: 20, height: 10)) == false)
-        #expect(roundedRect.hasIntersection(CGRect(x: 90, y: 40, width: 20, height: 20)) == true)
-    }
-
-    // MARK: - Contains
-
-    @Test
-    func containsFixedRoundedRect() {
-        let outer = FixedRoundedRect(
-            CGRect(x: 0, y: 0, width: 100, height: 100),
-            cornerRadius: 10,
-            style: .circular
+    func applyingAffineTransformPreservesCornerSigns() {
+        let base = FixedRoundedRect(
+            CGRect(x: 10, y: 20, width: 40, height: 30),
+            cornerSize: CGSize(width: -4, height: 6),
+            style: .continuous
         )
-        let inner = FixedRoundedRect(
-            CGRect(x: 10, y: 10, width: 80, height: 80),
-            cornerRadius: 5,
-            style: .circular
-        )
-        let outside = FixedRoundedRect(
-            CGRect(x: 200, y: 200, width: 50, height: 50),
-            cornerRadius: 5,
-            style: .circular
+        let scaled = base.applying(CGAffineTransform(scaleX: -2, y: 3))
+        #expect(scaled.rect == CGRect(x: -100, y: 60, width: 80, height: 90))
+        #expect(scaled.cornerSize == CGSize(width: -8, height: 18))
+        #expect(scaled.style == .continuous)
+    }
+
+    // MARK: - Intersection & Containment
+
+    @Test(arguments: [
+        (CGRect(x: 50, y: 25, width: 20, height: 10), true),
+        (CGRect(x: 90, y: 40, width: 20, height: 20), true),
+        (CGRect(x: 200, y: 200, width: 20, height: 10), false),
+    ])
+    func hasIntersection(query: CGRect, expected: Bool) {
+        let base = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 50), cornerRadius: 10, style: .circular)
+        #expect(base.hasIntersection(query) == expected)
+    }
+
+    @Test(arguments: [
+        (CGPoint(x: 50, y: 50), true),   // Center
+        (CGPoint(x: 50, y: 1), true),    // Near top edge
+        (CGPoint(x: 5, y: 5), true),     // Inside rounded corner
+        (CGPoint(x: 1, y: 1), false),    // Cut off by top-left corner
+        (CGPoint(x: 99, y: 99), false),  // Cut off by bottom-right corner
+        (CGPoint(x: 200, y: 200), false),
+    ])
+    func containsPoint(point: CGPoint, expected: Bool) {
+        let rounded = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 100), cornerRadius: 10, style: .circular)
+        #expect(rounded.contains(point) == expected)
+    }
+
+    enum ContainedShapeKind: CaseIterable, Sendable {
+        case innerRect
+        case outerRect
+        case circleEllipse
+        case nonCircleEllipse
+        case innerRoundedRect
+        case customLinePath
+    }
+
+    @Test(arguments: ContainedShapeKind.allCases)
+    func containsPathWithOffset(kind: ContainedShapeKind) {
+        let container = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 100), cornerRadius: 20, style: .circular)
+        let offset = CGSize(width: 10, height: 10)
+
+        let (candidate, expected): (Path, Bool) = switch kind {
+        case .innerRect:
+            (Path(CGRect(x: 10, y: 10, width: 60, height: 60)), true)
+        case .outerRect:
+            (Path(CGRect(x: 0, y: 0, width: 95, height: 95)), false)
+        case .circleEllipse:
+            // Circle of diameter 100 at (-10, -10) shifts to (0, 0, 100, 100) with radius 50 >= 20
+            (Path(ellipseIn: CGRect(x: -10, y: -10, width: 100, height: 100)), true)
+        case .nonCircleEllipse:
+            (Path(ellipseIn: CGRect(x: 10, y: 20, width: 60, height: 40)), true)
+        case .innerRoundedRect:
+            (Path(roundedRect: CGRect(x: 10, y: 10, width: 60, height: 60), cornerRadius: 5, style: .circular), true)
+        case .customLinePath:
+            (Path { p in p.move(to: CGPoint(x: 10, y: 10)); p.addLine(to: CGPoint(x: 50, y: 50)) }, true)
+        }
+
+        #expect(container.contains(path: candidate, offsetBy: offset) == expected)
+    }
+
+    @Test
+    func containsUsesShortestDimensionForClamping() {
+        let pill = FixedRoundedRect(CGRect(x: 0, y: 0, width: 100, height: 20), cornerSize: CGSize(width: 50, height: 10), style: .circular)
+        #expect(pill.contains(rect: CGRect(x: 4, y: 4, width: 92, height: 12)))
+        #expect(!pill.contains(rect: CGRect(x: 1, y: 1, width: 98, height: 18)))
+    }
+
+    // MARK: - CGPath & Protobuf
+
+    @Test(arguments: [RoundedCornerStyle.circular, .continuous])
+    func cgPathAndProtobufRoundTrip(style: RoundedCornerStyle) throws {
+        let original = FixedRoundedRect(
+            CGRect(x: 5, y: 10, width: 80, height: 40),
+            cornerSize: CGSize(width: 8, height: 6),
+            style: style
         )
 
-        #expect(outer.contains(inner) == true)
-        #expect(outer.contains(outside) == false)
-        #expect(inner.contains(outer) == false)
+        let bounds = original.cgPath.boundingBoxOfPath
+        #expect(abs(bounds.origin.x - 5) < 1e-5)
+        #expect(abs(bounds.origin.y - 10) < 1e-5)
+        #expect(abs(bounds.size.width - 80) < 1e-5)
+        #expect(abs(bounds.size.height - 40) < 1e-5)
+
+        let encoded = try ProtobufEncoder.encoding(original)
+        var decoder = ProtobufDecoder(encoded)
+        let decoded = try FixedRoundedRect(from: &decoder)
+        #expect(decoded == original)
+
+        #expect(RoundedCornerStyle(protobufValue: style.protobufValue) == style)
+        #expect(RoundedCornerStyle(protobufValue: 99) == nil)
     }
 
-    @Test
-    func containsFixedRoundedRectUsesShortestDimension() {
-        let outer = FixedRoundedRect(
-            CGRect(x: 0, y: 0, width: 100, height: 20),
-            cornerSize: CGSize(width: 50, height: 10),
-            style: .circular
-        )
-        let inner = FixedRoundedRect(
-            CGRect(x: 4, y: 4, width: 92, height: 12)
-        )
-
-        #expect(outer.contains(inner))
-    }
+    // MARK: - RectangleCornerRadii
 
     @Test
-    func containsRect() {
-        let roundedRect = FixedRoundedRect(
-            CGRect(x: 0, y: 0, width: 100, height: 100),
-            cornerRadius: 10,
-            style: .circular
-        )
+    func rectangleCornerRadiiAccessorsAndAnimatableData() {
+        var radii = RectangleCornerRadii(topLeading: 1, bottomLeading: 2, bottomTrailing: 3, topTrailing: 4)
+        #expect(radii.topLeft == 1)
+        #expect(radii.bottomLeft == 2)
+        #expect(radii.bottomRight == 3)
+        #expect(radii.topRight == 4)
 
-        #expect(roundedRect.contains(rect: CGRect(x: 20, y: 20, width: 60, height: 60)) == true)
-        #expect(roundedRect.contains(rect: CGRect(x: 200, y: 200, width: 10, height: 10)) == false)
+        radii.topLeading = 10
+        radii.bottomLeading = 20
+        radii.bottomTrailing = 30
+        radii.topTrailing = 40
+
+        var copy = RectangleCornerRadii()
+        copy.animatableData = radii.animatableData
+        #expect(copy == radii)
     }
 
     #if canImport(Darwin)
     @Test(arguments: [
-        (CGPoint(x: 50, y: 50), true),   // Center point - inside
-        (CGPoint(x: 200, y: 200), false), // Point clearly outside
-        (CGPoint(x: 50, y: 1), true),    // Near top edge - inside
-        (CGPoint(x: 1, y: 50), true),    // Near left edge - inside
-        (CGPoint(x: 5, y: 5), true),     // Corner region - inside rounded corner
-        (CGPoint(x: 1, y: 1), false),    // Corner - outside due to rounding
-        (CGPoint(x: 99, y: 99), false),  // Bottom-right corner - outside due to rounding
-        (CGPoint(x: 95, y: 95), true),   // Bottom-right corner region - inside
-    ] as [(CGPoint, Bool)])
-    func containsPoint(point: CGPoint, expected: Bool) {
-        let roundedRect = FixedRoundedRect(
-            CGRect(x: 0, y: 0, width: 100, height: 100),
-            cornerRadius: 10,
-            style: .circular
-        )
-        #expect(roundedRect.contains(point) == expected)
-    }
-
-    @Test(arguments: [
         (CGRect(x: 0, y: 0, width: 100, height: 100), 10.0, RoundedCornerStyle.circular),
         (CGRect(x: 10, y: 20, width: 80, height: 60), 15.0, RoundedCornerStyle.continuous),
-        (CGRect(x: 0, y: 0, width: 50, height: 50), 5.0, RoundedCornerStyle.circular),
-    ] as [(CGRect, CGFloat, RoundedCornerStyle)])
-    func withTemporaryPath(rect: CGRect, cornerRadius: CGFloat, style: RoundedCornerStyle) {
+        (CGRect(x: 10, y: 20, width: -80, height: -60), 15.0, RoundedCornerStyle.circular),
+    ])
+    func withTemporaryPathPreservesRawRect(rect: CGRect, cornerRadius: CGFloat, style: RoundedCornerStyle) {
         let roundedRect = FixedRoundedRect(rect, cornerRadius: cornerRadius, style: style)
-        let boundingRect = roundedRect.withTemporaryPath { path in
-            path.storage.boundingRect
-        }
-        #expect(boundingRect.origin.x == rect.origin.x)
-        #expect(boundingRect.origin.y == rect.origin.y)
-        #expect(boundingRect.size.width == rect.size.width)
-        #expect(boundingRect.size.height == rect.size.height)
+        let boundingRect = roundedRect.withTemporaryPath { $0.storage.boundingRect }
+        #expect(boundingRect.origin == rect.origin)
+        #expect(boundingRect.size == rect.size)
     }
     #endif
 }

@@ -1,5 +1,5 @@
 {
-  "originHash" : "d835df14202f1ad0c0bb332af55103cb7665747f71aa0a62b293817ac1d9e66a",
+  "originHash" : "459c86ed5ed6171cedbd2fe012f83881dbd0c3cccccdd9d5f335fc1a88e79b0e",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "5a8c0cb54ae37cccad0e222b51f4d7bee928b709"
+        "revision" : "211a9a3d6c2021dd3e8953892131abe06b26bb6f"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "3440823f9b2580dcd3795373214521efc37628b8"
+        "revision" : "89eb70998d076c52c11ada3c5cebefce6d8b1954"
       }
     },
     {
@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "0bb9980ad7aab62231913c659d1909a95e50c5b4"
+        "revision" : "f49e3003ad898f72ddcd5c378ecc95692613b83a"
       }
     },
     {
@@ -67,7 +67,7 @@
     {
       "identity" : "symbollocator",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
+      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator",
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"

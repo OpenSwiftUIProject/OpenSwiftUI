@@ -2,8 +2,8 @@
 //  BackgroundStyleUITests.swift
 //  OpenSwiftUIUITests
 
-import Testing
 import SnapshotTesting
+import Testing
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
@@ -95,8 +95,7 @@ struct BackgroundStyleUITests {
         openSwiftUIAssertSnapshot(of: ContentView())
     }
 
-    // FIXME
-    @Test(.disabled("Shape color does not match"))
+    @Test
     func backgroundWithContent() {
         struct ContentView: View {
             var body: some View {

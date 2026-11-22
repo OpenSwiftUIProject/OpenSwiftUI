@@ -26,6 +26,7 @@ XCODEWORKSPACE="$PROJECT_ROOT/Workspace.xcworkspace"
 # If --archs is omitted for an SDK, all default architectures are built.
 SDKS=()
 SDK_ARCHS=()
+SWIFT_SYMBOL_SETTINGS=()
 DEBUG_MODE=false
 RUN_TUIST_INSTALL=true
 CLEAN_DERIVED_DATA=true
@@ -53,6 +54,7 @@ Options:
   --compute               Build OpenAttributeGraphShims with the Compute source backend.
   --skip-tuist-install    Skip tuist install.
   --keep-derived-data     Reuse DerivedData from a previous build.
+  --keep-swift-symbols    Keep Swift symbol names for local binary inspection.
   --framework <name>      Build one framework. May be passed multiple times.
   --help                  Show this help.
 
@@ -100,6 +102,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --keep-derived-data)
             CLEAN_DERIVED_DATA=false
+            shift
+            ;;
+        --keep-swift-symbols)
+            SWIFT_SYMBOL_SETTINGS=(STRIP_SWIFT_SYMBOLS=NO)
             shift
             ;;
         --framework)
@@ -489,6 +495,7 @@ prebuild_compute_framework() {
         SKIP_INSTALL=NO
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES
         SWIFT_EMIT_MODULE_INTERFACE=YES
+        "${SWIFT_SYMBOL_SETTINGS[@]}"
         ENABLE_USER_SCRIPT_SANDBOXING=NO
     )
 
@@ -540,6 +547,7 @@ build_framework() {
         SKIP_INSTALL=NO
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES
         SWIFT_EMIT_MODULE_INTERFACE=YES
+        "${SWIFT_SYMBOL_SETTINGS[@]}"
         "SWIFT_ACTIVE_COMPILATION_CONDITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD"
         "GCC_PREPROCESSOR_DEFINITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD=1"
         ENABLE_USER_SCRIPT_SANDBOXING=NO

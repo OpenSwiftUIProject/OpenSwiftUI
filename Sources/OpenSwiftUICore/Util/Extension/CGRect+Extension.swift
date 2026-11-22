@@ -149,9 +149,9 @@ extension CGRect {
     package var cornerPoints: [CGPoint] {
         [
             origin,
-            origin.offsetBy(dx: width),
-            origin.offsetBy(dx: width, dy: height),
-            origin.offsetBy(dy: height),
+            CGPoint(x: origin.x + size.width, y: origin.y),
+            CGPoint(x: origin.x + size.width, y: origin.y + size.height),
+            CGPoint(x: origin.x, y: origin.y + size.height),
         ]
     }
     
