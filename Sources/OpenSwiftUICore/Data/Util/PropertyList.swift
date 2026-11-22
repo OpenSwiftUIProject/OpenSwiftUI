@@ -363,13 +363,14 @@ package struct PropertyList: CustomStringConvertible {
             let pointer = tuple.address(as: Element.self)
             var current: Element! = otherElements
             for index in 0 ..< copyCount {
-                pointer[index] = current
+                (pointer + index).initialize(to: current)
                 current = current.after
             }
             for index in 0 ..< copyCount {
                 let element = pointer[copyCount - index - 1]
                 elements = element.copy(before: element.before, after: elements)
             }
+            pointer.deinitialize(count: copyCount)
         }
     }
 
