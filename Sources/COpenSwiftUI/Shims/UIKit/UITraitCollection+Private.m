@@ -27,6 +27,11 @@
     return func(self, selector);
 }
 
+- (OpenSwiftUIHDRHeadroomUsage)_headroomUsage_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(OpenSwiftUIHDRHeadroomUsage, @"_headroomUsage", OpenSwiftUIHDRHeadroomUsageUnspecified);
+    return func(self, selector);
+}
+
 - (CGFloat)displayCornerRadius_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(CGFloat, @"displayCornerRadius", 0.0);
     return func(self, selector);
@@ -36,6 +41,38 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(_UIUserInterfaceVibrancy, @"_vibrancy", _UIUserInterfaceVibrancyUnspecified);
     return func(self, selector);
 }
+
+#if OPENSWIFTUI_TARGET_OS_VISION
+- (RSSPlacementTarget *)mrui_placementTarget_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(RSSPlacementTarget *, @"mrui_placementTarget", nil);
+    return func(self, selector);
+}
+
+- (CGFloat)_pointsPerMeter_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(CGFloat, @"_pointsPerMeter", 0);
+    return func(self, selector);
+}
+
+- (NSInteger)_platterGroundingShadowVisibility_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSInteger, @"_platterGroundingShadowVisibility", 0);
+    return func(self, selector);
+}
+
+- (BOOL)mrui_ornamentStatus_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"mrui_ornamentStatus", NO);
+    return func(self, selector);
+}
+
+- (NSInteger)_containerVibrancy_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSInteger, @"_containerVibrancy", -1);
+    return func(self, selector);
+}
+
+- (NSInteger)_platterStatus_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSInteger, @"_platterStatus", 0);
+    return func(self, selector);
+}
+#endif
 
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 - (BLSUpdateFidelity)_updateFidelity_openswiftui_safe_wrapper {
