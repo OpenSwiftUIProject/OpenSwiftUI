@@ -496,12 +496,12 @@ private func compareLists(
     guard lhsElement !== rhsElement else {
         return true
     }
-    guard lhsElement.matches(rhsElement, ignoredTypes: &ignoredTypes) else {
-        return false
-    }
     var currentLhsElement = lhsElement
     var currentRhsElement = rhsElement
     repeat {
+        guard currentLhsElement.matches(currentRhsElement, ignoredTypes: &ignoredTypes) else {
+            return false
+        }
         let lhsBefore = currentLhsElement.before
         let rhsBefore = currentRhsElement.before
         if let lhsBefore, let rhsBefore {
