@@ -108,6 +108,38 @@ struct PropertyListTests {
         #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "BB")
     }
 
+    // Releasing the long prefix must preserve the shared tail. Without Element.deinit,
+    // ARC releases the prefix recursively and overflows the stack, causing SIGBUS on macOS.
+    @Test
+    func releaseLongPrefixWithSharedTail() async throws {
+        #if os(macOS) || os(Linux) || os(Windows)
+        await #expect(processExitsWith: .success) {
+            try PropertyListTests.checkLongPrefixRelease()
+        }
+        #else
+        try Self.checkLongPrefixRelease()
+        #endif
+    }
+
+    private static func checkLongPrefixRelease() throws {
+        var sharedTail = PropertyList()
+        sharedTail[IntKey.self] = 42
+        sharedTail[BoolKey.self] = true
+
+        weak var oldestPrefixElement: AnyObject?
+        do {
+            var list = sharedTail
+            list.prependValue(0, for: IntKey.self)
+            oldestPrefixElement = list.data
+            for value in 1..<100_000 {
+                list.prependValue(value, for: IntKey.self)
+            }
+        }
+
+        try #require(oldestPrefixElement == nil)
+        try #require(sharedTail[IntKey.self] == 42)
+    }
+
     @Test
     func description() {
         var plist = PropertyList()

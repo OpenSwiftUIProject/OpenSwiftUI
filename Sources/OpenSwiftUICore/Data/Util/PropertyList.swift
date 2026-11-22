@@ -865,6 +865,16 @@ extension PropertyList {
             }
         }
 
+        deinit {
+            // Release a uniquely owned tail iteratively so long lists do not exhaust the stack.
+            var current: Element? = self
+            repeat {
+                guard let element = current else { break }
+                current = element.after
+                element.after = nil
+            } while isKnownUniquelyReferenced(&current)
+        }
+
         /// Executes a closure for each element that matches the filter.
         ///
         /// - Parameters:
@@ -903,7 +913,9 @@ extension PropertyList {
 
         /// A textual representation of the element.
         @usableFromInline
-        package var description: String { _openSwiftUIBaseClassAbstractMethod() }
+        package var description: String {
+            _openSwiftUIUnreachableCode()
+        }
 
         /// Checks if this element matches another element, ignoring specified types.
         ///
@@ -912,7 +924,7 @@ extension PropertyList {
         ///   - ignoredTypes: Types to ignore during comparison.
         /// - Returns: `true` if the elements match, otherwise `false`.
         fileprivate func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
-            _openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIUnreachableCode()
         }
 
         /// Creates a copy of this element with the specified before and after elements.
@@ -922,7 +934,7 @@ extension PropertyList {
         ///   - after: The element to link after this one.
         /// - Returns: A new element with the same value but different links.
         fileprivate func copy(before: Element?, after: Element?) -> Element {
-            _openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIUnreachableCode()
         }
 
         /// Extracts a value of the specified type from this element.

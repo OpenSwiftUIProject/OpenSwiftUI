@@ -301,7 +301,7 @@ package func _openSwiftUIUnreachableCode(_ function: String = #function, file: S
 
 @_transparent
 package func _openSwiftUIBaseClassAbstractMethod(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
-    preconditionFailure("", file: file, line: line)
+    preconditionFailure("abstract", file: file, line: line)
 }
 
 @_transparent
