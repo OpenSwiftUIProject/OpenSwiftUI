@@ -9,7 +9,6 @@ import SwiftUI
 #endif
 import Foundation
 
-// FIXME
 struct ConditionalContentExample: View {
     @State private var first = true
 

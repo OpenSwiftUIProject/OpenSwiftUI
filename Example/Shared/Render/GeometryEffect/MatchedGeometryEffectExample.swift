@@ -50,8 +50,7 @@ struct MatchedGeometryEffectModifierExample: View {
             }
         }
         .frame(width: 250).padding(10)
-        // TODO: strokePath not implemented
-//        .border(Color.gray, width: 3)
+        .border(Color.gray, width: 3)
     }
 }
 
@@ -93,8 +92,7 @@ struct MatchedGeometryEffectClipShapeModifierExample: View {
             }
         }
         .frame(width: 250).padding(10)
-        // TODO: strokePath not implemented
-//        .border(Color.gray, width: 3)
+        .border(Color.gray, width: 3)
     }
 }
 
