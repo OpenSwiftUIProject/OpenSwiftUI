@@ -314,11 +314,11 @@ private struct MaterialBaseColorKey: EnvironmentKey {
     static var defaultValue: Color? { nil }
 }
 
-@available(visionOS 1.0, *)
+@available(OpenSwiftUI_v5_0, *)
 @available(iOS, unavailable)
 @available(macOS, unavailable)
-@available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(tvOS, unavailable)
 extension EnvironmentValues {
     @usableFromInline
     var materialBaseColor: Color? {
