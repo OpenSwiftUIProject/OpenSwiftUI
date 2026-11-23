@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 1B53C0F89ECCB35331EE688D023E3AF9 (SwiftUICore)
 
-#if os(macOS) && OPENSWIFTUI_LINK_COREUI
+#if os(macOS)
 import OpenAttributeGraphShims
 
 // MARK: - AppearanceAssetReadingView
