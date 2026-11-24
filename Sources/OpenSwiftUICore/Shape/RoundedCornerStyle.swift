@@ -73,6 +73,22 @@ package struct FixedRoundedRect: Equatable {
         min(min(rect.width, rect.height) / 2, cornerSize.width)
     }
 
+    #if os(WASI)
+    package var wasiUniformCornerRadius: CGFloat? {
+        let rect = rect.standardized
+        guard isUniform,
+              cornerSize.width.isFinite, cornerSize.width >= 0,
+              !rect.isEmpty, rect.minX.isFinite, rect.minY.isFinite,
+              rect.maxX.isFinite, rect.maxY.isFinite else { return nil }
+        return min(rect.width / 2, rect.height / 2, cornerSize.width)
+    }
+
+    // The web renderer and hit test use circular corner geometry as a fast path.
+    package var wasiCircularCornerRadius: CGFloat? {
+        style == .circular ? wasiUniformCornerRadius : nil
+    }
+    #endif
+
     #if canImport(Darwin)
     package func withTemporaryPath<R>(_ body: (ORBPath) -> R) -> R {
         ORBPath.withTemporaryPath(do: body) { pointer in

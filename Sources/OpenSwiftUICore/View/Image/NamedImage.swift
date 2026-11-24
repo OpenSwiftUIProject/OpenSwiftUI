@@ -900,9 +900,60 @@ extension Image {
                     return resolveBitmap(key: key, info: info, in: context)
                 }
             }
+            #elseif os(WASI)
+            switch location {
+            case .system, .privateSystem:
+                return resolveWASISystemSymbol(in: context)
+            case .bundle:
+                break
+            }
             #endif
             return resolveError(in: context.environment)
         }
+
+        #if os(WASI)
+        private func resolveWASISystemSymbol(in context: ImageResolutionContext) -> Image.Resolved {
+            let env = context.environment
+            let traits: Font.ResolvedTraits
+            if let textStyle = context.textStyle {
+                traits = textStyle.fontTraits(in: env)
+            } else {
+                traits = env.effectiveSymbolFont.resolveTraits(in: env)
+            }
+            let scaleFactor: CGFloat = switch env.imageScale {
+            case .small, ._controlCenter_small: 0.85
+            case .medium, ._controlCenter_medium, ._watch_toolbar_medium: 1.0
+            case .large, ._controlCenter_large: 1.25
+            default: 1.0
+            }
+            let symbolSize = max(traits.pointSize * scaleFactor, 10.0)
+            let graphicsImage = GraphicsImage(
+                contents: .systemSymbol(
+                    name: name,
+                    pointSize: symbolSize,
+                    weight: traits.weight
+                ),
+                scale: 1.0,
+                unrotatedPixelSize: CGSize(width: symbolSize, height: symbolSize),
+                orientation: .up,
+                isTemplate: true
+            )
+            var resolved = Image.Resolved(
+                image: graphicsImage,
+                decorative: decorative,
+                label: label
+            )
+            let capHeight = symbolSize * 0.72
+            let baselineOffset = (symbolSize - capHeight) * 0.5
+            resolved.layoutMetrics = Image.LayoutMetrics(
+                baselineOffset: baselineOffset,
+                capHeight: capHeight,
+                contentSize: CGSize(width: symbolSize, height: symbolSize),
+                alignmentOrigin: .zero
+            )
+            return resolved
+        }
+        #endif
 
         package func resolveError(in environment: EnvironmentValues) -> Image.Resolved {
             if let bundle = location.bundle {

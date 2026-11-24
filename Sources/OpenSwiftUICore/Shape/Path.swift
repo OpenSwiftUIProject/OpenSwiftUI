@@ -588,12 +588,65 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         eoFill: Bool = false,
         origin: CGPoint = .zero
     ) -> BitVector64 {
+        #if os(WASI)
+        if case let .roundedRect(roundedRect) = storage {
+            guard origin.x.isFinite, origin.y.isFinite,
+                  let radius = roundedRect.wasiUniformCornerRadius else { return [] }
+            let rect = roundedRect.rect.standardized
+            let centerMinX = rect.minX + radius
+            let centerMaxX = rect.maxX - radius
+            let centerMinY = rect.minY + radius
+            let centerMaxY = rect.maxY - radius
+            return points.mapBool { point in
+                let x = point.x - origin.x
+                let y = point.y - origin.y
+                guard rect.contains(CGPoint(x: x, y: y)) else { return false }
+                let dx = x - min(max(x, centerMinX), centerMaxX)
+                let dy = y - min(max(y, centerMinY), centerMaxY)
+                return dx * dx + dy * dy <= radius * radius
+            }
+        }
+        #endif
+        #if os(WASI)
+        // Web hit testing currently supports exact primitive containment.
+        // Both fill rules agree for these single-contour primitives. Keep
+        // arbitrary paths explicitly unsupported until path geometry lands.
+        guard origin.x.isFinite, origin.y.isFinite else { return [] }
+        switch storage {
+        case .empty:
+            return []
+        case let .rect(rect):
+            return points.mapBool { point in
+                guard point.x.isFinite, point.y.isFinite else { return false }
+                return rect.contains(CGPoint(x: point.x - origin.x, y: point.y - origin.y))
+            }
+        case let .ellipse(rect):
+            let rect = rect.standardized
+            guard !rect.isEmpty,
+                  rect.width.isFinite,
+                  rect.height.isFinite else { return [] }
+            let radiusX = rect.width / 2
+            let radiusY = rect.height / 2
+            return points.mapBool { point in
+                guard point.x.isFinite, point.y.isFinite else { return false }
+                let x = (point.x - origin.x - rect.midX) / radiusX
+                let y = (point.y - origin.y - rect.midY) / radiusY
+                return x * x + y * y <= 1
+            }
+        case .roundedRect, .path, .stroked, .trimmed:
+            #if DEBUG
+            print("OpenSwiftUI Web hit testing: rounded and arbitrary paths are not supported")
+            #endif
+            return []
+        }
+        #else
         // FIXME:
         // The RenderBox shim currently declares the batched mask result as Bool.
         // Use scalar containment to preserve every bit until that ABI is corrected.
-        points.mapBool {
+        return points.mapBool {
             contains(CGPoint(x: $0.x - origin.x, y: $0.y - origin.y), eoFill: eoFill)
         }
+        #endif
     }
 
     /// An element of a path.

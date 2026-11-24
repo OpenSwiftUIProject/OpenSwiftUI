@@ -26,6 +26,9 @@ package struct GraphicsImage: Equatable, Sendable {
         indirect case vectorLayer(VectorImageLayer)
         indirect case color(Color.Resolved)
         indirect case named(NamedImage.Key)
+        #if os(WASI)
+        case systemSymbol(name: String, pointSize: CGFloat, weight: CGFloat)
+        #endif
     }
 
     package var contents: GraphicsImage.Contents?
@@ -155,6 +158,10 @@ extension GraphicsImage.Contents {
         /* OpenSwiftUI Addition Begin */
         // named is omitted on SwiftUI's implementation
         case let (.named(a), .named(b)): a == b
+        #if os(WASI)
+        case let (.systemSymbol(n1, s1, w1), .systemSymbol(n2, s2, w2)):
+            n1 == n2 && s1 == s2 && w1 == w2
+        #endif
         /* OpenSwiftUI Addition End */
         default: false
         }

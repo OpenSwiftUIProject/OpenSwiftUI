@@ -7,6 +7,27 @@ import Foundation
 import Testing
 
 struct FixedRoundedRectTests {
+    #if os(WASI)
+    @Test
+    func capsuleHitsTrackButNotTransparentCorners() {
+        let path = Path(
+            roundedRect: CGRect(x: 0, y: 0, width: 50, height: 30),
+            cornerRadius: 25,
+            style: .circular
+        )
+        let hits = path.contains(
+            points: [
+                CGPoint(x: 125, y: 215), // Track center.
+                CGPoint(x: 147, y: 215), // Inside the end cap.
+                CGPoint(x: 101, y: 201), // Outside the rounded corner.
+                CGPoint(x: 151, y: 215), // Outside the track.
+            ],
+            origin: CGPoint(x: 100, y: 200)
+        )
+        #expect(hits.rawValue == 0b0011)
+    }
+    #endif
+
     // MARK: - Initialization
 
     @Test
