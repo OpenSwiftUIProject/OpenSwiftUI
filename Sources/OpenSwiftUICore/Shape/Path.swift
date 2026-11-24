@@ -434,7 +434,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #if canImport(Darwin)
         _CGPathCopyDescription(cgPath, 0.0)
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        switch storage {
+        case .empty:
+            return ""
+        case let .rect(rect):
+            return "\(rect.minX) \(rect.minY) m \(rect.maxX) \(rect.minY) l \(rect.maxX) \(rect.maxY) l \(rect.minX) \(rect.maxY) l h"
+        case let .ellipse(rect):
+            return "ellipse(\(rect.minX), \(rect.minY), \(rect.width), \(rect.height))"
+        case let .roundedRect(roundedRect):
+            let rect = roundedRect.rect
+            return "roundedRect(\(rect.minX), \(rect.minY), \(rect.width), \(rect.height), \(roundedRect.cornerSize.width), \(roundedRect.cornerSize.height))"
+        default:
+            _openSwiftUIPlatformUnimplementedWarning()
+            return ""
+        }
         #endif
     }
 
