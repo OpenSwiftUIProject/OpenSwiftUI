@@ -10,6 +10,7 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #import <CoreFoundation/CoreFoundation.h>
+#import <CoreFoundation/CFStringTokenizer.h>
 #import <os/lock.h>
 
 @interface NSBundle (OpenSwiftUILocalizationPrivate)
