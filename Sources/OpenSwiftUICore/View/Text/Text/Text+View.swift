@@ -1681,6 +1681,7 @@ private struct DynamicTextView: PrimitiveView, UnaryView {
     private struct DynamicTextHelper: SizeFittingTextResolver {
         let view: DynamicTextView
         lazy var widthAdaptedText: ResolvedStyledText = {
+            let currentSizeVariant = sizeVariant
             var isUniqueSizeVariant = sizeVariant == .regular
             let storage: NSMutableAttributedString?
             if view.text.layoutProperties.sizeFitting {
@@ -1695,7 +1696,7 @@ private struct DynamicTextView: PrimitiveView, UnaryView {
                               ) as? any ResolvableStringAttribute else {
                             return
                         }
-                        let variant = resolvable.sizeVariant(sizeVariant)
+                        let variant = resolvable.sizeVariant(currentSizeVariant)
                         isUniqueSizeVariant = isUniqueSizeVariant || variant.exact
                         result.addAttribute(
                             value.resolvableAttributeKey,

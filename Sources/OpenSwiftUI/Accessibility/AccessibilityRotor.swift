@@ -156,7 +156,7 @@ extension AccessibilityLinkRotorBridge {
         elements.removeAll(keepingCapacity: true)
         paragraph.enumerateAttribute(.coreAXLink, in: NSRange(location: 0, length: paragraph.length)) { value, range, _ in
             if value as? Bool == true {
-                elements.append(Self.linkElement(for: node, range: range))
+                self.elements.append(Self.linkElement(for: node, range: range))
             }
         }
     }
