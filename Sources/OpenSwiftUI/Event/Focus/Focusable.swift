@@ -332,6 +332,42 @@ public struct _FocusableModifier: ViewModifier, MultiViewModifier, PrimitiveView
             )
             return outputs
         }
+        #elseif os(WASI)
+        let options = Attribute(ResolvedOptions(
+            modifier: modifier.value,
+            environment: inputs.environment
+        ))
+        let item = Attribute(UpdateViewFocusItem(
+            modifier: modifier.value,
+            options: options,
+            inputs: inputs
+        ))
+        item.flags = .transactional
+        let responder = FocusableViewResponder(inputs: inputs)
+        var newInputs = inputs
+        newInputs.environment = Attribute(IsFocusedEnvironmentChild(
+            item: item,
+            environment: newInputs.environment,
+            focusedItem: .init(newInputs.focusedItem)
+        ))
+        newInputs.preferences.add(FocusableOptionsKey.self)
+        var outputs = body(_Graph(), newInputs)
+        if newInputs.preferences.requiresViewResponders {
+            let geometry = Attribute(UpdateViewGeometry(
+                transform: newInputs.transform,
+                position: newInputs.animatedPosition(),
+                size: newInputs.animatedSize(),
+                responder: responder
+            ))
+            outputs.preferences.viewResponders = Attribute(UpdateFocusableViewResponder(
+                inputs: newInputs,
+                outputs: outputs,
+                item: item,
+                geometry: geometry,
+                responder: responder
+            ))
+        }
+        return outputs
         #else
         // TODO: Install the focus item, responder, and onFocusChange callback.
         _openSwiftUIUnimplementedWarning()
@@ -830,7 +866,7 @@ struct IsFocusedEnvironmentChild: Rule {
     @Attribute var environment: EnvironmentValues
     #if os(iOS) || os(visionOS)
     @Attribute var isPlatformItemFocused: Bool
-    #elseif os(macOS)
+    #elseif os(macOS) || os(WASI)
     @OptionalAttribute var focusedItem: FocusItem??
     #endif
 
@@ -840,7 +876,7 @@ struct IsFocusedEnvironmentChild: Rule {
         if !item.options.contains(.platformContainerHandlesFocus) {
             env.isFocused = isPlatformItemFocused
         }
-        #elseif os(macOS)
+        #elseif os(macOS) || os(WASI)
         if let focusedItem = focusedItem ?? nil,
            case let .view(focusedView) = focusedItem.base {
             env.isFocused = focusedView.id == item.id
@@ -889,7 +925,7 @@ private struct AccessibilityFocusItemAttachment: Rule {
 
 // MARK: - UpdateViewGeometry [TBA]
 
-#if os(iOS) || os(visionOS) || os(macOS)
+#if os(iOS) || os(visionOS) || os(macOS) || os(WASI)
 private struct UpdateViewGeometry: StatefulRule {
     @Attribute var transform: ViewTransform
     @Attribute var position: CGPoint

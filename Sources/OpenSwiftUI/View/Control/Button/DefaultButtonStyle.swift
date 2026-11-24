@@ -88,6 +88,10 @@ public struct DefaultButtonStyle: PrimitiveButtonStyle {
             ))
             #endif
             .buttonStyle(PlatformFallbackButtonStyle())
+        #elseif os(WASI)
+        // Keep the fallback style boundary so automaticButtonStyle overrides work.
+        Button(configuration)
+            .buttonStyle(PlatformFallbackButtonStyle())
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
@@ -120,6 +124,10 @@ struct PlatformFallbackButtonStyle: PrimitiveButtonStyle {
             ))
             .buttonStyle(ConditionallyBorderedStyle())
             #endif
+        #elseif os(WASI)
+        // Reuse shared button interaction and feedback without native controls.
+        Button(configuration)
+            .buttonStyle(PlainButtonStyle())
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif

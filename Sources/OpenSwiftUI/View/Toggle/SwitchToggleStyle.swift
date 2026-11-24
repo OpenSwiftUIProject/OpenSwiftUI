@@ -114,6 +114,9 @@ public struct SwitchToggleStyle: ToggleStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
+        #if os(WASI)
+        WebSwitchToggleBody(configuration: configuration, tint: tint ?? controlTint)
+        #else
         LabeledContent {
             #if os(iOS) || os(visionOS)
             Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, thumbTint: placementTint[.switchThumb], font: font)
@@ -146,11 +149,48 @@ public struct SwitchToggleStyle: ToggleStyle {
             configuration.isOn.toggle()
         })
         #endif
+        #endif
     }
 }
 
 @available(*, unavailable)
 extension SwitchToggleStyle: Sendable {}
+
+#if os(WASI)
+// MARK: - WebSwitchToggleBody [TBA]
+
+// iOS-style presentation using the Canvas renderer's solid shape fills.
+// Keep this at the style boundary: custom ToggleStyle bodies still take priority,
+// and Button supplies shared gesture handling, disabled state, and press feedback.
+private struct WebSwitchToggleBody: View {
+    let configuration: ToggleStyleConfiguration
+    let tint: Color?
+
+    var body: some View {
+        let isOn = configuration.isOn
+        return Button {
+            configuration.isOn.toggle()
+        } label: {
+            HStack(spacing: 12) {
+                configuration.label
+                Spacer(minLength: 0)
+                ZStack(alignment: isOn ? .trailing : .leading) {
+                    Capsule(style: .circular)
+                        .fill(isOn ? (tint ?? .green) : Color.gray.opacity(0.45))
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 27, height: 27)
+                        .padding(2)
+                }
+                .frame(width: 51, height: 31)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+#endif
 
 // MARK: - AccessibilityToggleModifier.Switch
 

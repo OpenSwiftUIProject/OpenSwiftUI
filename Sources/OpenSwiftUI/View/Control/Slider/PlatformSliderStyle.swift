@@ -17,8 +17,12 @@ protocol PlatformSliderCoordinator: PlatformViewCoordinator {}
 #if !canImport(Darwin)
 struct PlatformSliderStyle: SliderStyle {
     func makeBody(configuration: Configuration) -> some View {
+        #if os(WASI)
+        WASISliderBody(configuration: configuration)
+        #else
         _openSwiftUIPlatformUnimplementedWarning()
         return EmptyView()
+        #endif
     }
 }
 #endif

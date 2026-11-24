@@ -65,6 +65,10 @@ public struct BorderedProminentButtonStyle: PrimitiveButtonStyle {
             .buttonStyle(buttonStyleRepresentation)
             #endif
             .input(ButtonContainerIsBorderedInput.self)
+        #elseif os(WASI)
+        Button(configuration)
+            .buttonStyle(WASIBorderedButtonStyle(tint: nil, isProminent: true))
+            .input(ButtonContainerIsBorderedInput.self)
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif

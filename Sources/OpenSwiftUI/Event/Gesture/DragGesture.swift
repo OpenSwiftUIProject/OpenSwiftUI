@@ -194,6 +194,8 @@ extension DragGesture: Sendable {}
 
 #if os(macOS)
 private typealias DragEvent = MouseEvent
+#elseif os(WASI)
+private typealias DragEvent = SpatialEvent
 #else
 private typealias DragEvent = TouchEvent
 #endif
