@@ -610,6 +610,8 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package let storage: NSAttributedString?
 
+    final package let textMeasurementProvider: StaticTextMeasurementProvider?
+
     final package let stylePadding: EdgeInsets
 
     final package let archiveOptions: ArchivedViewInput.Value
@@ -685,9 +687,11 @@ package class ResolvedStyledText: CustomStringConvertible {
         attachments _: Text.ResolvedProperties.CustomAttachments,
         styles: [_ShapeStyle_Pack.Style],
         transitions: [Text.ResolvedProperties.Transition],
-        scaleFactorOverride _: CGFloat?
+        scaleFactorOverride _: CGFloat?,
+        textMeasurementProvider: StaticTextMeasurementProvider? = nil
     ) {
         self.storage = storage
+        self.textMeasurementProvider = textMeasurementProvider
         self.layoutProperties = layoutProperties
         self.stylePadding = stylePadding
         self.archiveOptions = archiveOptions
@@ -861,7 +865,8 @@ package class ResolvedStyledText: CustomStringConvertible {
             attachments: .init(),
             styles: styles,
             transitions: transitions,
-            scaleFactorOverride: scaleFactorOverride
+            scaleFactorOverride: scaleFactorOverride,
+            textMeasurementProvider: textMeasurementProvider
         )
     }
 
@@ -1087,7 +1092,8 @@ extension ResolvedStyledText {
         attachments: Text.ResolvedProperties.CustomAttachments,
         styles: [_ShapeStyle_Pack.Style],
         transitions: [Text.ResolvedProperties.Transition],
-        scaleFactorOverride: CGFloat?
+        scaleFactorOverride: CGFloat?,
+        textMeasurementProvider: StaticTextMeasurementProvider?
     ) -> ResolvedStyledText {
         let layoutManagerFeatures: Text.ResolvedProperties.Features = [
             .customRenderer,
@@ -1114,7 +1120,8 @@ extension ResolvedStyledText {
                 attachments: attachments,
                 styles: styles,
                 transitions: transitions,
-                scaleFactorOverride: scaleFactorOverride
+                scaleFactorOverride: scaleFactorOverride,
+                textMeasurementProvider: textMeasurementProvider
             )
         } else {
             return StringDrawing(
@@ -1129,7 +1136,8 @@ extension ResolvedStyledText {
                 attachments: attachments,
                 styles: styles,
                 transitions: transitions,
-                scaleFactorOverride: scaleFactorOverride
+                scaleFactorOverride: scaleFactorOverride,
+                textMeasurementProvider: textMeasurementProvider
             )
         }
     }
@@ -1158,7 +1166,8 @@ extension ResolvedStyledText {
             attachments: attachments,
             styles: styles,
             transitions: transitions,
-            scaleFactorOverride: nil
+            scaleFactorOverride: nil,
+            textMeasurementProvider: nil
         )
     }
 
@@ -1193,7 +1202,8 @@ extension ResolvedStyledText {
             attachments: attachments,
             styles: styles,
             transitions: transitions,
-            scaleFactorOverride: nil
+            scaleFactorOverride: nil,
+            textMeasurementProvider: environment.staticTextMeasurementProvider
         )
     }
 }
@@ -1250,7 +1260,8 @@ struct CodableResolvedStyledText: ProtobufMessage {
             attachments: .init(),
             styles: [],
             transitions: transitions,
-            scaleFactorOverride: nil
+            scaleFactorOverride: nil,
+            textMeasurementProvider: nil
         )
     }
 
@@ -1723,7 +1734,8 @@ private struct DynamicTextView: PrimitiveView, UnaryView {
                 attachments: .init(),
                 styles: view.text.styles,
                 transitions: view.text.transitions,
-                scaleFactorOverride: view.text.scaleFactorOverride
+                scaleFactorOverride: view.text.scaleFactorOverride,
+                textMeasurementProvider: view.text.textMeasurementProvider
             )
         }()
         var sizeVariant: TextSizeVariant = .regular
@@ -1753,7 +1765,8 @@ private struct DynamicTextView: PrimitiveView, UnaryView {
                 attachments: .init(),
                 styles: text.styles,
                 transitions: text.transitions,
-                scaleFactorOverride: text.scaleFactorOverride
+                scaleFactorOverride: text.scaleFactorOverride,
+                textMeasurementProvider: text.textMeasurementProvider
             )
             return SizeFittingTextCacheValue(
                 text: text,

@@ -293,8 +293,23 @@ extension Text.Style {
             properties: &properties
         )
         typesettingConfiguration.languageAwareLineHeightRatio.apply(to: &modifiers)
-        if let font = baseFont.resolve(in: environment, includeDefaultAttributes: includeDefaultAttributes) {
+        if let font = baseFont.resolve(
+            in: environment,
+            includeDefaultAttributes: includeDefaultAttributes
+        ) {
+            #if os(WASI)
+            let traits = font.resolveTraits(
+                in: environment.fontResolutionContext,
+                modifiers: modifiers
+            )
+            attributes[.openSwiftUIStaticTextStyle] = StaticTextStyle(
+                pointSize: traits.pointSize,
+                weight: traits.weight
+            )
+            #endif
+            #if canImport(CoreText)
             attributes[.kitFont] = font.platformFont(in: environment, modifiers: modifiers)
+            #endif
         } else {
             attributes[.kitFont] = nil
         }
@@ -305,6 +320,9 @@ extension Text.Style {
             includeDefaultAttributes: includeDefaultAttributes && !options.contains(.writeAuxiliaryMetadata)
         ) {
             attributes[.kitForegroundColor] = color.kitColor
+            #if os(WASI)
+            attributes[.openSwiftUIStaticTextForegroundColor] = color
+            #endif
             properties.addColor(color)
         }
         if let backgroundColor {

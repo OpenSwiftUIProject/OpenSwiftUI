@@ -33,7 +33,11 @@ final public class EventBindingManager {
         return eventGraphHost.eventBindingManager
     }
 
+    #if os(WASI)
+    private var eventTimer: Task<Void, Never>?
+    #else
     private var eventTimer: Timer?
+    #endif
 
     #if os(macOS)
     private var hasPendingHoverUpdate: Bool = false
@@ -44,7 +48,11 @@ final public class EventBindingManager {
     }
 
     deinit {
+        #if os(WASI)
+        eventTimer?.cancel()
+        #else
         eventTimer?.invalidate()
+        #endif
     }
 
     private func sendDownstream(_ events: [EventID: any EventType]) -> Set<EventID> {
@@ -130,6 +138,19 @@ final public class EventBindingManager {
     }
 
     private func scheduleNextEventUpdate(time: Time) {
+        #if os(WASI)
+        eventTimer?.cancel()
+        eventTimer = nil
+        let interval = time - .systemUptime
+        guard interval.isFinite else { return }
+        // WASI has no Foundation run loop. The JS executor drives this task;
+        // even an already-due deadline must advance the gesture graph.
+        eventTimer = withDelay(max(interval, 0.000_001)) { [weak self] in
+            guard let self, isActive else { return }
+            eventTimer = nil
+            _ = send([:])
+        }
+        #else
         eventTimer?.invalidate()
         eventTimer = nil
         let interval = time - .systemUptime
@@ -145,6 +166,7 @@ final public class EventBindingManager {
         }
         RunLoop.main.add(timer, forMode: .common)
         eventTimer = timer
+        #endif
     }
 
     package func addForwardedEventDispatcher(_ dispatcher: any ForwardedEventDispatcher) {
@@ -224,7 +246,11 @@ final public class EventBindingManager {
             }
         }
         eventBindings = [:]
+        #if os(WASI)
+        eventTimer?.cancel()
+        #else
         eventTimer?.invalidate()
+        #endif
         eventTimer = nil
         isActive = false
     }

@@ -72,6 +72,7 @@ extension NSAttributedString {
         let widthIsFlexible: Bool
         let drawWithRequestedWidth: Bool
         let isCollapsible: Bool
+        let staticTextMeasurementProvider: StaticTextMeasurementProvider?
         var entries: [(CGSize, Metrics)]
 
         init(
@@ -84,7 +85,8 @@ extension NSAttributedString {
             pixelLength: CGFloat,
             widthIsFlexible: Bool,
             drawWithRequestedWidth: Bool,
-            isCollapsible: Bool
+            isCollapsible: Bool,
+            staticTextMeasurementProvider: StaticTextMeasurementProvider? = nil
         ) {
             self.kitCache = nil
             self.string = string?.scaled(by: scaleFactorOverride ?? 1) ?? .emptyString
@@ -98,6 +100,7 @@ extension NSAttributedString {
             self.widthIsFlexible = widthIsFlexible
             self.drawWithRequestedWidth = drawWithRequestedWidth
             self.isCollapsible = isCollapsible
+            self.staticTextMeasurementProvider = staticTextMeasurementProvider
             self.entries = []
         }
 
@@ -140,6 +143,7 @@ extension NSAttributedString {
                 kitCache: &kitCache,
                 isCollapsible: isCollapsible,
                 wantsNumberOfLineFragments: wantsNumberOfLineFragments,
+                staticTextMeasurementProvider: staticTextMeasurementProvider,
                 context: context
             )
             result.size.round(.up, toMultipleOf: pixelLength)
@@ -162,9 +166,53 @@ extension NSAttributedString {
         kitCache: inout AnyObject?,
         isCollapsible: Bool,
         wantsNumberOfLineFragments: Bool,
+        staticTextMeasurementProvider: StaticTextMeasurementProvider?,
         context: TextDrawingContext
     ) -> NSAttributedString.Metrics {
-        context.withStringDrawingContext(
+        if let staticTextMeasurementProvider,
+           let run = staticSingleLineRun
+        {
+            let measurement = staticTextMeasurementProvider.measure(
+                StaticTextMeasurementRequest(
+                    text: string,
+                    style: run.style,
+                    proposedSize: requestedSize,
+                    lineLimit: lineLimit
+                )
+            )
+            func finiteNonnegative(_ value: CGFloat) -> CGFloat {
+                value.isFinite ? max(value, 0.0) : 0.0
+            }
+            let size = CGSize(
+                width: finiteNonnegative(measurement.size.width),
+                height: finiteNonnegative(measurement.size.height)
+            )
+            if isCollapsible && size.height > requestedSize.height {
+                return Metrics(
+                    size: .zero,
+                    scale: 1.0,
+                    firstBaseline: 0.0,
+                    lastBaseline: 0.0,
+                    baselineAdjustment: 0.0,
+                    requestedWidth: requestedSize.width,
+                    numberOfLines: wantsNumberOfLineFragments ? 0 : nil,
+                    hasTruncatedRanges: measurement.hasTruncatedRanges
+                )
+            }
+            return Metrics(
+                size: size,
+                scale: 1.0,
+                firstBaseline: finiteNonnegative(measurement.firstBaseline),
+                lastBaseline: finiteNonnegative(measurement.lastBaseline),
+                baselineAdjustment: 0.0,
+                requestedWidth: requestedSize.width,
+                numberOfLines: wantsNumberOfLineFragments
+                    ? measurement.numberOfLines
+                    : nil,
+                hasTruncatedRanges: measurement.hasTruncatedRanges
+            )
+        }
+        return context.withStringDrawingContext(
             minScaleFactor: minScaleFactor,
             lineLimit: lineLimit,
             kitCache: kitCache,
@@ -346,7 +394,8 @@ extension ResolvedStyledText {
             attachments: Text.ResolvedProperties.CustomAttachments,
             styles: [_ShapeStyle_Pack.Style],
             transitions: [Text.ResolvedProperties.Transition],
-            scaleFactorOverride: CGFloat?
+            scaleFactorOverride: CGFloat?,
+            textMeasurementProvider: StaticTextMeasurementProvider?
         ) {
             let widthIsFlexible = layoutProperties.widthIsFlexible || (storage?.isDynamic == true && archiveOptions.isArchived)
             cache = NSAttributedString.MetricsCache(
@@ -359,7 +408,8 @@ extension ResolvedStyledText {
                 pixelLength: layoutProperties.pixelLength,
                 widthIsFlexible: widthIsFlexible,
                 drawWithRequestedWidth: layoutProperties.hyphenationFactor != 0,
-                isCollapsible: isCollapsible
+                isCollapsible: isCollapsible,
+                staticTextMeasurementProvider: textMeasurementProvider
             )
             super.init(
                 storage: storage,
@@ -373,7 +423,8 @@ extension ResolvedStyledText {
                 attachments: attachments,
                 styles: styles,
                 transitions: transitions,
-                scaleFactorOverride: scaleFactorOverride
+                scaleFactorOverride: scaleFactorOverride,
+                textMeasurementProvider: textMeasurementProvider
             )
         }
 
@@ -397,7 +448,8 @@ extension ResolvedStyledText {
                 pixelLength: layoutProperties.pixelLength,
                 widthIsFlexible: cache.widthIsFlexible,
                 drawWithRequestedWidth: layoutProperties.hyphenationFactor != 0,
-                isCollapsible: cache.isCollapsible
+                isCollapsible: cache.isCollapsible,
+                staticTextMeasurementProvider: textMeasurementProvider
             )
         }
 
