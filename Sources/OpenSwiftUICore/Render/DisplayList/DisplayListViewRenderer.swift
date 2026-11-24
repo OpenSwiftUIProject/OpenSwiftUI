@@ -8,6 +8,9 @@
 
 import OpenSwiftUI_SPI
 package import Foundation
+#if canImport(Dispatch)
+import Dispatch
+#endif
 
 #if OPENSWIFTUI_SWIFTUI_RENDERER
 @_silgen_name("_OpenSwiftUI_LinkSwiftUIRendererInterposers")
@@ -67,7 +70,11 @@ extension DisplayList {
 
         let platform: DisplayList.ViewUpdater.Platform
 
-        package var configuration: _RendererConfiguration = .init()
+        package var configuration: _RendererConfiguration = .init() {
+            didSet {
+                configChanged = true
+            }
+        }
 
         package weak var host: (any ViewRendererHost)? = nil {
             didSet {
@@ -379,9 +386,13 @@ extension DisplayList {
                 let duration = renderer.nextTime - time
                 let delay = max(duration, 1e-6)
                 if delay != .infinity {
+                    #if canImport(Dispatch)
                     DispatchQueue.main.async { [weak host] in
                         host?.requestUpdate(after: delay)
                     }
+                    #else
+                    host?.requestUpdate(after: delay)
+                    #endif
                 }
             }
             return content
