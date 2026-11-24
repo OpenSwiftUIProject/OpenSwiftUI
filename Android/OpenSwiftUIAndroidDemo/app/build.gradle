@@ -1,0 +1,64 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace 'org.openswiftui.androiddemo'
+    compileSdkVersion 35
+
+    defaultConfig {
+        applicationId 'org.openswiftui.androiddemo'
+        minSdkVersion 28
+        targetSdkVersion 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    packagingOptions.jniLibs.keepDebugSymbols += '**/*.so'
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs += "${buildDir}/generated/swift-jniLibs"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    splits {
+        abi {
+            reset()
+            enable true
+            universalApk false
+            include 'arm64-v8a'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+tasks.register('buildSwiftArm64', Exec) {
+    commandLine 'bash', new File(rootProject.projectDir, '../../Scripts/Android/build-native.sh').absolutePath
+}
+
+tasks.register('cleanSwift', Delete) {
+    delete new File(rootProject.projectDir, '../../.build/android-demo/swift/aarch64-unknown-linux-android28')
+    delete new File(projectDir, 'build/generated/swift-jniLibs')
+}
+
+preBuild.dependsOn buildSwiftArm64
+clean.dependsOn cleanSwift
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    api project(':uikit')
+}

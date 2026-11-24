@@ -1,0 +1,122 @@
+{
+  "originHash" : "63534e9d05a0b5308d449fb922bc357e7b1dfc1a3dfd453a4f7fe79594bdf52c",
+  "pins" : [
+    {
+      "identity" : "compute",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/Compute",
+      "state" : {
+        "branch" : "android/dev",
+        "revision" : "6c5bd5f1a6984133a1582dfb339f4f574da31ebd"
+      }
+    },
+    {
+      "identity" : "openattributegraph",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
+      "state" : {
+        "branch" : "main",
+        "revision" : "46f2e1b832fa9626bd88f62ba34ba0b799b5206c"
+      }
+    },
+    {
+      "identity" : "opencombine",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCombine.git",
+      "state" : {
+        "revision" : "fa6ba53f863bba054a1ef9a6088615d0d34528ab",
+        "version" : "0.17.0"
+      }
+    },
+    {
+      "identity" : "opencoregraphics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
+      "state" : {
+        "branch" : "main",
+        "revision" : "89eb70998d076c52c11ada3c5cebefce6d8b1954"
+      }
+    },
+    {
+      "identity" : "openobservation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b030e44d6471cf1d760137e5da6805cf57aa885b"
+      }
+    },
+    {
+      "identity" : "openrenderbox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
+      "state" : {
+        "branch" : "android/dev",
+        "revision" : "a550d637b56155fbefa889f7ee141d83758f62a5"
+      }
+    },
+    {
+      "identity" : "sdl2-swiftpackagemanager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/flowkey/SDL2-SwiftPackageManager",
+      "state" : {
+        "revision" : "4c417816a3b1a8551148f101f580dd0de0aab7bd"
+      }
+    },
+    {
+      "identity" : "swift-asn1",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-asn1.git",
+      "state" : {
+        "revision" : "97fd57437fc94cfa6b62f2b8f84c50f433534e17",
+        "version" : "1.7.5"
+      }
+    },
+    {
+      "identity" : "swift-crypto",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-crypto.git",
+      "state" : {
+        "revision" : "95ba0316a9b733e92bb6b071255ff46263bbe7dc",
+        "version" : "3.15.1"
+      }
+    },
+    {
+      "identity" : "swift-jni",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftAndroid/swift-jni",
+      "state" : {
+        "revision" : "1f72846225ca616c0656f4329d891e32489aeff7",
+        "version" : "3.0.0"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log",
+      "state" : {
+        "revision" : "c7413d967b97aae67c46452bf7645bdb7b200e8e",
+        "version" : "1.17.2"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
+      }
+    },
+    {
+      "identity" : "uikit-cross-platform",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/UIKit-cross-platform",
+      "state" : {
+        "branch" : "android/dev",
+        "revision" : "d4291383f0848a35cfc994942377d89eda64a149"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# Shared by the command-line runner and Gradle's native build task.
+set -euo pipefail
+
+fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ANDROID_PROJECT="$REPO_ROOT/Android/OpenSwiftUIAndroidDemo"
+ANDROID_BUILD="$REPO_ROOT/.build/android-demo"
+SWIFT_SCRATCH="$ANDROID_BUILD/swift"
+UIKIT_CHECKOUT="$SWIFT_SCRATCH/checkouts/UIKit-cross-platform"
+uikit_override="${OPENSWIFTUI_UIKIT_CROSS_PLATFORM_PATH:-${OPENSWIFTUI_ANDROID_UIKIT_PATH:-}}"
+if [[ -n "$uikit_override" ]]; then
+    [[ -d "$uikit_override" ]] || fail "Missing UIKit checkout: $uikit_override"
+    UIKIT_CHECKOUT="$(cd "$uikit_override" && pwd)"
+    export OPENSWIFTUI_UIKIT_CROSS_PLATFORM_PATH="$UIKIT_CHECKOUT"
+fi
+SWIFT_VERSION=6.3.2
+SWIFT_ANDROID_TRIPLE=aarch64-unknown-linux-android28
+
+case "$(uname -s)" in
+    Darwin)
+        export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
+        sdk_home="$HOME/Library/org.swift.swiftpm/swift-sdks"
+        if [[ -x "$HOME/Library/Developer/Toolchains/swift-$SWIFT_VERSION-RELEASE.xctoolchain/usr/bin/swift" ]]; then
+            default_swift="$HOME/Library/Developer/Toolchains/swift-$SWIFT_VERSION-RELEASE.xctoolchain/usr/bin/swift"
+        else
+            default_swift="/Library/Developer/Toolchains/swift-$SWIFT_VERSION-RELEASE.xctoolchain/usr/bin/swift"
+        fi
+        if [[ -z "${DEVELOPER_DIR:-}" && -d /Applications/Xcode-26.3.0.app ]]; then
+            export DEVELOPER_DIR=/Applications/Xcode-26.3.0.app/Contents/Developer
+        fi
+        if [[ -z "${JAVA_HOME:-}" ]]; then
+            if [[ -d '/Applications/Android Studio.app/Contents/jbr/Contents/Home' ]]; then
+                export JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home'
+            elif [[ -d "$HOME/Applications/Android Studio.app/Contents/jbr/Contents/Home" ]]; then
+                export JAVA_HOME="$HOME/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+            elif [[ -x /usr/libexec/java_home ]] && java_home_candidate="$(/usr/libexec/java_home -v 17+ 2>/dev/null)"; then
+                export JAVA_HOME="$java_home_candidate"
+            fi
+        fi
+        ;;
+    Linux)
+        export ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}}"
+        sdk_home="$HOME/.local/share/swiftpm/swift-sdks"
+        for candidate_sdk_home in \
+            "${XDG_DATA_HOME:-$HOME/.local/share}/org.swift.swiftpm/swift-sdks" \
+            "$HOME/.swiftpm/swift-sdks" \
+            "$HOME/.local/share/swiftpm/swift-sdks"; do
+            if [[ -d "$candidate_sdk_home/swift-$SWIFT_VERSION-RELEASE_android.artifactbundle" ]]; then
+                sdk_home="$candidate_sdk_home"
+                break
+            fi
+        done
+        default_swift="${SWIFTLY_HOME_DIR:-$HOME/.local/share/swiftly}/toolchains/$SWIFT_VERSION/usr/bin/swift"
+        ;;
+    *) fail 'The Android demo runner supports macOS and Linux hosts.' ;;
+esac
+export PATH="${JAVA_HOME:+$JAVA_HOME/bin:}$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.swiftly/bin:$PATH"
+export SWIFT_ANDROID_SDK_PATH="${SWIFT_ANDROID_SDK_PATH:-$sdk_home/swift-$SWIFT_VERSION-RELEASE_android.artifactbundle/swift-android}"
+# SwiftPM 6.3 can choose another architecture when filtering by bundle ID.
+# Limit discovery to this version, then select its exact target triple.
+swift_sdk_store="$ANDROID_BUILD/sdk-store/$SWIFT_VERSION"
+swift_sdk_args=(--swift-sdks-path "$swift_sdk_store"
+    --swift-sdk "$SWIFT_ANDROID_TRIPLE" --triple "$SWIFT_ANDROID_TRIPLE")
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-${ANDROID_NDK_ROOT:-$ANDROID_HOME/ndk/27.3.13750724}}"
+if [[ ! -d "$ANDROID_NDK_HOME" && -d "$HOME/android-ndk/android-ndk-r27d" ]]; then
+    export ANDROID_NDK_HOME="$HOME/android-ndk/android-ndk-r27d"
+fi
+
+if [[ -n "${SWIFT_EXEC:-}" ]]; then
+    swift_command=("$SWIFT_EXEC")
+elif [[ -x "$default_swift" ]]; then
+    swift_command=("$default_swift")
+elif command -v swiftly >/dev/null 2>&1; then
+    swift_command=(swiftly run)
+else
+    fail "Install the official Swift $SWIFT_VERSION toolchain, or set SWIFT_EXEC."
+fi
+swift_cmd() {
+    if [[ "${swift_command[0]}" == swiftly ]]; then
+        swiftly run swift "$@" "+$SWIFT_VERSION"
+    else
+        "${swift_command[@]}" "$@"
+    fi
+}
+
+# These settings also reach OpenAttributeGraph's transitive Compute dependency.
+export OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM=0 OPENATTRIBUTEGRAPH_BUILD_FOR_DARWIN_PLATFORM=0 OPENRENDERBOX_BUILD_FOR_DARWIN_PLATFORM=0
+export OPENSWIFTUI_USE_LOCAL_DEPS=0 OPENATTRIBUTEGRAPH_USE_LOCAL_DEPS=0 OPENRENDERBOX_USE_LOCAL_DEPS=0
+export OPENSWIFTUI_LIBRARY_EVOLUTION=0 OPENATTRIBUTEGRAPH_LIBRARY_EVOLUTION=0 OPENRENDERBOX_LIBRARY_EVOLUTION=0
+export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1 OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE=1
+export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
+export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_REPO=OpenSwiftUIProject/Compute
+export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_BRANCH=android/dev
+export OPENSWIFTUI_UIKIT_CROSS_PLATFORM=1 OPENSWIFTUI_ANDROID_APP=1 OPENSWIFTUI_RENDER_GTK=0
+export OPENRENDERBOX_LIB_SWIFT_PATH="$SWIFT_ANDROID_SDK_PATH/swift-resources/usr/lib/swift_static-aarch64"
+export OPENSWIFTUI_ANDROID_SWIFT_STATIC_LIB_DIR="$OPENRENDERBOX_LIB_SWIFT_PATH/android"
+
+# Public upstream submodules use SSH URLs. Rewrite only in this process tree,
+# so a clean clone does not require a GitHub SSH key or global Git changes.
+git_config_count="${GIT_CONFIG_COUNT:-0}"
+export "GIT_CONFIG_KEY_${git_config_count}=url.https://github.com/.insteadOf"
+export "GIT_CONFIG_VALUE_${git_config_count}=git@github.com:"
+export GIT_CONFIG_COUNT="$((git_config_count + 1))"
+
+check_native_environment() {
+    local version
+    version="$(swift_cmd --version)"
+    [[ "$version" == *"Swift version $SWIFT_VERSION ("* ]] || fail "Expected Swift $SWIFT_VERSION; got: $version"
+    [[ -f "$SWIFT_ANDROID_SDK_PATH/swift-sdk.json" ]] || fail "Missing matching Swift Android SDK: $SWIFT_ANDROID_SDK_PATH"
+    [[ "$(basename "$(dirname "$SWIFT_ANDROID_SDK_PATH")")" == "swift-$SWIFT_VERSION-RELEASE_android.artifactbundle" ]] || fail "SWIFT_ANDROID_SDK_PATH must point inside the matching Swift $SWIFT_VERSION Android artifact bundle."
+    mkdir -p "$swift_sdk_store"
+    ln -sfn "$(dirname "$SWIFT_ANDROID_SDK_PATH")" "$swift_sdk_store/swift-$SWIFT_VERSION-RELEASE_android.artifactbundle"
+    [[ -f "$ANDROID_NDK_HOME/source.properties" ]] || fail "Set ANDROID_NDK_HOME to Android NDK r27d."
+    grep -q '^Pkg.Revision = 27.3.13750724' "$ANDROID_NDK_HOME/source.properties" || fail 'This demo expects Android NDK r27d (27.3.13750724).'
+    [[ -d "$SWIFT_ANDROID_SDK_PATH/ndk-sysroot/usr/include" ]] || fail 'Configure the Swift Android SDK with its scripts/setup-android-sdk.sh first.'
+    local candidates=("$ANDROID_NDK_HOME"/toolchains/llvm/prebuilt/*/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so)
+    [[ ${#candidates[@]} -eq 1 && -f "${candidates[0]}" ]] || fail 'Cannot locate the NDK arm64 libc++_shared.so.'
+    ANDROID_LIBCXX="${candidates[0]}"
+}
+
+resolve_android() {
+    check_native_environment
+    swift_cmd package --package-path "$ANDROID_PROJECT" --scratch-path "$SWIFT_SCRATCH" \
+        --cache-path "$ANDROID_BUILD/cache" "${swift_sdk_args[@]}" resolve
+    [[ -f "$UIKIT_CHECKOUT/build.gradle" ]] || fail 'UIKit remote checkout was not resolved.'
+}
