@@ -11,6 +11,8 @@ import Foundation
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+#elseif os(WASI)
+import WASILibc
 #else
 #error("Unsupported Platform")
 #endif

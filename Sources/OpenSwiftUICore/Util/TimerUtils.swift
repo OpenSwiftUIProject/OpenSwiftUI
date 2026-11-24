@@ -25,6 +25,24 @@ package import Foundation
 ///   - body: The closure to execute after the specified time interval.
 ///
 /// - Returns: The created `Timer` instance, which can be used to invalidate the timer if needed.
+#if os(WASI)
+@discardableResult
+package func withDelay(
+    _ timeInterval: TimeInterval,
+    do body: @escaping () -> Void
+) -> Task<Void, Never> {
+    let sendableBody = UncheckedSendable(body)
+    return Task {
+        do {
+            try await Task.sleep(for: .seconds(timeInterval))
+        } catch {
+            return
+        }
+        guard !Task.isCancelled else { return }
+        sendableBody.value()
+    }
+}
+#else
 @discardableResult
 package func withDelay(_ timeInterval: TimeInterval, do body: @escaping () -> Void) -> Timer {
     let timer = Timer(timeInterval: timeInterval, repeats: false) { _ in
@@ -33,3 +51,4 @@ package func withDelay(_ timeInterval: TimeInterval, do body: @escaping () -> Vo
     RunLoop.main.add(timer, forMode: .common)
     return timer
 }
+#endif

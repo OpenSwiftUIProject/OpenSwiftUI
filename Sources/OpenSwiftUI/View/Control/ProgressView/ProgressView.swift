@@ -137,13 +137,17 @@ public struct ProgressView<Label, CurrentValueLabel>: View where Label: View, Cu
     public var body: some View {
         switch base {
         case let .custom(custom): custom
+        #if !os(WASI)
         case let .observing(observing): observing
+        #endif
         }
     }
 
     enum Base {
         case custom(CustomProgressView<Label, CurrentValueLabel>)
+        #if !os(WASI)
         case observing(FoundationProgressView)
+        #endif
     }
 }
 
@@ -411,6 +415,7 @@ extension ProgressView {
 
 // MARK: - ProgressView + Foundation Progress
 
+#if !os(WASI)
 @available(OpenSwiftUI_v2_0, *)
 extension ProgressView {
     /// Creates a progress view for visualizing the given progress instance.
@@ -423,6 +428,7 @@ extension ProgressView {
         base = .observing(FoundationProgressView(progress: progress))
     }
 }
+#endif
 
 // MARK: - ProgressView + Style Configuration
 

@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 3E94A30D8C602D81EB55934DA2DC2E22 (SwiftUI)
 
+// The WASI Foundation SDK does not provide Foundation.Progress.
+#if !os(WASI)
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
 import OpenCombineFoundation
@@ -190,3 +192,4 @@ struct FoundationProgressView: View {
         }
     }
 }
+#endif
