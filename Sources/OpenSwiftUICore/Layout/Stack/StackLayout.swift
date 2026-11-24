@@ -323,8 +323,8 @@ extension StackLayout {
                     let frame = geometry.frame
                     let majorOrigin: CGFloat
                     if layoutDirection == .rightToLeft {
-                        majorOrigin = currentMajorPosition - child.distanceToPrevious
-                        currentMajorPosition = majorOrigin - frame.width
+                        majorOrigin = currentMajorPosition - child.distanceToPrevious - frame.width
+                        currentMajorPosition = majorOrigin
                     } else {
                         majorOrigin = currentMajorPosition + child.distanceToPrevious
                         currentMajorPosition = majorOrigin + frame.width
@@ -348,8 +348,8 @@ extension StackLayout {
                     let majorOrigin = currentMajorPosition + child.distanceToPrevious
                     currentMajorPosition = majorOrigin + frame.height
                     let finalMajorOrigin = majorOrigin.mappingNaN(to: frame.origin.y)
-                    let minorOrigin = layoutDirection == .rightToLeft 
-                        ? frame.maxX 
+                    let minorOrigin = layoutDirection == .rightToLeft
+                        ? bounds.width - frame.maxX
                         : frame.origin.x
                     let finalMinorOrigin = minorOrigin + minorBasePosition
                     proxy.place(

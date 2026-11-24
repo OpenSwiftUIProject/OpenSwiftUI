@@ -61,17 +61,11 @@ private struct OffsetPosition: Rule, AsyncAttribute {
     @Attribute var layoutDirection: LayoutDirection
 
     var value: CGPoint {
-        position.resolved(in: layoutDirection) + effect.offset
-    }
-}
-
-extension CGPoint {
-    @inline(__always)
-    fileprivate func resolved(in layoutDirection: LayoutDirection) -> CGPoint {
-        switch layoutDirection {
-        case .leftToRight: CGPoint(x: x, y: y)
-        case .rightToLeft: CGPoint(x: -x, y: y)
+        var offset = effect.offset
+        if layoutDirection == .rightToLeft {
+            offset.width = -offset.width
         }
+        return position + offset
     }
 }
 
