@@ -2,7 +2,7 @@
 //  PlatformImage.swift
 //  OpenSwiftUI
 
-#if canImport(UIKit)
+#if canImport(Darwin) && canImport(UIKit)
 typealias PlatformImage = UIImage
 #elseif canImport(AppKit)
 typealias PlatformImage = NSImage

@@ -47,7 +47,7 @@ class AccessibilityNode: AccessibilityNodeBase {
 
     var platformElementPropertiesDirty = true
 
-    #if canImport(UIKit)
+    #if os(iOS) || os(visionOS)
     var platformRotorStorage: [String: UIAccessibilityCustomRotor] = [:]
     #elseif os(macOS)
     var platformRotorStorage: [String: CustomRotorStorage] = [:]
