@@ -6,6 +6,7 @@
 //  Status: Complete
 
 public import Foundation
+public import OpenCoreGraphicsShims
 
 // MARK: - _RendererConfiguration
 
@@ -28,6 +29,13 @@ public struct _RendererConfiguration {
         /// to standard output.
         @_spi(StdoutRenderer)
         indirect case stdout(_ options: _RendererConfiguration.StdoutOptions = .init())
+
+        #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+        /// A renderer that forwards a static display-list frame to a web
+        /// surface owned by the embedding application.
+        @_spi(WebRenderer)
+        indirect case web(_ options: _RendererConfiguration.WebOptions)
+        #endif
         #endif
         /* OpenSwiftUI Addition End */
     }
@@ -59,6 +67,15 @@ public struct _RendererConfiguration {
     public static func stdout(_ options: _RendererConfiguration.StdoutOptions = .init()) -> _RendererConfiguration {
         _RendererConfiguration(renderer: .stdout(options))
     }
+
+    #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+    /// Returns a configuration that renders display-list frames to a web
+    /// surface owned by the embedding application.
+    @_spi(WebRenderer)
+    public static func web(_ options: _RendererConfiguration.WebOptions) -> _RendererConfiguration {
+        _RendererConfiguration(renderer: .web(options))
+    }
+    #endif
     #endif
 
     /* OpenSwiftUI Addition End */
@@ -132,6 +149,38 @@ public struct _RendererConfiguration {
         public init() {}
     }
 
+    #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+    // MARK: - _RendererConfiguration.WebOptions
+
+    /// Options for the `web` renderer.
+    @_spi(WebRenderer)
+    public struct WebOptions {
+        /// The logical size of the web rendering surface.
+        public var surface: CGSize
+
+        /// Receives browser pointer input for this renderer's gesture graph.
+        public var eventBridge: _WebEventBridge
+
+        /// Measures a single-line text run synchronously in logical pixels.
+        public var measureText: (_WebTextMeasurementRequest) -> _WebTextMetrics
+
+        /// Called synchronously whenever a new static frame is available.
+        public var onRender: (_WebRenderFrame) -> Void
+
+        public init(
+            surface: CGSize = CGSize(width: 640.0, height: 480.0),
+            eventBridge: _WebEventBridge = .init(),
+            measureText: @escaping (_WebTextMeasurementRequest) -> _WebTextMetrics,
+            onRender: @escaping (_WebRenderFrame) -> Void
+        ) {
+            self.surface = surface
+            self.eventBridge = eventBridge
+            self.measureText = measureText
+            self.onRender = onRender
+        }
+    }
+    #endif
+
     /* OpenSwiftUI Addition End */
 
     // MARK: - _RendererConfiguration.RasterizationOptions
@@ -188,6 +237,12 @@ extension _RendererConfiguration.RasterizationOptions: Sendable {}
 @_spi(StdoutRenderer)
 @available(*, unavailable)
 extension _RendererConfiguration.StdoutOptions: Sendable {}
+
+#if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+@_spi(WebRenderer)
+@available(*, unavailable)
+extension _RendererConfiguration.WebOptions: Sendable {}
+#endif
 /* OpenSwiftUI Addition End */
 
 // MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions

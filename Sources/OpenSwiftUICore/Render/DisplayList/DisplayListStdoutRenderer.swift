@@ -26,9 +26,15 @@ extension DisplayList {
             "display-list-version: \(version.value)",
             "rendered:",
         ]
+        #if os(WASI)
+        for command in staticRenderCommands() {
+            lines.append("  - \(command.stdoutDescription)")
+        }
+        #else
         for command in stdoutRenderCommands() {
             lines.append("  - \(command.description)")
         }
+        #endif
         return lines.joined(separator: "\n")
     }
 
@@ -235,6 +241,32 @@ private func stdoutResolvedColor(_ value: Any) -> Color.Resolved? {
         return color
     }
     return Color.Resolved(platformColor: value as AnyObject)
+}
+#endif
+
+#if os(WASI)
+private extension DisplayList.StaticRenderCommand {
+    var stdoutDescription: String {
+        switch self {
+        case let .fill(frame, transform, color, _):
+            let renderedFrame = frame.applying(transform)
+            return "fill x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height)) \(color.description)"
+        case let .gradient(frame, transform, gradient, _):
+            let renderedFrame = frame.applying(transform)
+            return "gradient x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height)) stops:\(gradient.stops.count)"
+        case let .text(frame, transform, text, style, color, firstBaseline):
+            let renderedFrame = frame.applying(transform)
+            return "text x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height)) baseline:\(stdoutFormat(firstBaseline)) size:\(stdoutFormat(style.pointSize)) weight:\(stdoutFormat(style.weight)) \(String(reflecting: text)) \(color.description)"
+        case let .pushClip(frame, transform, _):
+            let renderedFrame = frame.applying(transform)
+            return "pushClip x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height))"
+        case .popClip:
+            return "popClip"
+        case let .symbol(frame, transform, name, _, color):
+            let renderedFrame = frame.applying(transform)
+            return "symbol x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height)) \(String(reflecting: name)) \(color.description)"
+        }
+    }
 }
 #endif
 

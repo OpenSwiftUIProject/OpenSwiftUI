@@ -89,6 +89,9 @@ extension DisplayList {
             /* OpenSwiftUI Addition Begin */
             #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case stdout
+            #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+            case web
+            #endif
             #endif
             /* OpenSwiftUI Addition End */
         }
@@ -114,6 +117,9 @@ extension DisplayList {
             /* OpenSwiftUI Addition Begin */
             #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case .stdout: state == .stdout
+            #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+            case .web: state == .web
+            #endif
             #endif
             /* OpenSwiftUI Addition End */
             }
@@ -138,6 +144,12 @@ extension DisplayList {
                     let stdoutRenderer = renderer as! StdoutRenderer
                     stdoutRenderer.options = options
                     stdoutRenderer.host = host
+                #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+                case let .web(options):
+                    let webRenderer = renderer as! WebDisplayListRenderer
+                    webRenderer.options = options
+                    webRenderer.host = host
+                #endif
                 #endif
                 /* OpenSwiftUI Addition End */
                 }
@@ -165,6 +177,15 @@ extension DisplayList {
                         options: options
                     )
                     state = .stdout
+                #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+                case let .web(options):
+                    renderer = WebDisplayListRenderer(
+                        platform: platform,
+                        host: host,
+                        options: options
+                    )
+                    state = .web
+                #endif
                 #endif
                 /* OpenSwiftUI Addition End */
                 }

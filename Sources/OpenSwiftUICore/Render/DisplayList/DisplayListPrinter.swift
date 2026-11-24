@@ -8,6 +8,28 @@
 
 // MARK: - DisplayList + print
 
+private extension Path {
+    var displayListPathDescription: String {
+        #if os(WASI)
+        // Path.description needs CoreGraphics, even for stored primitives.
+        switch storage {
+        case .empty:
+            return " empty"
+        case let .rect(rect):
+            return " rect \(rect)"
+        case let .ellipse(rect):
+            return " ellipse \(rect)"
+        case let .roundedRect(roundedRect):
+            return " rounded-rect \(roundedRect.rect) corners:\(roundedRect.cornerSize)"
+        default:
+            return " unsupported"
+        }
+        #else
+        return description
+        #endif
+    }
+}
+
 extension DisplayList: CustomStringConvertible {
     public var description: String {
         var printer = SExpPrinter(tag: "display-list")
@@ -128,13 +150,13 @@ extension DisplayList.Content.Value {
             printer.pop()
         case let .shape(path, paint, style):
             printer.push("shape")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListPathDescription))")
             printer.print("(paint \(paint))")
             printer.print("(style \(style))")
             printer.pop()
         case let .shadow(path, shadow):
             printer.push("shadow")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListPathDescription))")
             printer.print("(shadow \(shadow))")
             printer.pop()
         case .platformView:
@@ -254,7 +276,7 @@ extension DisplayList.Effect {
             printer.print("#:blend-mode \(mode)", newline: false)
         case let .clip(path, style, options):
             printer.push("clip")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListPathDescription))")
             printer.print("(style \(style))")
             if !options.isEmpty {
                 printer.print("(options \(options))")

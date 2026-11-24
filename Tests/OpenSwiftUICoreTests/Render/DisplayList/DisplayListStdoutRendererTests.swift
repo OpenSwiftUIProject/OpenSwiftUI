@@ -4,7 +4,12 @@
 
 import Foundation
 import OpenCoreGraphicsShims
+#if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+@_spi(Private) @_spi(StdoutRenderer) @_spi(WebRenderer) import OpenSwiftUICore
+#else
 @_spi(Private) @_spi(StdoutRenderer) import OpenSwiftUICore
+#endif
+import OpenSwiftUITestsSupport
 import Testing
 
 struct DisplayListStdoutRendererTests {
@@ -233,8 +238,8 @@ struct DisplayListStdoutRendererTests {
         """)
     }
 
-    @Test
-    func statesDescription() {
+    @Test(.tags(.aigc))
+    func staticCommandsSelectMatchingState() {
         let redItem = item(
             .content(.init(
                 .color(.init(colorSpace: .sRGBLinear, red: 1.0, green: 0.0, blue: 0.0)),
@@ -256,18 +261,220 @@ struct DisplayListStdoutRendererTests {
             ]),
             frame: .zero
         )
+        let selectedState = item(
+            .effect(.state(StrongHash(of: 2)), DisplayList(states)),
+            frame: .zero
+        )
 
-        #expect(DisplayList(states).stdoutDescription(
-            surface: CGSize(width: 200.0, height: 150.0),
-            version: .init(decodedValue: 8)
-        ) == """
-        OpenSwiftUI backend: stdout
-        surface: 200.0x150.0
-        display-list-version: 8
-        rendered:
-          - fill x:0.0 y:0.0 w:10.0 h:20.0 #FF0000FF
-          - fill x:30.0 y:40.0 w:50.0 h:60.0 #0000FFFF
-        """)
+        let commands = DisplayList(selectedState).staticRenderCommands()
+        #expect(commands.count == 1)
+        guard let command = commands.first,
+              case let .fill(frame, transform, color, .rectangle) = command
+        else {
+            Issue.record("Expected the matching state's fill command")
+            return
+        }
+        #expect(frame.applying(transform) == CGRect(x: 30.0, y: 40.0, width: 50.0, height: 60.0))
+        #expect(color.description == "#0000FFFF")
+    }
+
+    @Test(.tags(.aigc))
+    func staticCommandsIgnoreUnmatchedState() {
+        let content = item(
+            .content(.init(
+                .color(.init(colorSpace: .sRGBLinear, red: 1.0, green: 0.0, blue: 0.0)),
+                seed: .init(decodedValue: 1)
+            )),
+            frame: CGRect(x: 0.0, y: 0.0, width: 10.0, height: 20.0)
+        )
+        let states = item(
+            .states([(StrongHash(of: 1), DisplayList(content))]),
+            frame: .zero
+        )
+        let unmatchedState = item(
+            .effect(.state(StrongHash(of: 2)), DisplayList(states)),
+            frame: .zero
+        )
+
+        #expect(DisplayList(unmatchedState).staticRenderCommands().isEmpty)
+    }
+
+    #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+    @Test
+    func webFrame() {
+        let item = item(
+            .content(.init(
+                .color(.init(colorSpace: .sRGBLinear, red: 1.0, green: 0.5, blue: 0.0)),
+                seed: .init(decodedValue: 2)
+            )),
+            frame: CGRect(x: 8.0, y: 12.0, width: 32.0, height: 48.0)
+        )
+
+        let frame = DisplayList(item).webRenderFrame(
+            surface: CGSize(width: 320.0, height: 240.0),
+            version: .init(decodedValue: 9)
+        )
+
+        #expect(frame.surface == CGSize(width: 320.0, height: 240.0))
+        #expect(frame.version == 9)
+        #expect(frame.commands.count == 1)
+        guard case let .fill(rect, transform, cssColor, .rectangle) = frame.commands[0] else {
+            Issue.record("Expected a fill command")
+            return
+        }
+        #expect(rect == CGRect(x: 0.0, y: 0.0, width: 32.0, height: 48.0))
+        #expect(transform == CGAffineTransform(translationX: 8.0, y: 12.0))
+        #expect(cssColor == "#FFBC00FF")
+    }
+
+    @Test
+    func webFramePreservesAffineTransformAndClampsCSSColor() {
+        let content = item(
+            .content(.init(
+                .color(.init(
+                    colorSpace: .sRGBLinear,
+                    red: 4.0,
+                    green: -1.0,
+                    blue: .nan,
+                    opacity: 2.0
+                )),
+                seed: .init(decodedValue: 3)
+            )),
+            frame: CGRect(x: 2.0, y: 3.0, width: 4.0, height: 5.0)
+        )
+        let rotation = CGAffineTransform(
+            a: 0.0,
+            b: 1.0,
+            c: -1.0,
+            d: 0.0,
+            tx: 0.0,
+            ty: 0.0
+        )
+        let transformed = item(
+            .effect(.transform(.affine(rotation)), DisplayList(content)),
+            frame: .zero
+        )
+
+        let frame = DisplayList(transformed).webRenderFrame(
+            surface: CGSize(width: 20.0, height: 20.0),
+            version: .init(decodedValue: 10)
+        )
+
+        #expect(frame.commands.count == 1)
+        guard case let .fill(rect, transform, cssColor, .rectangle) = frame.commands[0] else {
+            Issue.record("Expected a fill command")
+            return
+        }
+        #expect(rect == CGRect(x: 0.0, y: 0.0, width: 4.0, height: 5.0))
+        #expect(transform == rotation.translatedBy(x: 2.0, y: 3.0))
+        #expect(cssColor == "#FF0000FF")
+    }
+
+    @Test
+    func webFramePreservesCircularRoundedShapeGeometry() {
+        let localBounds = CGRect(x: 2.0, y: 3.0, width: 51.0, height: 31.0)
+        let path = Path(roundedRect: localBounds, cornerRadius: 20.0, style: .circular)
+        let color = Color.Resolved(colorSpace: .sRGBLinear, red: 0.0, green: 1.0, blue: 0.0)
+        let content = item(
+            .content(.init(.shape(path, _AnyResolvedPaint(color), .init()), seed: .init(decodedValue: 1))),
+            frame: CGRect(x: 8.0, y: 12.0, width: 60.0, height: 40.0)
+        )
+
+        let frame = DisplayList(content).webRenderFrame(
+            surface: CGSize(width: 320.0, height: 240.0),
+            version: .init(decodedValue: 1)
+        )
+
+        guard frame.commands.count == 1,
+              case let .fill(bounds, transform, cssColor, .roundedRectangle(radius)) = frame.commands[0]
+        else {
+            Issue.record("Expected the web frame to preserve the rounded shape")
+            return
+        }
+        #expect(bounds == localBounds)
+        #expect(transform == CGAffineTransform(translationX: 8.0, y: 12.0))
+        #expect(cssColor == "#00FF00FF")
+        #expect(radius == 15.5)
+    }
+
+    #endif
+
+    @Test
+    func staticTextCommandPreservesContentGeometryAndOpacity() {
+        let style = StaticTextStyle(pointSize: 24.0, weight: 0.4)
+        let color = Color.Resolved(
+            colorSpace: .sRGBLinear,
+            red: 0.0,
+            green: 1.0,
+            blue: 1.0
+        )
+        let storage = NSAttributedString(
+            string: "你好，Safari 👋🏽",
+            attributes: [
+                .openSwiftUIStaticTextStyle: style,
+                .openSwiftUIStaticTextForegroundColor: color,
+            ]
+        )
+        let measurementProvider = StaticTextMeasurementProvider { request in
+            #expect(request.text == "你好，Safari 👋🏽")
+            #expect(request.style == style)
+            return StaticTextMetrics(
+                size: CGSize(width: 180.0, height: 30.0),
+                firstBaseline: 23.0,
+                lastBaseline: 23.0,
+                numberOfLines: 1
+            )
+        }
+        let resolved = ResolvedStyledText.styledText(
+            storage: storage,
+            layoutProperties: TextLayoutProperties(),
+            layoutMargins: .zero,
+            stylePadding: .zero,
+            archiveOptions: .init(),
+            isCollapsible: false,
+            features: .init(),
+            suffix: .none,
+            attachments: .init(),
+            styles: [],
+            transitions: [],
+            scaleFactorOverride: nil,
+            textMeasurementProvider: measurementProvider
+        )
+        let content = item(
+            .content(.init(
+                .text(
+                    StyledTextContentView(text: resolved),
+                    CGSize(width: 180.0, height: 30.0)
+                ),
+                seed: .init(decodedValue: 4)
+            )),
+            frame: CGRect(x: 12.0, y: 18.0, width: 180.0, height: 30.0)
+        )
+        let faded = item(
+            .effect(.opacity(0.5), DisplayList(content)),
+            frame: .zero
+        )
+
+        let commands = DisplayList(faded).staticRenderCommands()
+
+        #expect(commands.count == 1)
+        guard case let .text(
+            rect,
+            transform,
+            text,
+            renderedStyle,
+            renderedColor,
+            firstBaseline
+        ) = commands[0] else {
+            Issue.record("Expected a text command")
+            return
+        }
+        #expect(rect == CGRect(x: 0.0, y: 0.0, width: 180.0, height: 30.0))
+        #expect(transform == CGAffineTransform(translationX: 12.0, y: 18.0))
+        #expect(text == "你好，Safari 👋🏽")
+        #expect(renderedStyle == style)
+        #expect(renderedColor.description == "#00FFFF80")
+        #expect(firstBaseline == 23.0)
     }
 
     private func item(
