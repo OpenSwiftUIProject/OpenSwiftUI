@@ -243,14 +243,10 @@ extension FontDefinition {
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
     public static func resolveFontInfo(_ font: CTFont) -> Font.ResolvedTraits {
-        #if canImport(CoreText)
         Font.ResolvedTraits(
             pointSize: font.pointSize,
             weight: font.weight
         )
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
     }
 }
 
