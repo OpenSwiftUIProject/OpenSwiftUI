@@ -6,8 +6,14 @@
 //  Status: Complete
 //  ID: 20E520D074F8AF54E6253E3E22B86490 (SwiftUI)
 
+#if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+@_spi(StdoutRenderer)
+@_spi(WebRenderer)
+public import OpenSwiftUICore
+#else
 @_spi(StdoutRenderer)
 public import OpenSwiftUICore
+#endif
 
 // MARK: - App
 
@@ -134,7 +140,12 @@ public protocol App {
     ///
     /// If set, OpenSwiftUI applies this configuration to renderers that it
     /// creates for the app.
+    #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
     @_spi(StdoutRenderer)
+    @_spi(WebRenderer)
+    #else
+    @_spi(StdoutRenderer)
+    #endif
     nonisolated static var rendererConfiguration: _RendererConfiguration? { get }
     #endif
     /* OpenSwiftUI Addition End */
@@ -154,10 +165,23 @@ extension App {
         let app = Self()
         /* OpenSwiftUI Addition Begin */
         #if !OPENSWIFTUI_SWIFTUI_RENDERER
-        if let rendererConfiguration = Self.rendererConfiguration,
-           case let .stdout(options) = rendererConfiguration.renderer {
-            runStdoutApp(app, options: options)
+        if let rendererConfiguration = Self.rendererConfiguration {
+            switch rendererConfiguration.renderer {
+            case let .stdout(options):
+                runStdoutApp(app, options: options)
+            #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+            case let .web(options):
+                runWebApp(app, options: options)
+                return
+            #endif
+            default:
+                break
+            }
         }
+        #if os(WASI) && OPENSWIFTUI_DEFAULT_WEB_HOST
+        runDefaultWebApp(app)
+        return
+        #endif
         #endif
         /* OpenSwiftUI Addition End */
         runApp(app)
@@ -213,11 +237,18 @@ typealias PlatformApplicationDelegate = AnyObject
 
 func runApp<Application>(_ app: Application) -> Never where Application: App {
     let rendererConfiguration = Application.rendererConfiguration ?? .stdout()
-    guard case let .stdout(options) = rendererConfiguration.renderer else {
-        print("OpenSwiftUI currently supports only the stdout renderer on this platform.")
+    switch rendererConfiguration.renderer {
+    case let .stdout(options):
+        runStdoutApp(app, options: options)
+    #if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+    case let .web(options):
+        runWebApp(app, options: options)
+        exit(0)
+    #endif
+    default:
+        print("OpenSwiftUI currently supports only headless renderers on this platform.")
         exit(1)
     }
-    runStdoutApp(app, options: options)
 }
 
 func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escaping (any TestHost, any TestHost) -> ()) -> Never where V1: View, V2: View {

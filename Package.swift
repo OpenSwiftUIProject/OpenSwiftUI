@@ -120,9 +120,11 @@ EnvManager.shared.register(domain: "OpenSwiftUI")
 
 // MARK: - Env and config
 
+let buildForWASIPlatform = envBoolValue("WASI", default: false)
+
 #if os(macOS)
-// NOTE: #if os(macOS) check is not accurate if we are cross compiling for Linux platform. So we add an env key to specify it.
-let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM", default: true)
+// NOTE: #if os(macOS) check is not accurate if we are cross compiling for Linux/WASI platform. So we add an env key to specify it.
+let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM", default: !buildForWASIPlatform)
 #else
 let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM")
 #endif
@@ -146,7 +148,7 @@ let useLocalDeps = envBoolValue("USE_LOCAL_DEPS", default: false)
 let versionedDocCPlugin = envBoolValue("VERSIONED_DOCC_PLUGIN", default: false)
 
 // For OpenAttributeGraphShims
-let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
+let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: buildForWASIPlatform)
 let danceUIGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_DANCEUIGRAPH", default: false)
 let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
 
@@ -168,7 +170,8 @@ let symbolLocatorCondition = envBoolValue("SYMBOL_LOCATOR", default: buildForDar
 let openCombineCondition = envBoolValue("OPENCOMBINE", default: !buildForDarwinPlatform)
 let swiftLogCondition = envBoolValue("SWIFT_LOG", default: !buildForDarwinPlatform)
 let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwinPlatform)
-let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
+let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform && !buildForWASIPlatform)
+let defaultWebHostCondition = envBoolValue("DEFAULT_WEB_HOST", default: buildForWASIPlatform)
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
 
@@ -203,6 +206,7 @@ var sharedCSettings: [CSetting] = [
     .unsafeFlags(["-ftyped-memory-operations"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fmodules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .define("_WASI_EMULATED_MMAN", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
@@ -214,6 +218,7 @@ var sharedCxxSettings: [CXXSetting] = [
     .unsafeFlags(["-ftyped-cxx-new-delete"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fcxx-modules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .define("_WASI_EMULATED_MMAN", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
@@ -501,7 +506,13 @@ extension Target {
 
     func addOpenCombineSettings() {
         dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
-        dependencies.append(.product(name: "OpenCombineFoundation", package: "OpenCombine"))
+        dependencies.append(
+            .product(
+                name: "OpenCombineFoundation",
+                package: "OpenCombine",
+                condition: .when(platforms: .nonWASIPlatforms)
+            )
+        )
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
         self.swiftSettings = swiftSettings
@@ -539,6 +550,10 @@ extension [Platform] {
 
     static var nonDarwinPlatforms: [Platform] {
         [.linux, .android, .wasi, .openbsd, .windows]
+    }
+
+    static var nonWASIPlatforms: [Platform] {
+        darwinPlatforms + [.linux, .android, .openbsd, .windows]
     }
 }
 
@@ -744,6 +759,8 @@ let openSwiftUITarget = Target.target(
         // -lAccessibility
         // For Accessibility private API link support
         .linkedLibrary("Accessibility", .when(platforms: [.iOS, .visionOS])),
+        .linkedLibrary("wasi-emulated-signal", .when(platforms: [.wasi])),
+        .linkedLibrary("wasi-emulated-mman", .when(platforms: [.wasi])),
     ]
 )
 
@@ -815,6 +832,21 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
+// MARK: - OpenSwiftUIWebDeploy Plugin Target
+
+let openSwiftUIWebDeployPluginTarget = Target.plugin(
+    name: "OpenSwiftUIWebDeploy",
+    capability: .command(
+        intent: .custom(
+            verb: "web-deploy",
+            description: "Build an OpenSwiftUI executable product for WASI and emit a deployable static Web site."
+        ),
+        permissions: [
+            .writeToPackageDirectory(reason: "Write the packaged Web bundle and static HTML/JS assets.")
+        ]
+    )
+)
+
 // MARK: - OpenSwiftUISymbolDualTests Target
 
 let openSwiftUISymbolDualTestsSupportTarget = Target.target(
@@ -858,7 +890,8 @@ default:
 }
 
 var products: [PackageDescription.Product] = [
-    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"])
+    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"]),
+    .plugin(name: "OpenSwiftUIWebDeploy", targets: ["OpenSwiftUIWebDeploy"]),
 ]
 if supportMultiProducts {
     products += [
@@ -888,6 +921,7 @@ let package = Package(
         openSwiftUITestsSupportTarget,
         openSwiftUIExtensionTarget,
         openSwiftUIBridgeTarget,
+        openSwiftUIWebDeployPluginTarget,
     ]
 )
 
@@ -1022,17 +1056,33 @@ if useLocalDeps {
     }
     package.dependencies += dependencies
 } else {
+    let wasiDepsBranch = envStringValue("WASI_DEPS_BRANCH", default: "wasi/dev")
+    let coreDepsBranch = buildForWASIPlatform ? wasiDepsBranch : "main"
+    let observationBranch = envStringValue("OBSERVATION_BRANCH", default: "main")
     var dependencies: [Package.Dependency] = [
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenCoreGraphics", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCoreGraphics", branch: coreDepsBranch),
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenAttributeGraph", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenAttributeGraph", branch: coreDepsBranch),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: coreDepsBranch),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: observationBranch),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreMaterial || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkGestures {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
+}
+
+if defaultWebHostCondition {
+    package.dependencies.append(
+        .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", exact: "0.57.0")
+    )
+    openSwiftUITarget.dependencies += [
+        .product(name: "JavaScriptKit", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
+        .product(name: "JavaScriptEventLoop", package: "JavaScriptKit", condition: .when(platforms: [.wasi])),
+    ]
+    openSwiftUITarget.swiftSettings = (openSwiftUITarget.swiftSettings ?? []) + [
+        .define("OPENSWIFTUI_DEFAULT_WEB_HOST", .when(platforms: [.wasi])),
+    ]
 }
 
 if openCombineCondition {
