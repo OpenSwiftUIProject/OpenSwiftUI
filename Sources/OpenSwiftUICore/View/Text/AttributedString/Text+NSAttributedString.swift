@@ -263,6 +263,9 @@ extension NSAttributedString {
             outsets: outsets
         )
         #else
+        if let system = PlatformTextSystems.current {
+            return system.fontMetrics(self)
+        }
         _openSwiftUIPlatformUnimplementedWarning()
         return EncodedFontMetrics()
         #endif
