@@ -388,7 +388,7 @@ public struct Text: Equatable, Sendable {
         storage = .verbatim(String(content))
     }
 
-    package func modified(with modifier: Text.Modifier) -> Text {
+    nonisolated package func modified(with modifier: Text.Modifier) -> Text {
         var modifiedText = self
         modifiedText.modifiers.append(modifier)
         return modifiedText
