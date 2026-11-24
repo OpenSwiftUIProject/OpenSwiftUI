@@ -9,6 +9,13 @@
 
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenSwiftUIProject%2FOpenSwiftUI%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI) [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenSwiftUIProject%2FOpenSwiftUI%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI) [![codecov](https://codecov.io/gh/OpenSwiftUIProject/OpenSwiftUI/graph/badge.svg?token=S63P3YUCAJ)](https://codecov.io/gh/OpenSwiftUIProject/OpenSwiftUI) [![API coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fopenswiftuiproject.github.io%2FInterfaceCoverage%2Fbadges%2Fopenswiftui-ios-ios-18-5-swiftui-swiftuicore-default.json)](https://openswiftuiproject.github.io/InterfaceCoverage/?project=OpenSwiftUI&target=iOS&scope=SwiftUI%20%2B%20SwiftUICore&baseline=iOS%2018.5)
 
+> [!IMPORTANT]
+> **WASI Branch Commit Policy**
+>
+> Commits on this branch are organized so that self-contained fixes and general cross-platform improvements will be cherry-picked into `main` individually, while the remaining WASI-specific commits require further review and manual judgment before upstream integration.
+>
+> To clone or switch sibling dependency repositories (`Compute`, `DarwinPrivateFrameworks`, `OpenAttributeGraph`, `OpenCoreGraphics`, `OpenObservation`, and `OpenRenderBox`) to matching branches for local development (`OPENSWIFTUI_USE_LOCAL_DEPS=1`), run `./Scripts/wasm_setup.sh`.
+
 OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
 The project is for the following purposes:
