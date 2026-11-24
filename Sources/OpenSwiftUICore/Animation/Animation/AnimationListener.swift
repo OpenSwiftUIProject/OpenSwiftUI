@@ -48,7 +48,7 @@ private final class ListenerPair: AnimationListener, @unchecked Sendable {
     }
 
     override func animationWasRemoved() {
-        first.animationWasAdded()
+        first.animationWasRemoved()
         second.animationWasRemoved()
     }
 }
