@@ -18,6 +18,7 @@ struct GroupBoxExample: View {
     var body: some View {
         GroupBox {
             VStack(alignment: .leading, spacing: 12) {
+                // TODO: Place the terms in a ScrollView when OpenSwiftUI supports it.
                 Text("Use this sample for evaluation. Keep a copy of the terms for your records.")
                     .font(.footnote)
                 Toggle("I agree to the above terms", isOn: $userAgreed)
