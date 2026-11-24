@@ -304,7 +304,8 @@ extension Text.Style {
             properties: &properties,
             includeDefaultAttributes: includeDefaultAttributes && !options.contains(.writeAuxiliaryMetadata)
         ) {
-            attributes[.kitForegroundColor] = color.kitColor
+            let foreground = shouldRedactContent ? color.multiplyingOpacity(by: 0.16) : color
+            attributes[.kitForegroundColor] = foreground.kitColor
             properties.addColor(color)
         }
         if let backgroundColor {
