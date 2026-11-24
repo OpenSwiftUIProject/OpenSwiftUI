@@ -38,11 +38,11 @@ extension AttributedString {
 // MARK: - NSAttributedString.Key + Kit Extension
 
 extension NSAttributedString.Key {
-    static let kitFont: NSAttributedString.Key = .init("NSFont")
+    package static let kitFont: NSAttributedString.Key = .init("NSFont")
 
-    static let kitParagraphStyle: NSAttributedString.Key = .init("NSParagraphStyle")
+    package static let kitParagraphStyle: NSAttributedString.Key = .init("NSParagraphStyle")
 
-    static let kitForegroundColor: NSAttributedString.Key = .init("NSColor")
+    package static let kitForegroundColor: NSAttributedString.Key = .init("NSColor")
 
     static let kitBackgroundColor: NSAttributedString.Key = .init("NSBackgroundColor")
 
