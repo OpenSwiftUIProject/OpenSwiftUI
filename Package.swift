@@ -171,6 +171,11 @@ let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwin
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
+let androidAppCondition = envBoolValue("ANDROID_APP", default: envBoolValue("ANDROID_UIKIT"))
+let uikitCrossPlatformCondition = envBoolValue("UIKIT_CROSS_PLATFORM", default: androidAppCondition)
+let uikitCrossPlatformPlatforms: [Platform] = [.android, .linux]
+precondition(!androidAppCondition || uikitCrossPlatformCondition, "The Android app requires OPENSWIFTUI_UIKIT_CROSS_PLATFORM=1.")
+let androidSwiftStaticLibDir = envStringValue("ANDROID_SWIFT_STATIC_LIB_DIR")
 
 let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocGenerationBuild && !compatibilityTestCondition)
 
@@ -251,6 +256,9 @@ if !compatibilityTestCondition {
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
+}
+if uikitCrossPlatformCondition {
+    sharedSwiftSettings.append(.define("UIKIT_CROSS_PLATFORM", .when(platforms: uikitCrossPlatformPlatforms)))
 }
 
 sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
@@ -765,6 +773,72 @@ let openSwiftUIExtensionTarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
+var openSwiftUIAndroidDemoLinkerSettings: [LinkerSetting] = [
+    .linkedLibrary("ssl", .when(platforms: [.android])),
+    .linkedLibrary("crypto", .when(platforms: [.android])),
+    .linkedLibrary("z", .when(platforms: [.android])),
+    .unsafeFlags(["-Xlinker", "--allow-multiple-definition"], .when(platforms: [.android])),
+]
+
+if let androidSwiftStaticLibDir {
+    openSwiftUIAndroidDemoLinkerSettings.append(
+        .unsafeFlags(["-Xlinker", "-L\(androidSwiftStaticLibDir)"], .when(platforms: [.android]))
+    )
+}
+
+let openSwiftUIAndroidRuntimeShimsTarget = Target.target(
+    name: "OpenSwiftUIAndroidRuntimeShims",
+    cSettings: sharedCSettings
+)
+
+let openSwiftUIUIKitCrossPlatformTarget = Target.target(
+    name: "OpenSwiftUIUIKitCrossPlatform",
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUICore",
+        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
+        .product(name: "UIKit", package: "UIKit-cross-platform", condition: .when(platforms: uikitCrossPlatformPlatforms)),
+    ],
+    swiftSettings: sharedSwiftSettings + [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ]
+)
+
+let openSwiftUIAndroidDemoTarget = Target.target(
+    name: "OpenSwiftUIAndroidDemo",
+    dependencies: [
+        "OpenSwiftUIDemoContent",
+        "OpenSwiftUICore",
+        .target(name: "OpenSwiftUIUIKitCrossPlatform", condition: .when(platforms: [.android])),
+        .target(name: "OpenSwiftUIAndroidRuntimeShims", condition: .when(platforms: [.android])),
+        .product(name: "UIKit", package: "UIKit-cross-platform", condition: .when(platforms: [.android])),
+        .product(name: "JNI", package: "swift-jni", condition: .when(platforms: [.android])),
+    ],
+    swiftSettings: sharedSwiftSettings + [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ],
+    linkerSettings: openSwiftUIAndroidDemoLinkerSettings
+)
+
+let openSwiftUILinuxDemoTarget = Target.executableTarget(
+    name: "OpenSwiftUILinuxDemo",
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUIDemoContent",
+    ],
+    swiftSettings: sharedSwiftSettings + (androidAppCondition ? [
+        .define("OPENSWIFTUI_ANDROID_APP", .when(platforms: [.android])),
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ] : []),
+    linkerSettings: [
+        .linkedLibrary("ssl", .when(platforms: [.android])),
+        .linkedLibrary("crypto", .when(platforms: [.android])),
+        .linkedLibrary("z", .when(platforms: [.android])),
+    ] + (androidAppCondition ? [
+        .unsafeFlags(["-Xlinker", "--allow-multiple-definition"], .when(platforms: [.android])),
+    ] : [])
+)
+
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
@@ -870,6 +944,17 @@ if supportMultiProducts {
     ]
 }
 
+if !buildForDarwinPlatform {
+    products.append(.executable(name: "OpenSwiftUILinuxDemo", targets: ["OpenSwiftUILinuxDemo"]))
+}
+if uikitCrossPlatformCondition {
+    products.append(.library(name: "OpenSwiftUIUIKitCrossPlatform", targets: ["OpenSwiftUIUIKitCrossPlatform"]))
+}
+if androidAppCondition {
+    products.append(.library(name: "OpenSwiftUIAndroidDemo", type: .dynamic, targets: ["OpenSwiftUIAndroidDemo"]))
+    products.append(.library(name: "OpenSwiftUIAndroidHost", targets: ["OpenSwiftUIAndroidDemo"]))
+}
+
 // MARK: - Package
 
 let package = Package(
@@ -888,7 +973,8 @@ let package = Package(
         openSwiftUITestsSupportTarget,
         openSwiftUIExtensionTarget,
         openSwiftUIBridgeTarget,
-    ]
+    ],
+    cxxLanguageStandard: androidAppCondition ? .cxx20 : nil
 )
 
 if versionedDocCPlugin {
@@ -902,6 +988,24 @@ if versionedDocCPlugin {
 
 if renderGTKCondition {
     package.targets.append(cgtkTarget)
+}
+
+if !buildForDarwinPlatform {
+    package.targets.append(openSwiftUILinuxDemoTarget)
+}
+if !buildForDarwinPlatform || androidAppCondition {
+    package.targets.append(.target(
+        name: "OpenSwiftUIDemoContent",
+        dependencies: ["OpenSwiftUI"],
+        swiftSettings: sharedSwiftSettings
+    ))
+}
+if uikitCrossPlatformCondition {
+    package.targets.append(openSwiftUIUIKitCrossPlatformTarget)
+}
+if androidAppCondition {
+    package.targets.append(openSwiftUIAndroidRuntimeShimsTarget)
+    package.targets.append(openSwiftUIAndroidDemoTarget)
 }
 
 if !compatibilityTestCondition {
@@ -1010,6 +1114,8 @@ if linkBacklightServices {
     openSwiftUISPITarget.addBacklightServicesSettings()
 }
 
+let androidDepsBranch = envStringValue("ANDROID_DEPS_BRANCH", default: "android/dev")
+
 if useLocalDeps {
     var dependencies: [Package.Dependency] = [
         .package(path: "../OpenCoreGraphics"),
@@ -1022,11 +1128,12 @@ if useLocalDeps {
     }
     package.dependencies += dependencies
 } else {
+    let renderBoxBranch = envStringValue("RENDERBOX_BRANCH", default: uikitCrossPlatformCondition ? androidDepsBranch : "main")
     var dependencies: [Package.Dependency] = [
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCoreGraphics", branch: "main"),
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenAttributeGraph", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: renderBoxBranch),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreMaterial || linkCoreSVG || linkSFSymbols || linkSymbols || linkFeatureFlags || linkGestures {
@@ -1060,6 +1167,32 @@ if swiftCryptoCondition {
     )
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
+}
+
+if uikitCrossPlatformCondition {
+    if let uikitPath = envStringValue("UIKIT_CROSS_PLATFORM_PATH") ?? envStringValue("ANDROID_UIKIT_PATH") {
+        package.dependencies.append(.package(path: uikitPath))
+    } else if useLocalDeps {
+        package.dependencies.append(.package(path: "../UIKit-cross-platform"))
+    } else {
+        let uikitBranch = envStringValue("UIKIT_CROSS_PLATFORM_BRANCH", default: androidDepsBranch)
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/UIKit-cross-platform", branch: uikitBranch)
+        )
+    }
+}
+
+if androidAppCondition {
+    if computeCondition && !useLocalDeps {
+        let computeBranch = envStringValue("COMPUTE_BRANCH", default: androidDepsBranch)
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/Compute", branch: computeBranch)
+        )
+    }
+    package.dependencies.append(.package(url: "https://github.com/SwiftAndroid/swift-jni", from: "3.0.0"))
+    openSwiftUILinuxDemoTarget.dependencies.append(
+        .target(name: "OpenSwiftUIAndroidDemo", condition: .when(platforms: [.android]))
+    )
 }
 
 #if TUIST
