@@ -102,3 +102,16 @@ package struct PreviewMacro: DeclarationMacro {
         return wrappedBody.formatted().cast(ClosureExprSyntax.self)
     }
 }
+
+package struct NoopPreviewMacro: DeclarationMacro {
+    package static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> [DeclSyntax] {
+        if node.trailingClosure == nil,
+           !node.arguments.contains(where: { $0.label?.text == "body" }) {
+            throw MacroExpansionErrorMessage("#Preview requires a view body")
+        }
+        return []
+    }
+}
