@@ -32,6 +32,18 @@ struct PathTests {
         #expect(!path.contains(CGPoint(x: 11, y: 21)))
     }
 
+    #if UIKIT_CROSS_PLATFORM || canImport(Darwin)
+    @Test
+    func roundedRectangleHitRegion() {
+        let path = Path(roundedRect: CGRect(x: 10, y: 20, width: 80, height: 36),
+                        cornerRadius: 12, style: .circular)
+        #expect(path.contains(CGPoint(x: 50, y: 38)))
+        #expect(path.contains(CGPoint(x: 11, y: 38)))
+        #expect(!path.contains(CGPoint(x: 11, y: 21)))
+        #expect(!path.contains(CGPoint(x: 9, y: 38)))
+    }
+    #endif
+
     @Test
     func coordinateConversionUpdatesPath() {
         var transform = ViewTransform()
