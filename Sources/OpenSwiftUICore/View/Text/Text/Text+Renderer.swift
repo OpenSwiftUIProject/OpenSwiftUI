@@ -656,7 +656,7 @@ extension Text {
     ///
     /// - Parameter font: The font to use when displaying this text.
     /// - Returns: Text that uses the font you specify.
-    public func font(_ font: Font?) -> Text {
+    nonisolated public func font(_ font: Font?) -> Text {
         modified(with: .font(font))
     }
 
