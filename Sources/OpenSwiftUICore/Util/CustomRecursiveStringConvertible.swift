@@ -225,7 +225,7 @@ extension Color.Resolved {
     package var name: String? {
         @inline(__always)
         func quantize(_ value: Float) -> Float {
-            round(value * 256.0) / 256.0
+            Foundation.roundf(value * 256.0) / 256.0
         }
         return colorNameForColorComponents(
             quantize(linearRed),
