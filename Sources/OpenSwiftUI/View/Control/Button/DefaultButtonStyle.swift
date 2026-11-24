@@ -88,6 +88,9 @@ public struct DefaultButtonStyle: PrimitiveButtonStyle {
             ))
             #endif
             .buttonStyle(PlatformFallbackButtonStyle())
+        #elseif UIKIT_CROSS_PLATFORM
+        Button(configuration)
+            .buttonStyle(PlatformFallbackButtonStyle())
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
@@ -120,6 +123,9 @@ struct PlatformFallbackButtonStyle: PrimitiveButtonStyle {
             ))
             .buttonStyle(ConditionallyBorderedStyle())
             #endif
+        #elseif UIKIT_CROSS_PLATFORM
+        Button(configuration)
+            .buttonStyle(PlainButtonStyle())
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif

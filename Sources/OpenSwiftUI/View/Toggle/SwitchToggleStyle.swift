@@ -114,6 +114,9 @@ public struct SwitchToggleStyle: ToggleStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
+        #if UIKIT_CROSS_PLATFORM
+        PortableSwitch(configuration: configuration, tint: tint ?? controlTint)
+        #else
         LabeledContent {
             #if os(iOS) || os(visionOS)
             Switch(isOn: configuration.$isOn, tint: tint ?? controlTint, thumbTint: placementTint[.switchThumb], font: font)
@@ -145,6 +148,7 @@ public struct SwitchToggleStyle: ToggleStyle {
         .gesture(PhysicalButtonPressGesture(allowedButtonTypes: [.select]).onEnded { _ in
             configuration.isOn.toggle()
         })
+        #endif
         #endif
     }
 }

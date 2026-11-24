@@ -65,6 +65,10 @@ public struct BorderedProminentButtonStyle: PrimitiveButtonStyle {
             .buttonStyle(buttonStyleRepresentation)
             #endif
             .input(ButtonContainerIsBorderedInput.self)
+        #elseif UIKIT_CROSS_PLATFORM
+        Button(configuration)
+            .buttonStyle(PortableBorderedButtonStyle(tint: nil, isProminent: true))
+            .input(ButtonContainerIsBorderedInput.self)
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif

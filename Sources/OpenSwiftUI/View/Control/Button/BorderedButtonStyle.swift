@@ -80,11 +80,53 @@ public struct BorderedButtonStyle: PrimitiveButtonStyle {
             .buttonStyle(BorderedButtonStyle_Phone(tint: tint, isProminent: isProminent))
             #endif
             .input(ButtonContainerIsBorderedInput.self)
+        #elseif UIKIT_CROSS_PLATFORM
+        Button(configuration)
+            .buttonStyle(PortableBorderedButtonStyle(tint: tint, isProminent: isProminent))
+            .input(ButtonContainerIsBorderedInput.self)
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
     }
 }
+
+#if UIKIT_CROSS_PLATFORM
+struct PortableBorderedButtonStyle: ButtonStyle {
+    @Environment(\.tintColor) private var environmentTint: Color?
+    @Environment(\._buttonBorderShape) private var borderShape: ButtonBorderShape
+    @Environment(\.controlSize) private var controlSize: ControlSize
+    @Environment(\.isEnabled) private var isEnabled: Bool
+
+    let tint: Color?
+    let isProminent: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        let resolvedTint = tint ?? environmentTint ?? .accentColor
+        let shape = ResolvedBorderShape(
+            controlSize: controlSize,
+            base: borderShape,
+            padding: .zero
+        )
+        let horizontalPadding: CGFloat = borderShape == .circle ? 10 : 12
+        let verticalPadding: CGFloat = borderShape == .circle ? 10 : 7
+        return configuration.label
+            .foregroundStyle(isProminent ? Color.white : resolvedTint)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
+            .background {
+                shape.fill(
+                    resolvedTint.opacity(
+                        isProminent
+                            ? (configuration.isPressed ? 0.78 : 1.0)
+                            : (configuration.isPressed ? 0.24 : 0.15)
+                    )
+                )
+            }
+            .opacity(isEnabled ? 1.0 : 0.45)
+            .contentShape(shape)
+    }
+}
+#endif
 
 @available(*, unavailable)
 extension BorderedButtonStyle: Sendable {}
