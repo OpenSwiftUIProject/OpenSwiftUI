@@ -115,6 +115,36 @@ private func expectApproximatelyEqual(
 // Override tests also use the main actor to exclude graph tests in other suites.
 @Suite(.serialized)
 struct NSAttributedStringTests {
+    @MainActor
+    @Test(arguments: [
+        (.privacy, true, 0.08),
+        (.privacy, false, 0.5),
+        (.placeholder, false, 0.08),
+        ([], true, 0.5),
+    ] as [(RedactionReasons, Bool, Float)])
+    func redactedTextColors(reasons: RedactionReasons, sensitive: Bool, expectedOpacity: Float) throws {
+        var environment = EnvironmentValues()
+        environment.redactionReasons = reasons
+        environment.sensitiveContent = sensitive
+        var style = Text.Style()
+        style.color = .explicit(AnyShapeStyle(Color(.sRGB, red: 1, green: 0, blue: 0, opacity: 0.5)))
+        style.backgroundColor = Color(.sRGB, red: 0, green: 0, blue: 1, opacity: 0.75)
+        var properties = Text.ResolvedProperties()
+        let attributes = style.nsAttributes(
+            content: nil,
+            environment: environment,
+            includeDefaultAttributes: false,
+            with: [],
+            properties: &properties
+        )
+        let foreground = try #require(attributes[.kitForegroundColor] as? NSObject)
+        let background = try #require(attributes[.kitBackgroundColor] as? NSObject)
+        let expectedForeground = Color.Resolved(linearRed: 1, linearGreen: 0, linearBlue: 0, opacity: expectedOpacity)
+        let expectedBackground = Color.Resolved(linearRed: 0, linearGreen: 0, linearBlue: 1, opacity: 0.75)
+        #expect(foreground == expectedForeground.kitColor)
+        #expect(background == expectedBackground.kitColor)
+    }
+
     // MARK: - Max font metrics
 
     // `.serialized` is a recursive trait, so this suite inherits the serial

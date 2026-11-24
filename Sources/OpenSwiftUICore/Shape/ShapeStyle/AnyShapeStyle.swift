@@ -50,6 +50,16 @@ public struct AnyShapeStyle: ShapeStyle {
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {
         type.result = .bool(true)
     }
+
+    package func `as`<S>(type: S.Type) -> S? where S: ShapeStyle {
+        if S.self == Color.self, let box = storage.box as? AnyColorBox {
+            return unsafeBitCast(Color(box: box), to: S.self)
+        } else if S.self == AnyGradient.self, let box = storage.box as? AnyGradientBox {
+            return unsafeBitCast(AnyGradient(box: box), to: S.self)
+        } else {
+            return (storage.box as? ShapeStyleBox<S>).map { $0.base }
+        }
+    }
     
     public typealias Resolved = Never
 }
