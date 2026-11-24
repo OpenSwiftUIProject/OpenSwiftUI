@@ -12,7 +12,7 @@ import OpenAttributeGraphShims
 import OpenSwiftUICore
 import struct OpenSwiftUICore.UniqueID
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
 typealias AccessibilityNodeBase = UIResponder
 #else
 typealias AccessibilityNodeBase = NSObject
@@ -549,7 +549,7 @@ class AccessibilityNode: AccessibilityNodeBase {
         _openSwiftUIUnimplementedFailure()
     }
 
-    #if canImport(UIKit)
+    #if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
     override var next: UIResponder? {
         parent ?? viewRendererHost as? UIView
     }
@@ -560,7 +560,7 @@ class AccessibilityNode: AccessibilityNodeBase {
               impliedVisibility(consideringParent: true, with: nil) != .hidden else {
             return
         }
-        #if canImport(UIKit)
+        #if canImport(UIKit) && !UIKIT_CROSS_PLATFORM
         guard viewRendererHost is UIView else { return }
         #endif
         // TODO: Schedule AccessibilityCore.ScreenChanged on the main queue.
