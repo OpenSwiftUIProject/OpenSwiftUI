@@ -73,6 +73,9 @@ open class PlatformViewDefinition: @unchecked Sendable {
     #if !canImport(QuartzCore)
     // Non-QuartzCore backends share the updater's traversal, state, and view cache.
     open class func setShape(_ path: Path, color: Color.Resolved, style: FillStyle, of view: AnyObject) -> Bool { false }
+    #if UIKIT_CROSS_PLATFORM
+    open class func setShape(_ path: Path, gradient: PlatformGradient, style: FillStyle, of view: AnyObject) -> Bool { false }
+    #endif
     open class func viewLayer(_ view: AnyObject) -> CALayer { _openSwiftUIBaseClassAbstractMethod() }
     open class func subviews(_ view: AnyObject) -> [AnyObject] { _openSwiftUIBaseClassAbstractMethod() }
     open class func removeFromSuperview(_ view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
@@ -1373,6 +1376,13 @@ extension DisplayList.ViewUpdater.Platform {
             viewInfo.state.isContentGeometryEnabled = true
             return
         }
+        #if UIKIT_CROSS_PLATFORM
+        if let gradient = PlatformGradient(paint, bounds: CGRect(origin: .zero, size: size)),
+           definition.setShape(path, gradient: gradient, style: style, of: viewInfo.view) {
+            viewInfo.state.isContentGeometryEnabled = true
+            return
+        }
+        #endif
         _openSwiftUIPlatformUnimplementedWarning("DisplayList shape paint or path")
         _ = definition.setShape(Path(), color: .clear, style: style, of: viewInfo.view)
         viewInfo.state.isContentGeometryEnabled = true
