@@ -14,6 +14,9 @@ package typealias UniqueID = OpenSwiftUICore.UniqueID
 
 #if canImport(CoreGraphics)
 @_exported import CoreGraphics
+#else
+@_exported public import Foundation
+@_exported public import OpenCoreGraphicsShims
 #endif
 
 #if canImport(CoreTransferable)
