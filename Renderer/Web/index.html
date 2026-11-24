@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenSwiftUI Web Playground</title>
+  <link rel="stylesheet" href="/playground.css">
+</head>
+<body>
+  <main
+    id="playground"
+    data-testid="playground"
+    data-build-status="idle"
+    data-preview-status="empty"
+    data-source-revision=""
+    data-preview-revision=""
+    data-diagnostic-count="0"
+  >
+    <section class="pane editor-pane" data-testid="editor-pane">
+      <header class="toolbar">
+        <div class="toolbar-title">
+          <span class="app-mark" aria-hidden="true">OS</span>
+          <div>
+            <strong>ContentView.swift</strong>
+            <span class="subtitle">OpenSwiftUI · WASI</span>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <span class="status" role="status" aria-live="polite">
+            <span class="status-dot" data-testid="build-status-dot"></span>
+            <span data-testid="build-status">Connecting…</span>
+          </span>
+          <button class="reset-button" type="button" data-testid="reset-source-button" disabled>
+            Reset to Default
+          </button>
+          <button class="run-button" type="button" data-testid="run-button">
+            Run <kbd>⌘↩</kbd>
+          </button>
+        </div>
+      </header>
+
+      <span class="editor-label" id="source-editor-label">ContentView source</span>
+      <div
+        id="source-editor"
+        data-testid="source-editor"
+        aria-labelledby="source-editor-label"
+      ></div>
+
+      <section class="problems" aria-label="Build diagnostics">
+        <div class="problems-header">
+          <strong>Problems</strong>
+          <span data-testid="diagnostic-summary">No problems</span>
+        </div>
+        <ol class="diagnostic-list" data-testid="diagnostics"></ol>
+        <details class="build-log" data-testid="build-log-container" hidden>
+          <summary>Raw build log</summary>
+          <pre data-testid="build-log"></pre>
+        </details>
+      </section>
+    </section>
+
+    <section class="pane preview-pane" data-testid="preview-pane">
+      <header class="toolbar">
+        <div class="toolbar-title">
+          <strong>Preview</strong>
+          <span class="subtitle" data-testid="preview-revision">No successful build</span>
+        </div>
+        <span class="status preview-status" role="status" aria-live="polite">
+          <span class="status-dot"></span>
+          <span data-testid="preview-status">Waiting</span>
+        </span>
+      </header>
+      <div class="preview-stack" data-testid="preview-stack">
+        <div class="empty-preview" data-testid="empty-preview">
+          <span class="empty-preview-icon" aria-hidden="true">▶</span>
+          <strong>Preview will appear after the first successful build.</strong>
+          <span>Editing pauses trigger a build automatically.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Keep this preset separate from the compile input, which the playground overwrites. -->
+  <script id="default-content-view" type="text/plain">
+#if os(WASI) && !OPENSWIFTUI_SWIFTUI_RENDERER
+@_spi(WebRenderer) import OpenSwiftUI
+
+struct ContentView: View {
+    @State private var tapCount = 0
+    @State private var doubleTapCount = 0
+    @State private var gestureTapCount = 0
+
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(red: 0.06, green: 0.12, blue: 0.23), .black],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            VStack(spacing: 14) {
+                VStack(spacing: 4) {
+                    Text("SwiftUI on the Web")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(.white)
+                    JavaScriptReader(resolve: BrowserHostInfo.current) { host in
+                        Text("Host: \(host.displayName)")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.cyan)
+                    }
+                }
+
+                HStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Button("A") {
+                            print("A")
+                        }
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(.white)
+                        ControlSamples()
+                    }
+                    .frame(width: 300)
+
+                    GradientSamples()
+                }
+                TextStyleSamples()
+            }
+            .padding(20)
+        }
+    }
+}
+
+private struct ControlSamples: View {
+    @State private var isSliderEnabled = true
+    @State private var level = 25.0
+    @State private var isEditing = false
+    @State private var quantity = 2
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: $isSliderEnabled) {
+                Text("Enable slider")
+            }
+            Slider(value: $level, in: 0...100, step: 5) {
+                Text("Level: \(Int(level))")
+            } minimumValueLabel: {
+                Text("0")
+            } maximumValueLabel: {
+                Text("100")
+            } onEditingChanged: { editing in
+                isEditing = editing
+            }
+            .disabled(!isSliderEnabled)
+
+            Text(isSliderEnabled ? (isEditing ? "Editing" : "Idle") : "Slider disabled")
+                .foregroundStyle(isEditing ? Color.cyan : .gray)
+
+            Stepper(value: $quantity, in: 0...5) {
+                Text("Quantity: \(quantity)")
+            }
+        }
+        .foregroundStyle(Color.white)
+    }
+}
+
+private struct GradientSamples: View {
+    private let spectrum: [Color] = [.pink, .orange, .yellow, .green, .cyan, .blue, .purple]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Gradients")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.white)
+
+            HStack(spacing: 10) {
+                GradientTile(name: "Linear", style: LinearGradient(
+                    colors: spectrum, startPoint: .topLeading, endPoint: .bottomTrailing
+                ))
+                GradientTile(name: "Radial", style: RadialGradient(
+                    colors: spectrum, center: .center, startRadius: 0, endRadius: 70
+                ))
+            }
+            HStack(spacing: 10) {
+                GradientTile(name: "Elliptical", style: EllipticalGradient(
+                    colors: spectrum, center: .center, startRadiusFraction: 0, endRadiusFraction: 0.6
+                ))
+                GradientTile(name: "Angular", style: AngularGradient(
+                    colors: spectrum, center: .center, startAngle: .degrees(-45), endAngle: .degrees(225)
+                ))
+            }
+            GradientTile(name: "Conic", style: AngularGradient(
+                colors: spectrum + [.pink], center: .center, angle: .degrees(-45)
+            ), isWide: true)
+        }
+    }
+}
+
+private struct GradientTile<Style: ShapeStyle>: View {
+    var name: String
+    var style: Style
+    var isWide = false
+
+    var body: some View {
+        VStack(spacing: 3) {
+            RoundedRectangle(cornerRadius: 10, style: .circular)
+                .fill(style)
+                .frame(width: isWide ? 282 : 136, height: 60)
+            Text(verbatim: name)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color.white.opacity(0.85))
+        }
+    }
+}
+
+private struct TextStyleSamples: View {
+    var body: some View {
+        HStack(spacing: 20.0) {
+            Text("Red Light")
+                .fontWeight(.light)
+                .foregroundStyle(.red)
+            Text("Yellow Medium")
+                .fontWeight(.medium)
+                .foregroundStyle(.yellow)
+            Text("Blue Heavy")
+                .fontWeight(.heavy)
+                .foregroundStyle(.blue)
+            Text("Purple Black")
+                .fontWeight(.black)
+                .foregroundStyle(.purple)
+        }
+        .font(.system(size: 18.0))
+    }
+}
+#endif
+  </script>
+  <script src="/vendor/ace/ace.js"></script>
+  <script src="/vendor/ace/mode-swift.js"></script>
+  <script src="/vendor/ace/theme-one_dark.js"></script>
+  <script src="/swift6-mode.js"></script>
+  <script type="module" src="/playground.js"></script>
+</body>
+</html>

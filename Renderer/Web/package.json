@@ -1,0 +1,11 @@
+{
+  "name": "openswiftui-web-playground",
+  "private": true,
+  "scripts": {
+    "start": "python3 playground_server.py",
+    "test": "python3 -m unittest discover -s tests -v"
+  },
+  "dependencies": {
+    "ace-builds": "1.44.0"
+  }
+}

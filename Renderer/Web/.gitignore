@@ -1,0 +1,5 @@
+/.build/
+/Bundle/
+/.preview/
+/node_modules/
+/__pycache__/
