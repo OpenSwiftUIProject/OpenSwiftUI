@@ -18,6 +18,11 @@ package import QuartzCore_Private
 
 extension ContentStyle.MaterialStyle {
     package func resolveColor(in environment: EnvironmentValues) -> Color.Resolved {
+        #if UIKIT_CROSS_PLATFORM
+        if material.flags.contains(.translucentFallback) {
+            return base.id.resolve(in: environment)
+        }
+        #endif
         #if os(macOS)
         if case .coreMaterial = material.id {
             return resolveCoreMaterialColor(in: environment)
@@ -51,6 +56,11 @@ extension ContentStyle.MaterialStyle {
     }
 
     package func resolveEffects() -> [DisplayList.Effect] {
+        #if UIKIT_CROSS_PLATFORM
+        if material.flags.contains(.translucentFallback) {
+            return []
+        }
+        #endif
         #if os(macOS)
         if case .coreMaterial = material.id {
             return resolveCoreMaterialEffects()
@@ -78,6 +88,38 @@ extension ContentStyle.MaterialStyle {
         #endif
     }
 }
+
+#if UIKIT_CROSS_PLATFORM
+private struct MaterialTranslucentFallbackKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    package var materialUsesTranslucentFallback: Bool {
+        get { self[MaterialTranslucentFallbackKey.self] }
+        set { self[MaterialTranslucentFallbackKey.self] = newValue }
+    }
+}
+
+extension Material.ResolvedMaterial {
+    // The SDL compositor has no backdrop filter. Preserve thickness and contrast
+    // using a tint, or a solid surface when transparency is disabled.
+    var translucentFallbackColor: Color.Resolved {
+        let opacity: Float
+        switch id {
+        case .ultraThin: opacity = 0.25
+        case .thin: opacity = 0.42
+        case .regular, .coreMaterial: opacity = 0.60
+        case .thick, .systemBars: opacity = 0.76
+        case .ultraThick: opacity = 0.90
+        }
+        var color: Color.Resolved = colorScheme == .dark ? .black : .white
+        color.opacity = flags.contains(.reduceTransparency) ? 1 :
+            min(1, opacity + (flags.contains(.increasedContrast) ? 0.15 : 0))
+        return color
+    }
+}
+#endif
 
 #if os(macOS)
 // MARK: - Material.ResolvedMaterial
