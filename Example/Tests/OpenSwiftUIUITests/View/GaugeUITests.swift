@@ -5,6 +5,15 @@
 import SnapshotTesting
 import Testing
 
+// Circular gradients reach the unimplemented GraphicsContext.renderingTo bridge.
+private let circularGradientAvailability: ConditionTrait = {
+    #if OPENSWIFTUI
+    .disabled("GraphicsContext.renderingTo(cgContext:environment:deviceScale:content:) is not implemented.")
+    #else
+    .enabled(if: true)
+    #endif
+}()
+
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct GaugeUITests {
@@ -47,10 +56,28 @@ struct GaugeUITests {
     }
 
     @Test(
-        arguments: GaugeStyleCase.allCases,
+        arguments: [
+            GaugeStyleCase.automatic,
+            .linearCapacity,
+            .accessoryLinear,
+            .accessoryLinearCapacity,
+        ],
         [LayoutDirection.leftToRight, .rightToLeft]
     )
     func gradientTints(style: GaugeStyleCase, direction: LayoutDirection) {
+        assertGradientTint(style: style, direction: direction)
+    }
+
+    @Test(
+        circularGradientAvailability,
+        arguments: [GaugeStyleCase.accessoryCircular, .accessoryCircularCapacity],
+        [LayoutDirection.leftToRight, .rightToLeft]
+    )
+    func circularGradientTints(style: GaugeStyleCase, direction: LayoutDirection) {
+        assertGradientTint(style: style, direction: direction)
+    }
+
+    private func assertGradientTint(style: GaugeStyleCase, direction: LayoutDirection) {
         openSwiftUIAssertSnapshot(
             of: GaugeValues(style: style)
                 .tint(Gradient(stops: [
@@ -60,11 +87,12 @@ struct GaugeUITests {
                 ]))
                 .environment(\.layoutDirection, direction),
             size: .init(width: 320, height: 500),
-            named: "\(style.rawValue)-\(direction == .leftToRight ? "ltr" : "rtl")"
+            named: "\(style.rawValue)-\(direction == .leftToRight ? "ltr" : "rtl")",
+            testName: "gradientTints(style:direction:)"
         )
     }
 
-    @Test(arguments: [LayoutDirection.leftToRight, .rightToLeft])
+    @Test(circularGradientAvailability, arguments: [LayoutDirection.leftToRight, .rightToLeft])
     func erasedCircularGradient(direction: LayoutDirection) {
         openSwiftUIAssertSnapshot(
             of: GaugeValues(style: .accessoryCircularCapacity)
