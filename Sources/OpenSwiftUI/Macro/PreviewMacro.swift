@@ -33,4 +33,16 @@ public macro Preview(
     module: "OpenSwiftUIMacros",
     type: "PreviewMacro"
 )
+#else
+import OpenSwiftUICore
+
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@freestanding(declaration)
+public macro Preview(
+    _ name: String? = nil,
+    @OpenSwiftUICore.ViewBuilder body: @escaping @MainActor () -> any OpenSwiftUICore.View
+) = #externalMacro(
+    module: "OpenSwiftUIMacros",
+    type: "NoopPreviewMacro"
+)
 #endif

@@ -13,5 +13,6 @@ struct OpenSwiftUIMacrosPlugin: CompilerPlugin {
         EntryMacro.self,
         EntryDefaultValueMacro.self,
         PreviewMacro.self,
+        NoopPreviewMacro.self,
     ]
 }
