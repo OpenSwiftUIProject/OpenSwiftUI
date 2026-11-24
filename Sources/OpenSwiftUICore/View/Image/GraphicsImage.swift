@@ -26,6 +26,9 @@ package struct GraphicsImage: Equatable, Sendable {
         indirect case vectorLayer(VectorImageLayer)
         indirect case color(Color.Resolved)
         indirect case named(NamedImage.Key)
+        #if UIKIT_CROSS_PLATFORM
+        case systemSymbol(name: String, pointSize: CGFloat, weight: CGFloat)
+        #endif
     }
 
     package var contents: GraphicsImage.Contents?

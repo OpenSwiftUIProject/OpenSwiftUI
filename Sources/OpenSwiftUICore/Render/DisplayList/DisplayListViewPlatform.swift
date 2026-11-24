@@ -75,6 +75,13 @@ open class PlatformViewDefinition: @unchecked Sendable {
     open class func setShape(_ path: Path, color: Color.Resolved, style: FillStyle, of view: AnyObject) -> Bool { false }
     #if UIKIT_CROSS_PLATFORM
     open class func setShape(_ path: Path, gradient: PlatformGradient, style: FillStyle, of view: AnyObject) -> Bool { false }
+    open class func setSystemSymbol(
+        _ name: String,
+        pointSize: CGFloat,
+        weight: CGFloat,
+        color: Color.Resolved,
+        of view: AnyObject
+    ) -> Bool { false }
     #endif
     open class func viewLayer(_ view: AnyObject) -> CALayer { _openSwiftUIBaseClassAbstractMethod() }
     open class func subviews(_ view: AnyObject) -> [AnyObject] { _openSwiftUIBaseClassAbstractMethod() }
@@ -453,6 +460,19 @@ extension DisplayList.ViewUpdater.Platform {
                 #if canImport(QuartzCore)
                 let layer = viewInfo.layer as! ImageLayer
                 layer.update(image: image, size: size)
+                #elseif UIKIT_CROSS_PLATFORM
+                if case let .systemSymbol(name, pointSize, weight) = image.contents,
+                   definition.setSystemSymbol(
+                       name,
+                       pointSize: pointSize,
+                       weight: weight,
+                       color: image.maskColor ?? .white,
+                       of: viewInfo.view
+                   ) {
+                    // Handled by UIKit-cross-platform symbol rasterizer.
+                } else {
+                    _openSwiftUIPlatformUnimplementedWarning()
+                }
                 #else
                 _openSwiftUIPlatformUnimplementedWarning()
                 #endif
