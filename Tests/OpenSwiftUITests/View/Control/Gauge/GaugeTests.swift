@@ -3,6 +3,7 @@
 //  OpenSwiftUITests
 
 @testable import OpenSwiftUI
+import OpenSwiftUITestsSupport
 import Testing
 
 @MainActor
@@ -11,20 +12,33 @@ struct GaugeTests {
         (10.0, 0.0),
         (15.0, 0.25),
         (30.0, 1.0),
-        (5.0, 0.0),
-        (35.0, 1.0),
-        (Double.nan, 0.0),
-        (-Double.infinity, 0.0),
-        (Double.infinity, 1.0),
     ] as [(Double, Double)])
     func normalizedValue(value: Double, expected: Double) {
         let gauge = Gauge(value: value, in: 10...30) { EmptyView() }
         #expect(gauge.value == expected)
     }
 
-    @Test(arguments: [4.0, 5.0, 6.0, Double.nan])
-    func zeroLengthRange(value: Double) {
-        let gauge = Gauge(value: value, in: 5...5) { EmptyView() }
+    @Test(
+        containsRuntimeIssue("Gauge initialized with an out-of-bounds progress amount. The amount will be clamped to the nearest bound."),
+        arguments: [
+            (5.0, 10.0...30.0, 0.0),
+            (35.0, 10.0...30.0, 1.0),
+            (Double.nan, 10.0...30.0, 0.0),
+            (-Double.infinity, 10.0...30.0, 0.0),
+            (Double.infinity, 10.0...30.0, 1.0),
+            (4.0, 5.0...5.0, 1.0),
+            (6.0, 5.0...5.0, 1.0),
+            (Double.nan, 5.0...5.0, 1.0),
+        ] as [(Double, ClosedRange<Double>, Double)]
+    )
+    func outOfBoundsValue(value: Double, bounds: ClosedRange<Double>, expected: Double) {
+        let gauge = Gauge(value: value, in: bounds) { EmptyView() }
+        #expect(gauge.value == expected)
+    }
+
+    @Test
+    func zeroLengthRange() {
+        let gauge = Gauge(value: 5.0, in: 5...5) { EmptyView() }
         #expect(gauge.value == 1.0)
     }
 
