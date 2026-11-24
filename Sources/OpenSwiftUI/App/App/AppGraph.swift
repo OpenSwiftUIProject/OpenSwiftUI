@@ -264,3 +264,28 @@ private struct RootEnvironment: Rule {
         return env
     }
 }
+
+#if UIKIT_CROSS_PLATFORM
+extension AppGraph {
+    package static func makeCrossPlatformRootScene<Application: App>(
+        for appType: Application.Type
+    ) -> (view: AnyView, environment: EnvironmentValues) {
+        Update.ensure {
+            let graph: AppGraph
+            if let existing = AppGraph.shared {
+                graph = existing
+            } else {
+                let created = AppGraph(app: Application())
+                created.rootScenePhase = .active
+                created.instantiate()
+                AppGraph.shared = created
+                graph = created
+            }
+            if let item = graph.rootSceneList?.items.first {
+                return (item.value.view, item.environment)
+            }
+            return (AnyView(EmptyView()), EnvironmentValues())
+        }
+    }
+}
+#endif
