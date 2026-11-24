@@ -145,13 +145,13 @@ private struct GroupBoxWidgetDefinition: AppearanceWidgetDefinition, CoreUIAppea
 
     var coreUIOptions: [String: Any] {
         var options: [String: Any] = [
-            kCUIWidgetKey as String: style == .normal ? "group" : "kCUIWidgetFrameGroupBoxForm",
+            kCUIWidgetKey as String: (style == .normal ? kCUIWidgetFrameGroupBox : kCUIWidgetFrameGroupBoxForm) as String,
             kCUIScaleKey as String: displayScale,
             kCUIIsFlippedKey as String: false,
-            "kCUIMaskOnlyKey": false,
+            kCUIMaskOnlyKey as String: false,
         ]
         if let part {
-            options["kCUIVariantKey"] = part == .fill ? "kCUIVariantFill" : "kCUIVariantStroke"
+            options[kCUIVariantKey as String] = (part == .fill ? kCUIVariantFill : kCUIVariantStroke) as String
         }
         return options
     }
