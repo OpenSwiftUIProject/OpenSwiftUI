@@ -26,10 +26,19 @@ public struct Font: Hashable, Sendable {
         provider.resolve(in: context)
     }
 
-    func resolveTraits(in enviroment: EnvironmentValues) -> ResolvedTraits {
-        let context = enviroment.fontResolutionContext
+    func resolveTraits(in environment: EnvironmentValues) -> ResolvedTraits {
+        resolveTraits(
+            in: environment.fontResolutionContext,
+            modifiers: environment.fontModifiers
+        )
+    }
+
+    package func resolveTraits(
+        in context: Context,
+        modifiers: [AnyFontModifier]
+    ) -> ResolvedTraits {
         var traits = provider.resolveTraits(in: context)
-        for modifier in enviroment.fontModifiers {
+        for modifier in modifiers {
             modifier.modify(traits: &traits)
         }
         return traits
@@ -88,7 +97,10 @@ public struct Font: Hashable, Sendable {
             self.weight = weight?.value ?? w
             self.width = nil
             #else
-            _openSwiftUIPlatformUnimplementedFailure()
+            _ = dynamicTypeSize
+            self.pointSize = textStyle.defaultPointSizeWithoutCoreText
+            self.weight = weight?.value ?? textStyle.defaultWeightWithoutCoreText
+            self.width = nil
             #endif
         }
 
@@ -390,3 +402,47 @@ extension Font {
 
     private static var ratioCache: [RatioKey: CGFloat] = [:]
 }
+
+#if !canImport(CoreText)
+private extension Font.TextStyle {
+    var defaultPointSizeWithoutCoreText: CGFloat {
+        switch self {
+        case .largeTitle:
+            34.0
+        case .title:
+            28.0
+        case .title2:
+            22.0
+        case .title3:
+            20.0
+        case .headline, .body:
+            17.0
+        case .callout:
+            16.0
+        case .subheadline:
+            15.0
+        case .footnote:
+            13.0
+        case .caption:
+            12.0
+        case .caption2:
+            11.0
+        case .extraLargeTitle:
+            36.0
+        case .extraLargeTitle2:
+            28.0
+        case .caption3:
+            10.0
+        }
+    }
+
+    var defaultWeightWithoutCoreText: CGFloat {
+        switch self {
+        case .headline:
+            Font.Weight.semibold.value
+        default:
+            Font.Weight.regular.value
+        }
+    }
+}
+#endif

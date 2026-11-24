@@ -483,6 +483,7 @@ extension Text {
                 return font!.resolveTraits(in: environment.fontResolutionContext)
             }
             let context = environment.fontResolutionContext
+            #if canImport(CoreText)
             var descriptor = font!.resolve(in: context)
             for modifier in environmentModifiers {
                 modifier.modify(descriptor: &descriptor, in: context)
@@ -491,6 +492,16 @@ extension Text {
                 modifier.modify(descriptor: &descriptor, in: context)
             }
             return .init(descriptor)
+            #else
+            var traits = font!.resolveTraits(in: context)
+            for modifier in environmentModifiers {
+                modifier.modify(traits: &traits)
+            }
+            for modifier in fontModifiers {
+                modifier.modify(traits: &traits)
+            }
+            return traits
+            #endif
         }
         
         package mutating func addFontModifier<M>(_ modifier: M) where M: FontModifier {

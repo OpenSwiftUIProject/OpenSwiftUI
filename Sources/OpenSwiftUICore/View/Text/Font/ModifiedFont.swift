@@ -889,6 +889,12 @@ extension Font {
             modifier.modify(descriptor: &descriptor, in: context)
             return descriptor
         }
+
+        func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits {
+            var traits = base.resolveTraits(in: context)
+            modifier.modify(traits: &traits)
+            return traits
+        }
     }
 
     private struct StaticModifierProvider<M>: FontProvider where M: StaticFontModifier {
@@ -898,6 +904,12 @@ extension Font {
             var descriptor = base.resolve(in: context)
             M.modify(descriptor: &descriptor, in: context)
             return descriptor
+        }
+
+        func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits {
+            var traits = base.resolveTraits(in: context)
+            M.modify(traits: &traits)
+            return traits
         }
     }
 }
