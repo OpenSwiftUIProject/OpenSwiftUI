@@ -480,6 +480,19 @@ extension NSButton {
                     idealContentInsets: &content, maxContentInsets: nil
                 )
                 #endif
+                /* OpenSwiftUI Addition Begin */
+                // AppKit can report no intrinsic width and rectangular content insets for a circular bezel.
+                // The cell's title rect gives the horizontal inset of the native content view.
+                if #available(macOS 26.0, *), bezelStyle == .circular,
+                   size.width == NSView.noIntrinsicMetric, size.height > 0 {
+                    size.width = size.height
+                    let bounds = CGRect(origin: .zero, size: size)
+                    let titleRect = Graph.withoutUpdate { cell?.titleRect(forBounds: bounds) } ?? .zero
+                    let inset = titleRect.isEmpty ? content.top : titleRect.minX
+                    content.left = inset
+                    content.right = inset
+                }
+                /* OpenSwiftUI Addition End */
             }
         }
         let alignmentInsets = EdgeInsets(top: alignment.top, leading: alignment.left, bottom: alignment.bottom, trailing: alignment.right)
